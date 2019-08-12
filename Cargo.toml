@@ -1,0 +1,45 @@
+[package]
+name = "webgl"
+version = "0.1.0"
+authors = ["Mattias"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+js-sys = "0.3.25"
+wasm-bindgen = "0.2.48"
+nalgebra = "0.18.0"
+
+[dependencies.web-sys]
+version = "0.3.25"
+features = [
+  'CssStyleDeclaration',
+  'Document',
+  'Element',
+  'Event',
+  'EventTarget',
+  'HtmlCanvasElement',
+  'HtmlElement',
+  'HtmlImageElement',
+  'HtmlInputElement',
+  'InputEvent',
+  'MouseEvent',
+  'Node',
+  'Touch',
+  'TouchEvent',
+  'TouchList',
+  'WebGlBuffer',
+  'WebGlFramebuffer',
+  'WebGlProgram',
+  'WebGlRenderbuffer',
+  'WebGlRenderingContext',
+  'WebGlShader',
+  'WebGlTexture',
+  'WebGlUniformLocation',
+  'WebGlVertexArrayObject',
+  'WheelEvent',
+  'Window',
+  'console',
+]
