@@ -33,11 +33,13 @@ pub fn start() -> Result<(), JsValue> {
     let vert_shader = compile_shader(
         &context,
         WebGlRenderingContext::VERTEX_SHADER,
-        r#"
+      r#"
         attribute vec4 position;
+        varying vec2 texCoords;
         
         void main() {
-            gl_Position = position;
+            gl_Position = vec4(position.xy, 0.0, 1.0);
+            texCoords = position.zw;
         }
     "#,
     )?;
@@ -56,6 +58,9 @@ pub fn start() -> Result<(), JsValue> {
         &context,
         WebGlRenderingContext::FRAGMENT_SHADER,
         r#"
+        precision mediump float;
+        varying vec2 texCoords;
+        uniform sampler2D texture;
         void main() {
             gl_FragColor = vec4(1.0,1.0,1.0,1.0);
         }
@@ -74,6 +79,7 @@ pub fn start() -> Result<(), JsValue> {
     */
     let program = link_program(&context, &vert_shader, &frag_shader)?;
     context.use_program(Some(&program));
+
 
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
@@ -100,7 +106,7 @@ pub fn start() -> Result<(), JsValue> {
 
     let buffer = context.create_buffer().ok_or("failed to create buffer")?;
     context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
-
+ 
     // Note that `Float32Array::view` is somewhat dangerous (hence the
     // `unsafe`!). This is creating a raw view into our module's
     // `WebAssembly.Memory` buffer, but if we allocate more pages for ourself
@@ -119,9 +125,9 @@ pub fn start() -> Result<(), JsValue> {
         );
     }
 
-//    let mesh_texture_uni = get_uniform_location(&context, "meshTexture", &program);
- //   context.uniform1i(mesh_texture_uni.as_ref(), TextureUnit::Button.texture_unit());
-
+    let mesh_texture_uni = get_uniform_location(&context, "texture", &program);
+    context.uniform1i(mesh_texture_uni.as_ref(), TextureUnit::Button.texture_unit());
+ 
     context.vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
     context.enable_vertex_attrib_array(0);
 
@@ -129,8 +135,7 @@ pub fn start() -> Result<(), JsValue> {
     context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
 
     context.draw_arrays(
-   //     WebGlRenderingContext::TRIANGLE_STRIP,
-        WebGlRenderingContext::TRIANGLES,
+        WebGlRenderingContext::TRIANGLE_STRIP,
         0,
         (vertices.len() / 3) as i32,
     );
@@ -192,6 +197,6 @@ pub fn get_uniform_location(
     uniform_name: &str,
     program: &WebGlProgram
 ) -> Option<WebGlUniformLocation> {
-            Some(gl.get_uniform_location(program, uniform_name)
-                .expect(&format!(r#"Uniform '{}' not found"#, uniform_name)).clone())
+            Some(gl.get_uniform_location(&program, uniform_name)).unwrap()
+//                .expect(&format!(r#"Uniform '{}' not found"#, uniform_name)).clone())
 }
