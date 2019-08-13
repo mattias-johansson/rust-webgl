@@ -44,17 +44,7 @@ pub fn start() -> Result<(), JsValue> {
         }
     "#,
     )?;
-    /*
-      r#"
-        attribute vec4 position;
-        varying vec2 texCoords;
-        
-        void main() {
-            gl_Position = vec4(position, 0.0, 1.0);
-            texCoords = position.zw;
-        }
-    "#
-    */
+
     let frag_shader = compile_shader(
         &context,
         WebGlRenderingContext::FRAGMENT_SHADER,
@@ -68,17 +58,6 @@ pub fn start() -> Result<(), JsValue> {
         }
         "#,
     )?;
-    /*
-    r#"
-        precision mediump float;
-        varying vec2 texCoords;
-        uniform sampler2D texture;
-
-        void main() {
-            gl_FragColor = texture2D( texture, vec2(texCoords.s, texCoords.t) );
-        }
-        "#
-    */
     let program = link_program(&context, &vert_shader, &frag_shader)?;
     context.use_program(Some(&program));
 
@@ -91,65 +70,20 @@ pub fn start() -> Result<(), JsValue> {
 
     let rect_width = 100.0;
     let rect_height = 50.0;
-/*        let texture_coords = [
-            0., 1., // Top left
-            1., 0., // Bottom Right
-            0., 0., // Bottom Left
-            0., 1., // Top Left
-            1., 1., // Top Right
-            1., 0., // Bottom Right
-        ];
-*/
-//    let vertices: [f32; 9] = [-0.7, -0.7, 0.0, 0.7, -0.7, 0.0, 0.0, 0.7, 0.0];
-    let vertices: [f32; 24] = [ -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0, 1.0,
-                                rect_width / 2.0 * pxw,  rect_height / 2.0 * pxh , 1.0, 0.0,
-                                -rect_width / 2.0 *  pxw, - rect_height / 2.0 * pxh , 0.0, 0.0,
-                                -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0, 1.0,
-                                rect_width / 2.0 * pxw , - rect_height / 2.0 * pxh , 0.0, 1.0,
-                                rect_width / 2.0 * pxw,  rect_height / 2.0 * pxh , 1.0, 0.0,];
 
-
-//    let target = Point3::new(0.0, 0.0, 0.0);
-//    let camera: [f32; 3] = [1.0, 1.0, 1.0,];
-//    let view: [f32; 3] = [1.0, 1.0, 1.0];
-
-//    let view = Isometry3::look_at_rh(&eye, &target, &Vector3::y());
+    let vertices: Vec<f32> = make_coord();
 
     let buffer = context.create_buffer().ok_or("failed to create buffer")?;
     context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
  
-
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
-
-//    let vert_array = js_sys::Float32Array::view(&vertices);
     
     buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
-    
-    // Note that `Float32Array::view` is somewhat dangerous (hence the
-    // `unsafe`!). This is creating a raw view into our module's
-    // `WebAssembly.Memory` buffer, but if we allocate more pages for ourself
-    // (aka do a memory allocation in Rust) it'll cause the buffer to change,
-    // causing the `Float32Array` to be invalid.
-    //
-    // As a result, after `Float32Array::view` we have to be very careful not to
-    // do any memory allocations before it's dropped.
-/*    unsafe {
-        let vert_array = js_sys::Float32Array::view(&vertices);
 
-        context.buffer_data_with_array_buffer_view(
-            WebGlRenderingContext::ARRAY_BUFFER,
-            &vert_array,
-            WebGlRenderingContext::STATIC_DRAW,
-        );
-    }
-*/
     let mesh_texture_uni = get_uniform_location(&context, "texture", &program);
     context.uniform1i(mesh_texture_uni.as_ref(), TextureUnit::Button.texture_unit() as i32);
  
-    context.vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
-    context.enable_vertex_attrib_array(0);
-
     context.clear_color(0.0, 0.0, 1.0, 1.0);
     context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
 
@@ -237,3 +171,53 @@ pub fn buffer_f32_data(gl: &WebGlRenderingContext, data: &[f32], attrib: u32, si
         gl.buffer_data_with_array_buffer_view(WebGlRenderingContext::ARRAY_BUFFER, &data_array, WebGlRenderingContext::STATIC_DRAW);
         gl.vertex_attrib_pointer_with_i32(attrib, size, WebGlRenderingContext::FLOAT, false, 0, 0);
     }
+    
+pub fn make_coord() -> Vec<f32> {
+
+/*    let vertices: Vec<f32> = [ -0.7, 0.7 , 0.0, 1.0,
+                                0.7, -0.7, 1.0, 0.0,
+                                -0.7, -0.7 , 0.0, 0.0,
+                                -0.7, 0.7, 0.0, 1.0,
+                                0.7, 0.7, 0.0, 1.0,
+                                0.7, -0.7, 1.0, 0.0,];
+  */                              
+        let left_x = -0.7;
+        let top_y = 0.7;
+        let right_x = 0.7;
+        let bottom_y = -0.7;
+
+        // All of the positions of our quad in screen space
+        let positions = [
+            left_x, top_y, // Top Left
+            right_x, bottom_y, // Bottom Right
+            left_x, bottom_y, // Bottom Left
+            left_x, top_y, // Top Left
+            right_x, top_y, // Top Right
+            right_x, bottom_y, // Bottom Right
+        ];
+
+        let texture_coords = [
+            0., 1., // Top left
+            1., 0., // Bottom Right
+            0., 0., // Bottom Left
+            0., 1., // Top Left
+            1., 1., // Top Right
+            1., 0., // Bottom Right
+        ];
+
+        let mut vertices = vec![];
+
+        for i in 0..positions.len() {
+            // Skip odd indices
+            if i % 2 == 1 {
+                continue;
+            }
+
+            vertices.push(positions[i]);
+            vertices.push(positions[i + 1]);
+            vertices.push(texture_coords[i]);
+            vertices.push(texture_coords[i + 1]);
+        }
+
+        vertices
+}
