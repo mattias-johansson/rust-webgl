@@ -57,12 +57,13 @@ pub fn start() -> Result<(), JsValue> {
     let frag_shader = compile_shader(
         &context,
         WebGlRenderingContext::FRAGMENT_SHADER,
-        r#"
+    r#"
         precision mediump float;
         varying vec2 texCoords;
         uniform sampler2D texture;
+
         void main() {
-            gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+            gl_FragColor = texture2D( texture, vec2(texCoords.s, texCoords.t) );
         }
         "#,
     )?;
@@ -131,7 +132,7 @@ pub fn start() -> Result<(), JsValue> {
     context.vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
     context.enable_vertex_attrib_array(0);
 
-    context.clear_color(0.0, 0.0, 0.0, 1.0);
+    context.clear_color(0.0, 0.0, 1.0, 1.0);
     context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
 
     context.draw_arrays(
