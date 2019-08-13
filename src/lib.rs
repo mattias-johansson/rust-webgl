@@ -6,6 +6,7 @@ use std::f32::consts::PI;
 use std::rc::Rc;
 use self::render::texture_unit::*;
 use crate::load_texture_img::load_texture_image;
+use js_sys::WebAssembly;
 
 mod load_texture_img;
 mod render;
@@ -22,24 +23,24 @@ pub fn start() -> Result<(), JsValue> {
         .unwrap()
         .dyn_into::<WebGlRenderingContext>()?;
 
-//    let context = Rc::new(context);
+    let context = Rc::new(context);
 
-/*        load_texture_image(
+        load_texture_image(
             Rc::clone(&context),
             "/dudvmap.png",
             TextureUnit::Button,
         );
-*/
+
     let vert_shader = compile_shader(
         &context,
         WebGlRenderingContext::VERTEX_SHADER,
       r#"
-        attribute vec4 position;
+        attribute vec4 vertexData;
         varying vec2 texCoords;
         
         void main() {
-            gl_Position = vec4(position.xy, 0.0, 1.0);
-            texCoords = position.zw;
+            gl_Position = vec4(vertexData.xy, 0.0, 1.0);
+            texCoords = vertexData.zw;
         }
     "#,
     )?;
@@ -90,14 +91,23 @@ pub fn start() -> Result<(), JsValue> {
 
     let rect_width = 100.0;
     let rect_height = 50.0;
-
-
-    let vertices: [f32; 9] = [-0.7, -0.7, 0.0, 0.7, -0.7, 0.0, 0.0, 0.7, 0.0];
-/*    let vertices: [f32; 12] = [ -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0,
-                                rect_width / 2.0 * pxw,  rect_height / 2.0 * pxh , 0.0,
-                                -rect_width / 2.0 *  pxw, - rect_height / 2.0 * pxh , 0.0,
-                                rect_width / 2.0 * pxw , - rect_height / 2.0 * pxh , 0.0,];
+/*        let texture_coords = [
+            0., 1., // Top left
+            1., 0., // Bottom Right
+            0., 0., // Bottom Left
+            0., 1., // Top Left
+            1., 1., // Top Right
+            1., 0., // Bottom Right
+        ];
 */
+//    let vertices: [f32; 9] = [-0.7, -0.7, 0.0, 0.7, -0.7, 0.0, 0.0, 0.7, 0.0];
+    let vertices: [f32; 24] = [ -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0, 1.0,
+                                rect_width / 2.0 * pxw,  rect_height / 2.0 * pxh , 1.0, 0.0,
+                                -rect_width / 2.0 *  pxw, - rect_height / 2.0 * pxh , 0.0, 0.0,
+                                -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0, 1.0,
+                                rect_width / 2.0 * pxw , - rect_height / 2.0 * pxh , 0.0, 1.0,
+                                rect_width / 2.0 * pxw,  rect_height / 2.0 * pxh , 1.0, 0.0,];
+
 
 //    let target = Point3::new(0.0, 0.0, 0.0);
 //    let camera: [f32; 3] = [1.0, 1.0, 1.0,];
@@ -108,6 +118,14 @@ pub fn start() -> Result<(), JsValue> {
     let buffer = context.create_buffer().ok_or("failed to create buffer")?;
     context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
  
+
+    let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
+    context.enable_vertex_attrib_array(vertex_data_attrib as u32);
+
+//    let vert_array = js_sys::Float32Array::view(&vertices);
+    
+    buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
+    
     // Note that `Float32Array::view` is somewhat dangerous (hence the
     // `unsafe`!). This is creating a raw view into our module's
     // `WebAssembly.Memory` buffer, but if we allocate more pages for ourself
@@ -116,7 +134,7 @@ pub fn start() -> Result<(), JsValue> {
     //
     // As a result, after `Float32Array::view` we have to be very careful not to
     // do any memory allocations before it's dropped.
-    unsafe {
+/*    unsafe {
         let vert_array = js_sys::Float32Array::view(&vertices);
 
         context.buffer_data_with_array_buffer_view(
@@ -125,9 +143,9 @@ pub fn start() -> Result<(), JsValue> {
             WebGlRenderingContext::STATIC_DRAW,
         );
     }
-
+*/
     let mesh_texture_uni = get_uniform_location(&context, "texture", &program);
-    context.uniform1i(mesh_texture_uni.as_ref(), TextureUnit::Button.texture_unit());
+    context.uniform1i(mesh_texture_uni.as_ref(), TextureUnit::Button.texture_unit() as i32);
  
     context.vertex_attrib_pointer_with_i32(0, 3, WebGlRenderingContext::FLOAT, false, 0, 0);
     context.enable_vertex_attrib_array(0);
@@ -136,9 +154,9 @@ pub fn start() -> Result<(), JsValue> {
     context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
 
     context.draw_arrays(
-        WebGlRenderingContext::TRIANGLE_STRIP,
+        WebGlRenderingContext::TRIANGLES,
         0,
-        (vertices.len() / 3) as i32,
+        6,
     );
     Ok(())
 }
@@ -201,3 +219,21 @@ pub fn get_uniform_location(
             Some(gl.get_uniform_location(&program, uniform_name)).unwrap()
 //                .expect(&format!(r#"Uniform '{}' not found"#, uniform_name)).clone())
 }
+
+pub fn buffer_f32_data(gl: &WebGlRenderingContext, data: &[f32], attrib: u32, size: i32) {
+        let memory_buffer = wasm_bindgen::memory()
+            .dyn_into::<WebAssembly::Memory>()
+            .unwrap()
+            .buffer();
+
+        let data_location = data.as_ptr() as u32 / 4;
+
+        let data_array = js_sys::Float32Array::new(&memory_buffer)
+            .subarray(data_location, data_location + data.len() as u32);
+
+        let buffer = gl.create_buffer().unwrap();
+
+        gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
+        gl.buffer_data_with_array_buffer_view(WebGlRenderingContext::ARRAY_BUFFER, &data_array, WebGlRenderingContext::STATIC_DRAW);
+        gl.vertex_attrib_pointer_with_i32(attrib, size, WebGlRenderingContext::FLOAT, false, 0, 0);
+    }
