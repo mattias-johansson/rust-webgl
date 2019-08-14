@@ -8,6 +8,8 @@ use self::render::texture_unit::*;
 use crate::load_texture_img::load_texture_image;
 use js_sys::WebAssembly;
 
+use std::cell::RefCell;
+
 mod load_texture_img;
 mod render;
 
@@ -25,11 +27,11 @@ pub fn start() -> Result<(), JsValue> {
 
     let context = Rc::new(context);
 
-        load_texture_image(
-            Rc::clone(&context),
-            "/dudvmap.png",
-            TextureUnit::Button,
-        );
+    load_texture_image(
+        Rc::clone(&context),
+        "/dudvmap.png",
+        TextureUnit::Button,
+    );
 
     let vert_shader = compile_shader(
         &context,
@@ -71,27 +73,20 @@ pub fn start() -> Result<(), JsValue> {
     let rect_width = 100.0;
     let rect_height = 50.0;
 
-    let vertices: Vec<f32> = make_coord();
-
     let buffer = context.create_buffer().ok_or("failed to create buffer")?;
     context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
- 
-    let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
-    context.enable_vertex_attrib_array(vertex_data_attrib as u32);
-    
-    buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
 
-    let mesh_texture_uni = get_uniform_location(&context, "texture", &program);
-    context.uniform1i(mesh_texture_uni.as_ref(), TextureUnit::Button.texture_unit() as i32);
- 
-    context.clear_color(0.0, 0.0, 1.0, 1.0);
-    context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
+    let f = Rc::new(RefCell::new(None));
+    let g = f.clone();
 
-    context.draw_arrays(
-        WebGlRenderingContext::TRIANGLES,
-        0,
-        6,
-    );
+    *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
+        render(&context, &program);
+
+        // Schedule ourself for another requestAnimationFrame callback.
+        request_animation_frame(f.borrow().as_ref().unwrap());
+    }) as Box<dyn FnMut()>));
+
+    request_animation_frame(g.borrow().as_ref().unwrap());
     Ok(())
 }
 
@@ -150,8 +145,7 @@ pub fn get_uniform_location(
     uniform_name: &str,
     program: &WebGlProgram
 ) -> Option<WebGlUniformLocation> {
-            Some(gl.get_uniform_location(&program, uniform_name)).unwrap()
-//                .expect(&format!(r#"Uniform '{}' not found"#, uniform_name)).clone())
+            gl.get_uniform_location(&program, uniform_name)
 }
 
 pub fn buffer_f32_data(gl: &WebGlRenderingContext, data: &[f32], attrib: u32, size: i32) {
@@ -173,14 +167,7 @@ pub fn buffer_f32_data(gl: &WebGlRenderingContext, data: &[f32], attrib: u32, si
     }
     
 pub fn make_coord() -> Vec<f32> {
-
-/*    let vertices: Vec<f32> = [ -0.7, 0.7 , 0.0, 1.0,
-                                0.7, -0.7, 1.0, 0.0,
-                                -0.7, -0.7 , 0.0, 0.0,
-                                -0.7, 0.7, 0.0, 1.0,
-                                0.7, 0.7, 0.0, 1.0,
-                                0.7, -0.7, 1.0, 0.0,];
-  */                              
+                            
         let left_x = -0.7;
         let top_y = 0.7;
         let right_x = 0.7;
@@ -220,4 +207,37 @@ pub fn make_coord() -> Vec<f32> {
         }
 
         vertices
+}
+
+pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram) {
+    let vertices: Vec<f32> = make_coord();
+ 
+    let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
+    context.enable_vertex_attrib_array(vertex_data_attrib as u32);
+    
+    buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
+ 
+    context.clear_color(0.0, 0.0, 1.0, 1.0);
+    context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
+    
+    let mesh_texture_uni = context.get_uniform_location(&program, "texture");
+    context.uniform1i(mesh_texture_uni.as_ref(), TextureUnit::Button.texture_unit() as i32);
+
+    context.draw_arrays(
+        WebGlRenderingContext::TRIANGLES,
+        0,
+        6,
+    );
+    
+
+}
+
+fn request_animation_frame(f: &Closure<dyn FnMut()>) {
+    window()
+        .request_animation_frame(f.as_ref().unchecked_ref())
+        .expect("should register `requestAnimationFrame` OK");
+}
+
+fn window() -> web_sys::Window {
+    web_sys::window().expect("no global `window` exists")
 }

@@ -6,14 +6,21 @@ use wasm_bindgen::JsCast;
 use web_sys::HtmlImageElement;
 use web_sys::WebGlRenderingContext;
 use web_sys::WebGlRenderingContext as GL;
-
+use std::thread;
+use std::time::Duration;
 
 pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_unit: TextureUnit) {
     let image = Rc::new(RefCell::new(HtmlImageElement::new().unwrap()));
     let image_clone = Rc::clone(&image);
+    let texture = gl.create_texture();
+
+    gl.active_texture(texture_unit.TEXTURE_N());
+    gl.bind_texture(GL::TEXTURE_2D, texture.as_ref());
+
+    let color: [u8;4] = [0, 0, 255, 255];
+    let color = Some(&color[1 .. 4]);
 
     let onload = Closure::wrap(Box::new(move || {
-        let texture = gl.create_texture();
 
         gl.active_texture(texture_unit.TEXTURE_N());
 
@@ -41,4 +48,5 @@ pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_unit
     image.set_src(src);
 
     onload.forget();
+//    thread::sleep(Duration::from_secs(2));
 }
