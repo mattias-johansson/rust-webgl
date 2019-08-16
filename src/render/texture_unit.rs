@@ -3,6 +3,9 @@ use web_sys::WebGlRenderingContext as GL;
 #[derive(Clone, Copy)]
 pub enum TextureUnit {
     Button = 0,
+    Toggle = 1,
+    ToggleActive = 2,
+    ToggelBackground = 3,
 }
 
 impl TextureUnit {
@@ -11,6 +14,9 @@ impl TextureUnit {
     pub fn TEXTURE_N(&self) -> u32 {
         match self {
             TextureUnit::Button => GL::TEXTURE0,
+            TextureUnit::Toggle => GL::TEXTURE1,
+            TextureUnit::ToggleActive => GL::TEXTURE2,
+            TextureUnit::ToggelBackground => GL::TEXTURE3,
         }
     }
 

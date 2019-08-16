@@ -26,11 +26,29 @@ pub fn start() -> Result<(), JsValue> {
         .dyn_into::<WebGlRenderingContext>()?;
 
     let context = Rc::new(context);
+    
+    load_texture_image(
+        Rc::clone(&context),
+        "/assets/button.png",
+        TextureUnit::Button,
+    );
 
     load_texture_image(
         Rc::clone(&context),
-        "/dudvmap.png",
-        TextureUnit::Button,
+        "/assets/grey.png",
+        TextureUnit::Toggle,
+    );
+    
+    load_texture_image(
+        Rc::clone(&context),
+        "/assets/blue.png",
+        TextureUnit::ToggleActive,
+    );
+
+    load_texture_image(
+        Rc::clone(&context),
+        "/assets/bg.png",
+        TextureUnit::ToggelBackground,
     );
 
     let vert_shader = compile_shader(
@@ -56,7 +74,8 @@ pub fn start() -> Result<(), JsValue> {
         uniform sampler2D texture;
 
         void main() {
-            gl_FragColor = texture2D( texture, vec2(texCoords.s, texCoords.t) );
+            gl_FragColor = texture2D( texture, texCoords ); 
+            gl_FragColor.rgb *= gl_FragColor.a;
         }
         "#,
     )?;
@@ -80,7 +99,12 @@ pub fn start() -> Result<(), JsValue> {
     let g = f.clone();
 
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        render(&context, &program);
+        context.clear_color(1.0, 1.0, 1.0, 1.0);
+        context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT | WebGlRenderingContext::DEPTH_BUFFER_BIT);
+
+        render(&context, &program, 107.0, 36.0, TextureUnit::ToggelBackground);
+        render(&context, &program, 30.0, 30.0, TextureUnit::Toggle);
+        render(&context, &program, 30.0, 30.0, TextureUnit::ToggleActive);
 
         // Schedule ourself for another requestAnimationFrame callback.
         request_animation_frame(f.borrow().as_ref().unwrap());
@@ -209,19 +233,35 @@ pub fn make_coord() -> Vec<f32> {
         vertices
 }
 
-pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram) {
-    let vertices: Vec<f32> = make_coord();
- 
+pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, texture: TextureUnit) {
+    //let vertices: Vec<f32> = make_coord();
+    let canvas_width = 1280.0;
+    let canvas_height = 703.0;
+
+    let pxw = 2.0 / canvas_width;
+    let pxh = 2.0 / canvas_height;
+
+//    let rect_width = 145.0;
+//    let rect_height = 34.0;
+        // All of the positions of our quad in screen space
+
+    let vertices: [f32; 24] = [ -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0, 1.0,
+                                rect_width / 2.0 * pxw,  -rect_height / 2.0 * pxh , 1.0, 0.0,
+                                -rect_width / 2.0 *  pxw, -rect_height / 2.0 * pxh , 0.0, 0.0,
+                                -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0, 1.0,
+                                rect_width / 2.0 * pxw , rect_height / 2.0 * pxh , 1.0, 1.0,
+                                rect_width / 2.0 * pxw,  -rect_height / 2.0 * pxh , 1.0, 0.0,];
+
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
     
     buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
- 
-    context.clear_color(0.0, 0.0, 1.0, 1.0);
-    context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
-    
+    context.enable(WebGlRenderingContext::BLEND);
+
+    context.blend_func(WebGlRenderingContext::SRC_ALPHA, WebGlRenderingContext::ONE_MINUS_SRC_ALPHA);
+
     let mesh_texture_uni = context.get_uniform_location(&program, "texture");
-    context.uniform1i(mesh_texture_uni.as_ref(), TextureUnit::Button.texture_unit() as i32);
+    context.uniform1i(mesh_texture_uni.as_ref(), texture.texture_unit() as i32);
 
     context.draw_arrays(
         WebGlRenderingContext::TRIANGLES,
