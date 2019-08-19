@@ -7,7 +7,7 @@ use std::rc::Rc;
 use self::render::texture_unit::*;
 use crate::load_texture_img::load_texture_image;
 use js_sys::WebAssembly;
-
+use nalgebra_glm as glm;
 use std::cell::RefCell;
 
 mod load_texture_img;
@@ -58,8 +58,12 @@ pub fn start() -> Result<(), JsValue> {
         attribute vec4 vertexData;
         varying vec2 texCoords;
         
+        uniform mat4 model;
+            uniform mat4 view;
+        uniform mat4 perspective;
+
         void main() {
-            gl_Position = vec4(vertexData.xy, 0.0, 1.0);
+            gl_Position = perspective * view * model * vec4(vertexData.xy, 0.0, 1.0);
             texCoords = vertexData.zw;
         }
     "#,
@@ -234,17 +238,16 @@ pub fn make_coord() -> Vec<f32> {
 }
 
 pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, texture: TextureUnit) {
-    //let vertices: Vec<f32> = make_coord();
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
+
+    
+    //let vertices: Vec<f32> = make_coord();
 
     let pxw = 2.0 / canvas_width;
     let pxh = 2.0 / canvas_height;
 
-//    let rect_width = 145.0;
-//    let rect_height = 34.0;
-        // All of the positions of our quad in screen space
-
+    // All of the positions of our quad in local space
     let vertices: [f32; 24] = [ -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0, 1.0,
                                 rect_width / 2.0 * pxw,  -rect_height / 2.0 * pxh , 1.0, 0.0,
                                 -rect_width / 2.0 *  pxw, -rect_height / 2.0 * pxh , 0.0, 0.0,
@@ -255,6 +258,36 @@ pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_wid
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
     
+
+    let model_uni = context.get_uniform_location(&program, "model");
+    let model = Isometry3::new(Vector3::new(1.0, 1.0, 1.0), nalgebra::zero());
+    let mut model_array = [0.; 16];
+    model_array.copy_from_slice(model.to_homogeneous().as_slice());
+/*    console::log_1(&"model_array".into());
+    for value in model_array.iter() {
+        console::log_1(&value.to_string().into());
+    }
+*/    context.uniform_matrix4fv_with_f32_array(model_uni.as_ref(), false, &mut identity().as_slice());
+//    console::log_1(&"perspective_array1".into());
+    let perspective_uni = context.get_uniform_location(&program, "perspective");
+//    console::log_1(&"perspective_array2".into());
+    let ortho_matrix = glm::ortho(0.0, canvas_width, 0.0, canvas_height, 0.1, 100.0);
+//    let mut perspective_array = [0.; 16];
+
+//    console::log_1(&"perspective_array3".into());
+//    perspective_array.copy_from_slice(ortho_matrix.to_homogeneous().as_slice()); //error
+//    console::log_1(&"perspective_array4".into());
+//    for value in perspective_array.iter() {
+//        console::log_1(&value.to_string().into());
+//    }
+    context.uniform_matrix4fv_with_f32_array(perspective_uni.as_ref(), false, &mut identity().as_slice());
+
+    let view_uni = context.get_uniform_location(&program, "view");
+    let view = Isometry3::new(Vector3::new(1.0, 1.0, 1.0), nalgebra::zero());
+    let mut view_array = [0.; 16];
+    view_array.copy_from_slice(view.to_homogeneous().as_slice());
+    context.uniform_matrix4fv_with_f32_array(view_uni.as_ref(), false, &mut identity().as_slice());
+
     buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
     context.enable(WebGlRenderingContext::BLEND);
 
@@ -268,7 +301,6 @@ pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_wid
         0,
         6,
     );
-    
 
 }
 
@@ -280,4 +312,11 @@ fn request_animation_frame(f: &Closure<dyn FnMut()>) {
 
 fn window() -> web_sys::Window {
     web_sys::window().expect("no global `window` exists")
+}
+
+fn identity() -> glm::TMat4<f32> {
+    glm::mat4(  1.0,0.0,0.0,0.0,
+                0.0,1.0,0.0,0.0,
+                0.0,0.0,1.0,0.0,
+                0.0,0.0,0.0,1.0,)
 }
