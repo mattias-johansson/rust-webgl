@@ -105,8 +105,8 @@ pub fn start() -> Result<(), JsValue> {
         context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT | WebGlRenderingContext::DEPTH_BUFFER_BIT);
 
         render(&context, &program, 107.0, 36.0, 0.0, 0.0, TextureUnit::ToggelBackground);
-        render(&context, &program, 30.0, 30.0, 6.0, 5.0, TextureUnit::Toggle);
-        render(&context, &program, 30.0, 30.0, 6.0, 5.0, TextureUnit::ToggleActive);
+        render(&context, &program, 30.0, 30.0, 3.0, 3.0, TextureUnit::Toggle);
+        render(&context, &program, 30.0, 30.0, 3.0, 3.0, TextureUnit::ToggleActive);
 
         // Schedule ourself for another requestAnimationFrame callback.
         request_animation_frame(f.borrow().as_ref().unwrap());
@@ -239,6 +239,8 @@ pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_wid
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
 
+    let rect_height = rect_height / 2.0;
+    let rect_width = rect_width / 2.0;
     // All of the positions of our quad in local space
     let vertices: [f32; 24] = [ -rect_width, rect_height, 0.0, 1.0,
                                 rect_width,  -rect_height, 1.0, 0.0,
