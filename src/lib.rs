@@ -104,9 +104,9 @@ pub fn start() -> Result<(), JsValue> {
         context.clear_color(1.0, 1.0, 1.0, 1.0);
         context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT | WebGlRenderingContext::DEPTH_BUFFER_BIT);
 
-        render(&context, &program, 107.0, 36.0, TextureUnit::ToggelBackground);
-        render(&context, &program, 30.0, 30.0, TextureUnit::Toggle);
-        render(&context, &program, 30.0, 30.0, TextureUnit::ToggleActive);
+        render(&context, &program, 107.0, 36.0, 0.0, 0.0, TextureUnit::ToggelBackground);
+        render(&context, &program, 30.0, 30.0, 6.0, 5.0, TextureUnit::Toggle);
+        render(&context, &program, 30.0, 30.0, 6.0, 5.0, TextureUnit::ToggleActive);
 
         // Schedule ourself for another requestAnimationFrame callback.
         request_animation_frame(f.borrow().as_ref().unwrap());
@@ -235,15 +235,9 @@ pub fn make_coord() -> Vec<f32> {
         vertices
 }
 
-pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, texture: TextureUnit) {
+pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, texture: TextureUnit) {
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
-
-    
-    //let vertices: Vec<f32> = make_coord();
-
-    let pxw = 1.0 / rect_width;
-    let pxh = 1.0 / rect_height;
 
     // All of the positions of our quad in local space
     let vertices: [f32; 24] = [ -rect_width, rect_height, 0.0, 1.0,
@@ -259,7 +253,7 @@ pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_wid
     
 
     let model_uni = context.get_uniform_location(&program, "model");
-    let model = Isometry3::new(Vector3::new(rect_width, rect_height, 1.0), nalgebra::zero()); //move to 1,1,1
+    let model = Isometry3::new(Vector3::new(x+(rect_width), y+(rect_height), 1.0), nalgebra::zero()); //move to 1,1,1
     let mut model_array = [0.; 16];
     model_array.copy_from_slice(model.to_homogeneous().as_slice());
     context.uniform_matrix4fv_with_f32_array(model_uni.as_ref(), false, &mut model_array);
