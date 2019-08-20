@@ -63,7 +63,7 @@ pub fn start() -> Result<(), JsValue> {
         uniform mat4 perspective;
 
         void main() {
-            gl_Position = perspective * view * model * vec4(vertexData.xy, 0.0, 1.0);
+            gl_Position = perspective * view * model * vec4(vertexData.xy, 1.0, 1.0);
             texCoords = vertexData.zw;
         }
     "#,
@@ -86,15 +86,13 @@ pub fn start() -> Result<(), JsValue> {
     let program = link_program(&context, &vert_shader, &frag_shader)?;
     context.use_program(Some(&program));
 
-
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
 
-    let pxw = 2.0 / canvas_width;
-    let pxh = 2.0 / canvas_height;
-
-    let rect_width = 100.0;
-    let rect_height = 50.0;
+    let ortho_matrix = glm::ortho(0.0, canvas_width, 0.0, canvas_height, -2.0, 100.0); 
+          for value in ortho_matrix.iter() {
+        web_sys::console::log_1(&value.to_string().into());
+    }
 
     let buffer = context.create_buffer().ok_or("failed to create buffer")?;
     context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
@@ -244,43 +242,35 @@ pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_wid
     
     //let vertices: Vec<f32> = make_coord();
 
-    let pxw = 2.0 / canvas_width;
-    let pxh = 2.0 / canvas_height;
+    let pxw = 1.0 / rect_width;
+    let pxh = 1.0 / rect_height;
 
     // All of the positions of our quad in local space
-    let vertices: [f32; 24] = [ -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0, 1.0,
-                                rect_width / 2.0 * pxw,  -rect_height / 2.0 * pxh , 1.0, 0.0,
-                                -rect_width / 2.0 *  pxw, -rect_height / 2.0 * pxh , 0.0, 0.0,
-                                -rect_width / 2.0 * pxw, rect_height / 2.0 * pxh , 0.0, 1.0,
-                                rect_width / 2.0 * pxw , rect_height / 2.0 * pxh , 1.0, 1.0,
-                                rect_width / 2.0 * pxw,  -rect_height / 2.0 * pxh , 1.0, 0.0,];
+    let vertices: [f32; 24] = [ -rect_width, rect_height, 0.0, 1.0,
+                                rect_width,  -rect_height, 1.0, 0.0,
+                                -rect_width, -rect_height, 0.0, 0.0,
+                                -rect_width, rect_height, 0.0, 1.0,
+                                rect_width, rect_height, 1.0, 1.0,
+                                rect_width,  -rect_height, 1.0, 0.0,];
+
 
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
     
 
     let model_uni = context.get_uniform_location(&program, "model");
-    let model = Isometry3::new(Vector3::new(1.0, 1.0, 1.0), nalgebra::zero());
+    let model = Isometry3::new(Vector3::new(rect_width, rect_height, 1.0), nalgebra::zero()); //move to 1,1,1
     let mut model_array = [0.; 16];
     model_array.copy_from_slice(model.to_homogeneous().as_slice());
-/*    console::log_1(&"model_array".into());
-    for value in model_array.iter() {
-        console::log_1(&value.to_string().into());
-    }
-*/    context.uniform_matrix4fv_with_f32_array(model_uni.as_ref(), false, &mut identity().as_slice());
-//    console::log_1(&"perspective_array1".into());
-    let perspective_uni = context.get_uniform_location(&program, "perspective");
-//    console::log_1(&"perspective_array2".into());
-    let ortho_matrix = glm::ortho(0.0, canvas_width, 0.0, canvas_height, 0.1, 100.0);
-//    let mut perspective_array = [0.; 16];
+    context.uniform_matrix4fv_with_f32_array(model_uni.as_ref(), false, &mut model_array);
 
-//    console::log_1(&"perspective_array3".into());
-//    perspective_array.copy_from_slice(ortho_matrix.to_homogeneous().as_slice()); //error
-//    console::log_1(&"perspective_array4".into());
-//    for value in perspective_array.iter() {
-//        console::log_1(&value.to_string().into());
-//    }
-    context.uniform_matrix4fv_with_f32_array(perspective_uni.as_ref(), false, &mut identity().as_slice());
+
+    let perspective_uni = context.get_uniform_location(&program, "perspective");
+
+    // builds the view "box" Note that the z-axis is turned 180 degrees compared to the vertex shader. Don't know why just yet. 
+    let ortho_matrix = glm::ortho(0.0, canvas_width, 0.0, canvas_height, -2.0, 2.0); 
+
+    context.uniform_matrix4fv_with_f32_array(perspective_uni.as_ref(), false, &mut ortho_matrix.as_slice());
 
     let view_uni = context.get_uniform_location(&program, "view");
     let view = Isometry3::new(Vector3::new(1.0, 1.0, 1.0), nalgebra::zero());
