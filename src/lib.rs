@@ -10,11 +10,16 @@ use js_sys::WebAssembly;
 use nalgebra_glm as glm;
 use std::cell::RefCell;
 
+use crate::controls::toggle_button::ToggleButton;
+
 mod load_texture_img;
 mod render;
+mod controls;
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
+    let node_tree : Vec<ToggleButton> = vec![];
+    let tb = ToggleButton::new (10.0, 10.0, 0.0);
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
     
@@ -85,14 +90,6 @@ pub fn start() -> Result<(), JsValue> {
     )?;
     let program = link_program(&context, &vert_shader, &frag_shader)?;
     context.use_program(Some(&program));
-
-    let canvas_width = 1280.0;
-    let canvas_height = 703.0;
-
-    let ortho_matrix = glm::ortho(0.0, canvas_width, 0.0, canvas_height, -2.0, 100.0); 
-          for value in ortho_matrix.iter() {
-        web_sys::console::log_1(&value.to_string().into());
-    }
 
     let buffer = context.create_buffer().ok_or("failed to create buffer")?;
     context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
@@ -192,49 +189,6 @@ pub fn buffer_f32_data(gl: &WebGlRenderingContext, data: &[f32], attrib: u32, si
         gl.vertex_attrib_pointer_with_i32(attrib, size, WebGlRenderingContext::FLOAT, false, 0, 0);
     }
     
-pub fn make_coord() -> Vec<f32> {
-                            
-        let left_x = -0.7;
-        let top_y = 0.7;
-        let right_x = 0.7;
-        let bottom_y = -0.7;
-
-        // All of the positions of our quad in screen space
-        let positions = [
-            left_x, top_y, // Top Left
-            right_x, bottom_y, // Bottom Right
-            left_x, bottom_y, // Bottom Left
-            left_x, top_y, // Top Left
-            right_x, top_y, // Top Right
-            right_x, bottom_y, // Bottom Right
-        ];
-
-        let texture_coords = [
-            0., 1., // Top left
-            1., 0., // Bottom Right
-            0., 0., // Bottom Left
-            0., 1., // Top Left
-            1., 1., // Top Right
-            1., 0., // Bottom Right
-        ];
-
-        let mut vertices = vec![];
-
-        for i in 0..positions.len() {
-            // Skip odd indices
-            if i % 2 == 1 {
-                continue;
-            }
-
-            vertices.push(positions[i]);
-            vertices.push(positions[i + 1]);
-            vertices.push(texture_coords[i]);
-            vertices.push(texture_coords[i + 1]);
-        }
-
-        vertices
-}
-
 pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, texture: TextureUnit) {
     let canvas_width = 1280.0;
     let canvas_height = 703.0;

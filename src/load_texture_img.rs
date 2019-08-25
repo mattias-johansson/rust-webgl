@@ -50,5 +50,4 @@ pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_unit
     image.set_src(src);
 
     onload.forget();
-//    thread::sleep(Duration::from_secs(2));
 }
