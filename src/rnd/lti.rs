@@ -1,4 +1,4 @@
-use crate::render::texture_unit::TextureUnit;
+use crate::rnd::texture_unit::TextureUnit;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -6,9 +6,8 @@ use wasm_bindgen::JsCast;
 use web_sys::HtmlImageElement;
 use web_sys::WebGlRenderingContext;
 use web_sys::WebGlRenderingContext as GL;
-use std::thread;
-use std::time::Duration;
 
+#[allow(dead_code)]
 pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_unit: TextureUnit) {
     let image = Rc::new(RefCell::new(HtmlImageElement::new().unwrap()));
     let image_clone = Rc::clone(&image);

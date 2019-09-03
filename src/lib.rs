@@ -1,18 +1,18 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader, WebGlUniformLocation};
-use nalgebra::{Isometry3, Perspective3, Point3, Vector3};
 use std::f32::consts::PI;
 use std::rc::Rc;
-use self::render::texture_unit::*;
-use crate::load_texture_img::load_texture_image;
+use self::rnd::texture_unit::*;
+use self::rnd::lti::*;
+use self::rnd::draw::*;
 use js_sys::WebAssembly;
 use nalgebra_glm as glm;
 use std::cell::RefCell;
 
 use crate::controls::toggle_button::ToggleButton;
 
-mod render;
+mod rnd;
 mod controls;
 
 #[wasm_bindgen(start)]
@@ -149,25 +149,6 @@ pub fn get_uniform_location(
 ) -> Option<WebGlUniformLocation> {
             gl.get_uniform_location(&program, uniform_name)
 }
-
-pub fn buffer_f32_data(gl: &WebGlRenderingContext, data: &[f32], attrib: u32, size: i32) {
-        let memory_buffer = wasm_bindgen::memory()
-            .dyn_into::<WebAssembly::Memory>()
-            .unwrap()
-            .buffer();
-
-        let data_location = data.as_ptr() as u32 / 4;
-
-        let data_array = js_sys::Float32Array::new(&memory_buffer)
-            .subarray(data_location, data_location + data.len() as u32);
-
-        let buffer = gl.create_buffer().unwrap();
-
-        gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
-        gl.buffer_data_with_array_buffer_view(WebGlRenderingContext::ARRAY_BUFFER, &data_array, WebGlRenderingContext::STATIC_DRAW);
-        gl.vertex_attrib_pointer_with_i32(attrib, size, WebGlRenderingContext::FLOAT, false, 0, 0);
-    }
-    
 
 
 fn request_animation_frame(f: &Closure<dyn FnMut()>) {

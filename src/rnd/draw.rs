@@ -1,9 +1,17 @@
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader, WebGlUniformLocation};
+use nalgebra::{Isometry3, Perspective3, Point3, Vector3};
+use nalgebra_glm as glm;
+use js_sys::WebAssembly;
+use wasm_bindgen::JsCast;
 
-mod load_texture_img;
+use crate::rnd::texture_unit::*;
+use crate::rnd::lti::*;
+use std::rc::Rc;
 
-pub fn initTextures() {
-        
+pub fn initTextures(context: WebGlRenderingContext) {    
+
+    let context = Rc::new(context);
+
     load_texture_image(
         Rc::clone(&context),
         "/assets/button.png",
@@ -83,3 +91,30 @@ pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_wid
     );
 
 }
+
+fn identity() -> glm::TMat4<f32> {
+    glm::mat4(  1.0,0.0,0.0,0.0,
+                0.0,1.0,0.0,0.0,
+                0.0,0.0,1.0,0.0,
+                0.0,0.0,0.0,1.0,)
+}
+
+
+ fn buffer_f32_data(gl: &WebGlRenderingContext, data: &[f32], attrib: u32, size: i32) {
+        let memory_buffer = wasm_bindgen::memory()
+            .dyn_into::<WebAssembly::Memory>()
+            .unwrap()
+            .buffer();
+
+        let data_location = data.as_ptr() as u32 / 4;
+
+        let data_array = js_sys::Float32Array::new(&memory_buffer)
+            .subarray(data_location, data_location + data.len() as u32);
+
+        let buffer = gl.create_buffer().unwrap();
+
+        gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
+        gl.buffer_data_with_array_buffer_view(WebGlRenderingContext::ARRAY_BUFFER, &data_array, WebGlRenderingContext::STATIC_DRAW);
+        gl.vertex_attrib_pointer_with_i32(attrib, size, WebGlRenderingContext::FLOAT, false, 0, 0);
+    }
+    
