@@ -22,5 +22,29 @@
   </style>
   <body id="app">
     <canvas id="canvas" width="1280px" height="703px"/>
+    <script src="/webgl.js"> </script>
+    <script>
+      window.addEventListener('load', function () {
+        window.wasm_bindgen('/webgl_bg.wasm')
+          .then(function () {
+            // Start our rust application. You can find `WebClient` in `src/lib.rs`
+            const appilcation = new window.wasm_bindgen.Application()
+            appilcation.start()
+  
+            let time = Date.now();
+            function render () {
+              const dt = Date.now() - time
+  
+              //appilcation.update(dt)
+              appilcation.render()
+              window.requestAnimationFrame(render)
+  
+              time = Date.now()
+            }
+  
+            render()
+          })
+      })
+      </script>
   </body>
 </html>

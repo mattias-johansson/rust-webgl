@@ -8,30 +8,29 @@ use crate::rnd::texture_unit::*;
 use crate::rnd::lti::*;
 use std::rc::Rc;
 
-pub fn initTextures(context: WebGlRenderingContext) {    
+pub fn init_textures(gl: Rc<WebGlRenderingContext>) {    
 
-    let context = Rc::new(context);
 
     load_texture_image(
-        Rc::clone(&context),
+        Rc::clone(&gl),
         "/assets/button.png",
         TextureUnit::Button,
     );
 
     load_texture_image(
-        Rc::clone(&context),
+        Rc::clone(&gl),
         "/assets/grey.png",
         TextureUnit::Toggle,
     );
     
     load_texture_image(
-        Rc::clone(&context),
+        Rc::clone(&gl),
         "/assets/blue.png",
         TextureUnit::ToggleActive,
     );
 
     load_texture_image(
-        Rc::clone(&context),
+        Rc::clone(&gl),
         "/assets/bg.png",
         TextureUnit::ToggelBackground,
     );

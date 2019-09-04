@@ -1,3 +1,5 @@
+extern crate wasm_bindgen;
+use crate::rnd::draw::init_textures;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader, WebGlUniformLocation};
@@ -15,6 +17,99 @@ use crate::controls::toggle_button::ToggleButton;
 mod rnd;
 mod controls;
 
+/// Used to run the application from the web
+#[wasm_bindgen]
+pub struct Application {
+    gl: Rc<WebGlRenderingContext>,
+    node_tree: Vec<ToggleButton>,
+    program: WebGlProgram,
+//    renderer: WebRenderer,
+}
+
+#[wasm_bindgen]
+impl Application {
+
+    /// Create a new Application
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Application {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let canvas = document.get_element_by_id("canvas").unwrap();
+    
+    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+
+    let gl = canvas
+        .get_context("webgl").unwrap()
+        .unwrap()
+        .dyn_into::<WebGlRenderingContext>().unwrap();
+
+    let gl = Rc::new(gl);
+
+    let vert_shader = compile_shader(
+        &gl,
+        WebGlRenderingContext::VERTEX_SHADER,
+      r#"
+        attribute vec4 vertexData;
+        varying vec2 texCoords;
+        
+        uniform mat4 model;
+            uniform mat4 view;
+        uniform mat4 perspective;
+
+        void main() {
+            gl_Position = perspective * view * model * vec4(vertexData.xy, 1.0, 1.0);
+            texCoords = vertexData.zw;
+        }
+    "#,
+    ).unwrap();
+
+    let frag_shader = compile_shader(
+        &gl,
+        WebGlRenderingContext::FRAGMENT_SHADER,
+    r#"
+        precision mediump float;
+        varying vec2 texCoords;
+        uniform sampler2D texture;
+
+        void main() {
+            gl_FragColor = texture2D( texture, texCoords ); 
+            gl_FragColor.rgb *= gl_FragColor.a;
+        }
+        "#,
+    ).unwrap();
+
+    let program = link_program(&gl, &vert_shader, &frag_shader).unwrap();
+
+    gl.use_program(Some(&program));
+
+    let buffer = gl.create_buffer().ok_or("failed to create buffer").unwrap();
+    gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
+
+    let node_tree : Vec<ToggleButton> = vec![];
+
+        Application { gl, node_tree, program }
+    }
+
+    /// Start our application. `index.html` will call this function in order
+    /// to begin rendering.
+    pub fn start(&mut self) -> Result<(), JsValue> {
+        let gl = &self.gl;
+        init_textures(Rc::clone(gl));
+        let tb1 = ToggleButton::new (10.0, 10.0, 0.0);
+        self.node_tree.push(tb1);
+        let tb2 = ToggleButton::new (30.0, 30.0, 0.0);
+        self.node_tree.push(tb2);
+
+        Ok(())
+    }
+ 
+    pub fn render(&mut self) {
+        for node in &self.node_tree  {
+            node.draw(&self.gl, &self.program);
+        }
+}
+
+}
+/*
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
     
@@ -80,9 +175,9 @@ pub fn start() -> Result<(), JsValue> {
         context.clear_color(1.0, 1.0, 1.0, 1.0);
         context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT | WebGlRenderingContext::DEPTH_BUFFER_BIT);
 
-        render(&context, &program, 107.0, 36.0, 0.0, 0.0, TextureUnit::ToggelBackground);
-        render(&context, &program, 30.0, 30.0, 3.0, 3.0, TextureUnit::Toggle);
-        render(&context, &program, 30.0, 30.0, 3.0, 3.0, TextureUnit::ToggleActive);
+ //       render(&context, &program, 107.0, 36.0, 0.0, 0.0, TextureUnit::ToggelBackground);
+       // render(&context, &program, 30.0, 30.0, 3.0, 3.0, TextureUnit::Toggle);
+       // render(&context, &program, 30.0, 30.0, 3.0, 3.0, TextureUnit::ToggleActive);
 
         // Schedule ourself for another requestAnimationFrame callback.
         request_animation_frame(f.borrow().as_ref().unwrap());
@@ -91,7 +186,7 @@ pub fn start() -> Result<(), JsValue> {
     request_animation_frame(g.borrow().as_ref().unwrap());
     Ok(())
 }
-
+*/
 pub fn compile_shader(
     context: &WebGlRenderingContext,
     shader_type: u32,
@@ -148,22 +243,4 @@ pub fn get_uniform_location(
     program: &WebGlProgram
 ) -> Option<WebGlUniformLocation> {
             gl.get_uniform_location(&program, uniform_name)
-}
-
-
-fn request_animation_frame(f: &Closure<dyn FnMut()>) {
-    window()
-        .request_animation_frame(f.as_ref().unchecked_ref())
-        .expect("should register `requestAnimationFrame` OK");
-}
-
-fn window() -> web_sys::Window {
-    web_sys::window().expect("no global `window` exists")
-}
-
-fn identity() -> glm::TMat4<f32> {
-    glm::mat4(  1.0,0.0,0.0,0.0,
-                0.0,1.0,0.0,0.0,
-                0.0,0.0,1.0,0.0,
-                0.0,0.0,0.0,1.0,)
 }
