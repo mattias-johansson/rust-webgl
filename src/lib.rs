@@ -96,7 +96,7 @@ impl Application {
         init_textures(Rc::clone(gl));
         let tb1 = ToggleButton::new (10.0, 10.0, 0.0);
         self.node_tree.push(tb1);
-        let tb2 = ToggleButton::new (30.0, 30.0, 0.0);
+        let tb2 = ToggleButton::new (10.0, 50.0, 0.0);
         self.node_tree.push(tb2);
 
         Ok(())
