@@ -11,8 +11,10 @@ use self::rnd::draw::*;
 use js_sys::WebAssembly;
 use nalgebra_glm as glm;
 use std::cell::RefCell;
+use crate::controls::draw::Draw;
 
-use crate::controls::toggle_button::ToggleButton;
+use crate::controls::toggle_button::*;
+use crate::controls::button::*;
 
 mod rnd;
 mod controls;
@@ -21,7 +23,7 @@ mod controls;
 #[wasm_bindgen]
 pub struct Application {
     gl: Rc<WebGlRenderingContext>,
-    node_tree: Vec<ToggleButton>,
+    node_tree: Vec<Box<dyn Draw>>,
     program: WebGlProgram,
 //    renderer: WebRenderer,
 }
@@ -84,7 +86,7 @@ impl Application {
     let buffer = gl.create_buffer().ok_or("failed to create buffer").unwrap();
     gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
 
-    let node_tree : Vec<ToggleButton> = vec![];
+    let node_tree : Vec<Box<dyn Draw>> = vec![];
 
         Application { gl, node_tree, program }
     }
@@ -95,15 +97,15 @@ impl Application {
         let gl = &self.gl;
         init_textures(Rc::clone(gl));
         let tb1 = ToggleButton::new (10.0, 10.0, 0.0);
-        self.node_tree.push(tb1);
-        let tb2 = ToggleButton::new (10.0, 50.0, 0.0);
-        self.node_tree.push(tb2);
+        self.node_tree.push(Box::new(tb1));
+        let tb2 = Button::new (10.0, 50.0, 0.0);
+        self.node_tree.push(Box::new(tb2));
 
         Ok(())
     }
  
     pub fn render(&mut self) {
-        for node in &self.node_tree  {
+        for node in self.node_tree.iter() {
             node.draw(&self.gl, &self.program);
         }
 }
