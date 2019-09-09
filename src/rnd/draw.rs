@@ -1,5 +1,5 @@
-use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader, WebGlUniformLocation};
-use nalgebra::{Isometry3, Perspective3, Point3, Vector3};
+use web_sys::{WebGlProgram, WebGlRenderingContext};
+use nalgebra::{Isometry3, Vector3};
 use nalgebra_glm as glm;
 use js_sys::WebAssembly;
 use wasm_bindgen::JsCast;

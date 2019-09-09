@@ -2,6 +2,7 @@ use crate::rnd::texture_unit::*;
 use crate::rnd::draw::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 use crate::controls::draw::*;
+use crate::events::mouse::*;
 
 pub struct Button {
     x: f32,
@@ -16,6 +17,10 @@ impl Button {
 impl Draw for Button {
     fn draw(&self, context: &WebGlRenderingContext, program: &WebGlProgram) {
             render(&context, &program, 145.0, 34.0, self.x + 0.0, self.y + 0.0, TextureUnit::Button);
+    }
+
+    fn event(&mut self, event: &Mouse) {
+    
     }
     
 }
