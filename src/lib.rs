@@ -112,7 +112,6 @@ impl Application {
         let x = self.events.borrow().event.x;
         let y = self.events.borrow().event.y;
         if x != 0 && y != 0 {
-            web_sys::console::log_1(&"sending event".into());
             for node in self.node_tree.iter_mut() {
                 let xy = node.position();
                 if xy.0 < x as f32 && xy.2 > x as f32 && 

@@ -19,6 +19,12 @@ pub fn init_textures(gl: Rc<WebGlRenderingContext>) {
 
     load_texture_image(
         Rc::clone(&gl),
+        "/assets/button_pressed.png",
+        TextureUnit::ButtonPressed,
+    );
+
+    load_texture_image(
+        Rc::clone(&gl),
         "/assets/grey.png",
         TextureUnit::Toggle,
     );

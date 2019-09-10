@@ -8,19 +8,27 @@ pub struct Button {
     x: f32,
     y: f32,
     opacity: f32,
+    pressed: bool,
 }
 
 impl Button {
-    pub fn new(x: f32, y: f32, opacity: f32) -> Button { Button { x, y, opacity } }
+    pub fn new(x: f32, y: f32, opacity: f32) -> Button { 
+        let pressed = false;    
+        Button { x, y, opacity, pressed } 
+    }
 }
 
 impl Draw for Button {
     fn draw(&self, context: &WebGlRenderingContext, program: &WebGlProgram) {
-            render(&context, &program, 145.0, 34.0, self.x + 0.0, self.y + 0.0, TextureUnit::Button);
+        if self.pressed {
+            render(&context, &program, 145.0, 34.0, self.x + 0.0, self.y + 0.0, TextureUnit::ButtonPressed);
+        } else {
+            render(&context, &program, 145.0, 34.0, self.x + 0.0, self.y + 0.0, TextureUnit::Button);    
+        }
     }
 
     fn event(&mut self, event: &Mouse) {
-    
+        self.pressed = !self.pressed;
     }
     
    fn position(&self) -> (f32, f32, f32, f32) {

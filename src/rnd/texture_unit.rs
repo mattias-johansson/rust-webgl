@@ -6,6 +6,7 @@ pub enum TextureUnit {
     Toggle = 1,
     ToggleActive = 2,
     ToggelBackground = 3,
+    ButtonPressed = 4,
 }
 
 impl TextureUnit {
@@ -17,6 +18,7 @@ impl TextureUnit {
             TextureUnit::Toggle => GL::TEXTURE1,
             TextureUnit::ToggleActive => GL::TEXTURE2,
             TextureUnit::ToggelBackground => GL::TEXTURE3,
+            TextureUnit::ButtonPressed => GL::TEXTURE4,
         }
     }
 
