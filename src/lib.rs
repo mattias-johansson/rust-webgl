@@ -104,6 +104,7 @@ impl Application {
         let canvas = document.get_element_by_id("canvas").unwrap();
         let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
         attach_mouse_down_handler(&canvas, Rc::clone(&self.events));
+        attach_mouse_up_handler(&canvas, Rc::clone(&self.events));
 
         Ok(())
     }
@@ -121,7 +122,7 @@ impl Application {
                 }
             }
         }
-        let mouse_event = Mouse::new(0,0);
+        let mouse_event = Mouse::new(0,0, MouseEvent::None);
         self.events.borrow_mut().set_event(mouse_event);
         for node in self.node_tree.iter() {
             node.draw(&self.gl, &self.program);
@@ -191,13 +192,29 @@ fn attach_mouse_down_handler(canvas: &web_sys::HtmlCanvasElement, handler: Rc<Re
     let handler = move |event: web_sys::MouseEvent| {
         let x = event.client_x() as u16;
         let y = event.client_y() as u16;
-        let mouse_event = Mouse::new(x,y);
+        let mouse_event = Mouse::new(x,y, MouseEvent::Down);
         handler.borrow_mut().set_event(mouse_event);
     };
 
     let handler = Closure::wrap(Box::new(handler) as Box<FnMut(_)>);
 
     canvas.add_event_listener_with_callback("mousedown", handler.as_ref().unchecked_ref())?;
+
+    handler.forget();
+
+    Ok(())
+}
+fn attach_mouse_up_handler(canvas: &web_sys::HtmlCanvasElement, handler: Rc<RefCell<Handler>>) -> Result<(), JsValue> {
+    let handler = move |event: web_sys::MouseEvent| {
+        let x = event.client_x() as u16;
+        let y = event.client_y() as u16;
+        let mouse_event = Mouse::new(x,y, MouseEvent::Up);
+        handler.borrow_mut().set_event(mouse_event);
+    };
+
+    let handler = Closure::wrap(Box::new(handler) as Box<FnMut(_)>);
+
+    canvas.add_event_listener_with_callback("mouseup", handler.as_ref().unchecked_ref())?;
 
     handler.forget();
 

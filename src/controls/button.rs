@@ -28,7 +28,11 @@ impl Draw for Button {
     }
 
     fn event(&mut self, event: &Mouse) {
-        self.pressed = !self.pressed;
+        if event.event == MouseEvent::Up {
+            self.pressed = false;
+        } else if event.event == MouseEvent::Down {
+            self.pressed = true; 
+        }
     }
     
    fn position(&self) -> (f32, f32, f32, f32) {

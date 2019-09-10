@@ -31,7 +31,9 @@ impl Draw for ToggleButton {
     }
 
     fn event(&mut self, event: &Mouse) {
-        self.pressed = !self.pressed;
+        if event.event == MouseEvent::Up {
+            self.pressed = !self.pressed;
+        }
     }
 
     fn position(&self) -> (f32, f32, f32, f32) {
