@@ -52,7 +52,7 @@ impl Application {
         varying vec2 texCoords;
         
         uniform mat4 model;
-            uniform mat4 view;
+        uniform mat4 view;
         uniform mat4 perspective;
 
         void main() {

@@ -25,7 +25,7 @@ pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_unit
 
         gl.bind_texture(GL::TEXTURE_2D, texture.as_ref());
 
-        gl.pixel_storei(GL::UNPACK_FLIP_Y_WEBGL, 1);
+        gl.pixel_storei(GL::UNPACK_FLIP_Y_WEBGL, 0);
         
         gl.tex_parameteri(GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::NEAREST as i32);
         gl.tex_parameteri(GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::NEAREST as i32);
