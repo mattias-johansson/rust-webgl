@@ -109,9 +109,17 @@ impl Application {
     }
  
     pub fn render(&mut self) {
-        if self.events.borrow().event.x != 0 && self.events.borrow().event.y != 0 {
+        let x = self.events.borrow().event.x;
+        let y = self.events.borrow().event.y;
+        if x != 0 && y != 0 {
+            web_sys::console::log_1(&"sending event".into());
             for node in self.node_tree.iter_mut() {
-                node.event(&self.events.borrow().event);
+                let xy = node.position();
+                if xy.0 < x as f32 && xy.2 > x as f32 && 
+                   xy.1 < y as f32 && xy.3 > y as f32 {
+                        web_sys::console::log_1(&"sending event".into());
+                        node.event(&self.events.borrow().event);
+                }
             }
         }
         let mouse_event = Mouse::new(0,0);

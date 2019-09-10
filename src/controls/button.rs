@@ -23,4 +23,7 @@ impl Draw for Button {
     
     }
     
+   fn position(&self) -> (f32, f32, f32, f32) {
+        (self.x, self.y, self.x + 145.0, self.y + 34.0)
+    }
 }

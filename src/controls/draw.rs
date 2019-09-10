@@ -5,4 +5,7 @@ pub trait Draw {
     fn draw(&self, context: &WebGlRenderingContext, program: &WebGlProgram);
 
     fn event(&mut self, event: &Mouse);
+
+    fn position(&self) -> (f32, f32, f32, f32);
+    
 }

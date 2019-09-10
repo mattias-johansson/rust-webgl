@@ -65,7 +65,7 @@ pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_wid
     let perspective_uni = context.get_uniform_location(&program, "perspective");
 
     // builds the view "box" Note that the z-axis is turned 180 degrees compared to the vertex shader. Don't know why just yet. 
-    let ortho_matrix = glm::ortho(0.0, canvas_width, 0.0, canvas_height, -2.0, 2.0); 
+    let ortho_matrix = glm::ortho(0.0, canvas_width, canvas_height, 0.0, -2.0, 2.0); 
 
     context.uniform_matrix4fv_with_f32_array(perspective_uni.as_ref(), false, &mut ortho_matrix.as_slice());
 
