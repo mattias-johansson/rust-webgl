@@ -3,23 +3,26 @@ use crate::rnd::draw::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 use crate::controls::draw::*;
 use crate::events::mouse::*;
+use crate::animation::animator::*;
 
 pub struct Button {
     x: f32,
     y: f32,
     opacity: f32,
     pressed: bool,
+    animator: Option<Animator>,
 }
 
 impl Button {
     pub fn new(x: f32, y: f32, opacity: f32) -> Button { 
-        let pressed = false;    
-        Button { x, y, opacity, pressed } 
+        let pressed = false;
+        let animator = Option::None;    
+        Button { x, y, opacity, pressed, animator } 
     }
 }
 
 impl Draw for Button {
-    fn draw(&self, context: &WebGlRenderingContext, program: &WebGlProgram) {
+    fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
         if self.pressed {
             render(&context, &program, 145.0, 34.0, self.x + 0.0, self.y + 0.0, TextureUnit::ButtonPressed);
         } else {

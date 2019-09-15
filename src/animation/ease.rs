@@ -1,3 +1,6 @@
+use std::f32::consts::PI;
+
+#[derive(PartialEq, Clone, Copy)]
 pub enum Ease {
     Lin,
     InQuad,
@@ -30,13 +33,13 @@ pub enum Ease {
     InBounce,
     OutBounce,
     InOutBounce,
-    Pow {begin: f64, end: f64},
-    Bezier {cp0: f64, cp1: f64, cp2: f64, cp3: f64}
+    Pow {begin: f32, end: f32},
+    Bezier {cp0: f32, cp1: f32, cp2: f32, cp3: f32}
 }
 
 
 impl Ease {
-    pub fn map(&self, t: f64) -> f64 {
+    pub fn map(&self, t: f32) -> f32 {
         match self {
             Ease::Lin => {
                 return t.max(0.0).min(1.0);
@@ -135,7 +138,7 @@ impl Ease {
                     return 0.;
                 }
                 else {
-                    return 2.0f64.powf(10. * (t - 1.));
+                    return 2.0f32.powf(10. * (t - 1.));
                 }
             },
             Ease::OutExp => {
@@ -143,7 +146,7 @@ impl Ease {
                     return 1.;
                 }
                 else {
-                    return -(2.0f64.powf(-10. * t)) + 1.;
+                    return -(2.0f32.powf(-10. * t)) + 1.;
                 }
             },
             Ease::InOutExp => {
@@ -155,11 +158,11 @@ impl Ease {
                 }
                 let t = t * 2.0;
                 if t < 1. {
-                    return 0.5 * 2.0f64.powf(10. * (t - 1.));
+                    return 0.5 * 2.0f32.powf(10. * (t - 1.));
                 }
                 else {
                     let t = t - 1.;
-                    return 0.5 * (-(2.0f64.powf(-10. * t)) + 2.);
+                    return 0.5 * (-(2.0f32.powf(-10. * t)) + 2.);
                 }
             },
             Ease::InCirc => {
@@ -189,7 +192,7 @@ impl Ease {
                     return 1.;
                 }
                 let t = t - 1.0;
-                return -(2.0f64.powf(10.0 * t) * ((t - s) * (2.0 * PI) / p).sin());
+                return -(2.0f32.powf(10.0 * t) * ((t - s) * (2.0 * PI) / p).sin());
             },
             Ease::OutElastic => {
                 let p = 0.3;
@@ -201,7 +204,7 @@ impl Ease {
                 if t > 0.999 {
                     return 1.;
                 }
-                return 2.0f64.powf(-10.0 * t) * ((t - s) * (2.0 * PI) / p).sin() + 1.0;
+                return 2.0f32.powf(-10.0 * t) * ((t - s) * (2.0 * PI) / p).sin() + 1.0;
             },
             Ease::InOutElastic => {
                 let p = 0.3;
@@ -215,11 +218,11 @@ impl Ease {
                 let t = t * 2.0;
                 if t < 1. {
                     let t = t - 1.0;
-                    return -0.5 * (2.0f64.powf(10.0 * t) * ((t - s) * (2.0 * PI) / p).sin());
+                    return -0.5 * (2.0f32.powf(10.0 * t) * ((t - s) * (2.0 * PI) / p).sin());
                 }
                 else {
                     let t = t - 1.0;
-                    return 0.5 * 2.0f64.powf(-10.0 * t) * ((t - s) * (2.0 * PI) / p).sin() + 1.0;
+                    return 0.5 * 2.0f32.powf(-10.0 * t) * ((t - s) * (2.0 * PI) / p).sin() + 1.0;
                 }
             },
             Ease::InBack => {

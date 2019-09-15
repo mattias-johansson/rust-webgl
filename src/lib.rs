@@ -11,10 +11,12 @@ use crate::controls::toggle_button::*;
 use crate::controls::button::*;
 use crate::events::mouse::*;
 use crate::events::handler::*;
+use crate::animation::animator::*;
 
 mod rnd;
 mod controls;
 mod events;
+mod animation;
 
 /// Used to run the application from the web
 #[wasm_bindgen]
@@ -109,7 +111,10 @@ impl Application {
         Ok(())
     }
  
-    pub fn render(&mut self) {
+    pub fn render(&mut self, dt: f32) {
+
+//        let js: JsValue = dt.into();
+//        web_sys::console::log_1(&js);
         let x = self.events.borrow().event.x;
         let y = self.events.borrow().event.y;
         if x != 0 && y != 0 {
@@ -124,8 +129,8 @@ impl Application {
         }
         let mouse_event = Mouse::new(0,0, MouseEvent::None);
         self.events.borrow_mut().set_event(mouse_event);
-        for node in self.node_tree.iter() {
-            node.draw(&self.gl, &self.program);
+        for node in self.node_tree.iter_mut() {
+            node.draw(&self.gl, &self.program, dt);
         }
     }
 }

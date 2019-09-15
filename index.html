@@ -34,12 +34,11 @@
             let time = Date.now();
             function render () {
               const dt = Date.now() - time
-  
               //appilcation.update(dt)
-              appilcation.render()
+              appilcation.render(dt)
               window.requestAnimationFrame(render)
   
-              time = Date.now()
+//              time = Date.now()
             }
   
             render()
