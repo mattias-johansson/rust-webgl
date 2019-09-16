@@ -13,37 +13,43 @@ pub struct ToggleButton {
     y: f32,
     opacity: f32,
     pressed: bool,
+    value: bool,
     animator: Option<Animator>,
 }
 
 impl ToggleButton {
     pub fn new(x: f32, y: f32, opacity: f32) -> ToggleButton { 
         let pressed = false;
+        let value = false;
         let animator = Option::None;
-        ToggleButton { x, y, opacity, pressed, animator } 
+        ToggleButton { x, y, opacity, pressed, value, animator } 
     }
 }
 
 impl Draw for ToggleButton {
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
         if self.pressed {
-            if self.animator.is_none() {
-                self.animator = Option::Some(Animator::new(Ease::Lin, time, time + 3000.0));
-                
-            }
+            self.pressed = false;
+            self.animator = Option::Some(Animator::new(Ease::OutCubic, time, 250.0));
+        }
+        if self.value {
             render(&context, &program, 107.0, 36.0, self.x + 0.0, self.y + 0.0, TextureUnit::ToggelBackground);
-            let default = self.x + 75.0;
+            let end = self.x + 74.0;
             if self.animator.is_some() {
-                let time = (time - self.animator.unwrap().start_time) / 3000.0;
+                let time = (time - self.animator.unwrap().start_time) / self.animator.unwrap().duration;
 
-                let x = self.animator.map_or(default, |a| a.easing.map(time) as f32);
+                let x = self.animator.map_or(end, |a| a.easing.map(time) as f32);
+                let start = self.x + 3.0;
+//                let js: JsValue = x.into();
+//                web_sys::console::log_1(&js);
 
-                let js: JsValue = x.into();
-                web_sys::console::log_1(&js);
-                let x = x * (self.x + 75.0);
-                render(&context, &program, 30.0, 30.0, x, self.y + 3.0, TextureUnit::ToggleActive);
+                let x = x * (end - start);
+                render(&context, &program, 30.0, 30.0, start + x, self.y + 3.0, TextureUnit::ToggleActive);
+                if x == 1.0 {
+                    self.animator = None;
+                }
             } else {
-                render(&context, &program, 30.0, 30.0, default, self.y + 3.0, TextureUnit::ToggleActive);
+                render(&context, &program, 30.0, 30.0, end, self.y + 3.0, TextureUnit::ToggleActive);
             }
         } else {
             render(&context, &program, 107.0, 36.0, self.x + 0.0, self.y + 0.0, TextureUnit::ToggelBackground);
@@ -53,7 +59,8 @@ impl Draw for ToggleButton {
 
     fn event(&mut self, event: &Mouse) {
         if event.event == MouseEvent::Up {
-            self.pressed = !self.pressed;
+            self.pressed = true;
+            self.value = !self.value;
         }
     }
 

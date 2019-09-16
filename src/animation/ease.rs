@@ -78,7 +78,7 @@ impl Ease {
             },
             Ease::OutCubic => {
                 let t2 = t - 1.0;
-                return t2 * t2 * t2 + 1.0;
+                return (t2 * t2 * t2 + 1.0).max(0.0).min(1.0);
             },
             Ease::InOutCubic => {
                 let t = t * 2.0;
