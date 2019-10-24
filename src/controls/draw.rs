@@ -1,6 +1,8 @@
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 use crate::events::mouse::*;
 
+extern crate erased_serde;
+
 pub trait Draw {
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32);
 

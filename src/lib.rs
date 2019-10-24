@@ -4,6 +4,10 @@ use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader, WebGlUniformLocation};
 use std::rc::Rc;
 use std::cell::RefCell;
+use serde::{Serialize, Deserialize};
+
+#[macro_use]
+extern crate erased_serde;
 
 use crate::controls::draw::Draw;
 use crate::rnd::draw::init_textures;
@@ -27,6 +31,9 @@ pub struct Application {
     events: Rc<RefCell<Handler>>,
 //    renderer: WebRenderer,
 }
+
+
+serialize_trait_object!(Draw);
 
 #[wasm_bindgen]
 impl Application {
@@ -99,8 +106,16 @@ impl Application {
         init_textures(Rc::clone(gl));
         let tb1 = ToggleButton::new (10.0, 10.0, 0.0);
         self.node_tree.push(Box::new(tb1));
-        let tb2 = Button::new (10.0, 50.0, 0.0);
+        let mut tb2 = Button::new (10.0, 50.0, 0.0);
+        let closure = move |event: &MouseEvent| {
+            web_sys::console::log_1(&"click".into());
+        };
+        let handler = Some(Box::new(closure) as Box<Fn(&MouseEvent)>);
+        tb2.setClickHandler(handler);
         self.node_tree.push(Box::new(tb2));
+
+//        let json = serde_json::to_string(&self.node_tree).unwrap();
+//        web_sys::console::log_1(&json.into());
 
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
@@ -122,7 +137,7 @@ impl Application {
                 let xy = node.position();
                 if xy.0 < x as f32 && xy.2 > x as f32 && 
                    xy.1 < y as f32 && xy.3 > y as f32 {
-                        web_sys::console::log_1(&"sending event".into());
+//                        web_sys::console::log_1(&"sending event".into());
                         node.event(&self.events.borrow().event);
                 }
             }
@@ -209,12 +224,12 @@ fn attach_mouse_down_handler(canvas: &web_sys::HtmlCanvasElement, handler: Rc<Re
 
     Ok(())
 }
-fn attach_mouse_up_handler(canvas: &web_sys::HtmlCanvasElement, handler: Rc<RefCell<Handler>>) -> Result<(), JsValue> {
+fn attach_mouse_up_handler(canvas: &web_sys::HtmlCanvasElement, events: Rc<RefCell<Handler>>) -> Result<(), JsValue> {
     let handler = move |event: web_sys::MouseEvent| {
         let x = event.client_x() as u16;
         let y = event.client_y() as u16;
         let mouse_event = Mouse::new(x,y, MouseEvent::Up);
-        handler.borrow_mut().set_event(mouse_event);
+        events.borrow_mut().set_event(mouse_event);
     };
 
     let handler = Closure::wrap(Box::new(handler) as Box<FnMut(_)>);

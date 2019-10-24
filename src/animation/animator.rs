@@ -1,6 +1,7 @@
 use crate::animation::ease::*;
+use serde::{Serialize, Deserialize};
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub struct Animator {
     pub easing: Ease,
     pub start_time: f32,
