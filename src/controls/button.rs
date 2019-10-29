@@ -1,3 +1,4 @@
+use crate::events::click_handler::ClickHandler;
 use crate::rnd::texture_unit::*;
 use crate::rnd::draw::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
@@ -19,7 +20,7 @@ pub struct Button {
     pressed: bool,
     animator: Option<Animator>,
     clicks: Vec<Click>,
-    event_handler: Option<Box<Fn(&MouseEvent)>>,
+    event_handler: Option<ClickHandler>,
 }
 
 
@@ -33,7 +34,7 @@ impl Button {
         Button { node, pressed, animator, clicks, event_handler } 
     }
 
-    pub fn setClickHandler(&mut self, handler : Option<Box<Fn(&MouseEvent)>>) {
+    pub fn set_click_handler(&mut self, handler : Option<ClickHandler>) {
         self.event_handler = handler;
     }
 }

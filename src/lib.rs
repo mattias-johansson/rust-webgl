@@ -8,7 +8,7 @@ use serde::{Serialize, Deserialize};
 
 #[macro_use]
 extern crate erased_serde;
-
+use self::gui::*;
 use crate::controls::draw::Draw;
 use crate::rnd::draw::init_textures;
 use crate::controls::toggle_button::*;
@@ -16,7 +16,9 @@ use crate::controls::button::*;
 use crate::events::mouse::*;
 use crate::events::handler::*;
 use crate::animation::animator::*;
+use crate::events::click_handler::*;
 
+mod gui;
 mod rnd;
 mod controls;
 mod events;
@@ -25,8 +27,8 @@ mod animation;
 /// Used to run the application from the web
 #[wasm_bindgen]
 pub struct Application {
+    gui: Gui,
     gl: Rc<WebGlRenderingContext>,
-    node_tree: Vec<Box<dyn Draw>>,
     program: WebGlProgram,
     events: Rc<RefCell<Handler>>,
 //    renderer: WebRenderer,
@@ -41,62 +43,62 @@ impl Application {
     /// Create a new Application
     #[wasm_bindgen(constructor)]
     pub fn new() -> Application {
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("canvas").unwrap();
-    
-    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
-
-    let gl = canvas
-        .get_context("webgl").unwrap()
-        .unwrap()
-        .dyn_into::<WebGlRenderingContext>().unwrap();
-
-    let gl = Rc::new(gl);
-
-    let vert_shader = compile_shader(
-        &gl,
-        WebGlRenderingContext::VERTEX_SHADER,
-      r#"
-        attribute vec4 vertexData;
-        varying vec2 texCoords;
+        let document = web_sys::window().unwrap().document().unwrap();
+        let canvas = document.get_element_by_id("canvas").unwrap();
         
-        uniform mat4 model;
-        uniform mat4 view;
-        uniform mat4 perspective;
+        let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
 
-        void main() {
-            gl_Position = perspective * view * model * vec4(vertexData.xy, 1.0, 1.0);
-            texCoords = vertexData.zw;
-        }
-    "#,
-    ).unwrap();
+        let gl = canvas
+            .get_context("webgl").unwrap()
+            .unwrap()
+            .dyn_into::<WebGlRenderingContext>().unwrap();
 
-    let frag_shader = compile_shader(
-        &gl,
-        WebGlRenderingContext::FRAGMENT_SHADER,
-    r#"
-        precision mediump float;
-        varying vec2 texCoords;
-        uniform sampler2D texture;
+        let gl = Rc::new(gl);
 
-        void main() {
-            gl_FragColor = texture2D( texture, texCoords ); 
-            gl_FragColor.rgb *= gl_FragColor.a;
-        }
+        let vert_shader = compile_shader(
+            &gl,
+            WebGlRenderingContext::VERTEX_SHADER,
+        r#"
+            attribute vec4 vertexData;
+            varying vec2 texCoords;
+            
+            uniform mat4 model;
+            uniform mat4 view;
+            uniform mat4 perspective;
+
+            void main() {
+                gl_Position = perspective * view * model * vec4(vertexData.xy, 1.0, 1.0);
+                texCoords = vertexData.zw;
+            }
         "#,
-    ).unwrap();
+        ).unwrap();
 
-    let program = link_program(&gl, &vert_shader, &frag_shader).unwrap();
+        let frag_shader = compile_shader(
+            &gl,
+            WebGlRenderingContext::FRAGMENT_SHADER,
+        r#"
+            precision mediump float;
+            varying vec2 texCoords;
+            uniform sampler2D texture;
 
-    gl.use_program(Some(&program));
+            void main() {
+                gl_FragColor = texture2D( texture, texCoords ); 
+                gl_FragColor.rgb *= gl_FragColor.a;
+            }
+            "#,
+        ).unwrap();
 
-    let buffer = gl.create_buffer().ok_or("failed to create buffer").unwrap();
-    gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
+        let program = link_program(&gl, &vert_shader, &frag_shader).unwrap();
 
-    let node_tree : Vec<Box<dyn Draw>> = vec![];
-    let events = Handler::new();
-    let events = Rc::new(RefCell::new(events));
-        Application { gl, node_tree, program, events }
+        gl.use_program(Some(&program));
+
+        let buffer = gl.create_buffer().ok_or("failed to create buffer").unwrap();
+        gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
+
+        let events = Handler::new();
+        let events = Rc::new(RefCell::new(events));
+        let gui = Gui::new();
+        Application { gui, gl, program, events }
     }
 
     /// Start our application. `index.html` will call this function in order
@@ -104,19 +106,6 @@ impl Application {
     pub fn start(&mut self) -> Result<(), JsValue> {
         let gl = &self.gl;
         init_textures(Rc::clone(gl));
-        let tb1 = ToggleButton::new (10.0, 10.0, 0.0);
-        self.node_tree.push(Box::new(tb1));
-        let mut tb2 = Button::new (10.0, 50.0, 0.0);
-        let closure = move |event: &MouseEvent| {
-            web_sys::console::log_1(&"click".into());
-        };
-        let handler = Some(Box::new(closure) as Box<Fn(&MouseEvent)>);
-        tb2.setClickHandler(handler);
-        self.node_tree.push(Box::new(tb2));
-
-//        let json = serde_json::to_string(&self.node_tree).unwrap();
-//        web_sys::console::log_1(&json.into());
-
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
         let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
@@ -128,12 +117,13 @@ impl Application {
  
     pub fn render(&mut self, dt: f32) {
 
+        let node_tree = self.gui.get_tree();
 //        let js: JsValue = dt.into();
 //        web_sys::console::log_1(&js);
         let x = self.events.borrow().event.x;
         let y = self.events.borrow().event.y;
         if x != 0 && y != 0 {
-            for node in self.node_tree.iter_mut() {
+            for node in self.gui.get_tree().iter_mut() {
                 let xy = node.position();
                 if xy.0 < x as f32 && xy.2 > x as f32 && 
                    xy.1 < y as f32 && xy.3 > y as f32 {
@@ -144,7 +134,7 @@ impl Application {
         }
         let mouse_event = Mouse::new(0,0, MouseEvent::None);
         self.events.borrow_mut().set_event(mouse_event);
-        for node in self.node_tree.iter_mut() {
+        for node in self.gui.get_tree().iter_mut() {
             node.draw(&self.gl, &self.program, dt);
         }
     }
