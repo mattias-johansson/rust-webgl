@@ -1,3 +1,3 @@
-use crate::events::mouse::*;
+use crate::*;
 
-pub type ClickHandler = fn(&MouseEvent);
+pub type ClickHandler = fn(&mut page::Page, &MouseEvent);

@@ -1,4 +1,5 @@
 
+use std::rc::Rc;
 use crate::rnd::texture_unit::*;
 use crate::rnd::draw::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
@@ -19,8 +20,8 @@ pub struct ToggleButton {
 }
 
 impl ToggleButton {
-    pub fn new(x: f32, y: f32, opacity: f32) -> ToggleButton { 
-        let node = Node { x, y, opacity };
+    pub fn new(x: f32, y: f32, opacity: f32, parent: Option<Rc<Node>>) -> ToggleButton { 
+        let node = Node { x, y, opacity, parent };
         let pressed = false;
         let value = false;
         let animator = Option::None;

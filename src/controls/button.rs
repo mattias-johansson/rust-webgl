@@ -1,4 +1,5 @@
 use crate::events::click_handler::ClickHandler;
+use std::rc::Rc;
 use crate::rnd::texture_unit::*;
 use crate::rnd::draw::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
@@ -7,6 +8,7 @@ use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::animation::animator::*;
 use serde::{Serialize, Deserialize};
+use crate::page::*;
 
 extern crate erased_serde;
 
@@ -20,23 +22,27 @@ pub struct Button {
     pressed: bool,
     animator: Option<Animator>,
     clicks: Vec<Click>,
-    event_handler: Option<ClickHandler>,
+    event_handler: Option<Box<Fn(&mut Node, &MouseEvent)>>,
 }
 
 
 impl Button {
-    pub fn new(x: f32, y: f32, opacity: f32) -> Button { 
-        let node = Node { x, y, opacity };
+    pub fn new(x: f32, y: f32, opacity: f32, parent: Option<Rc<Node>>) -> Button { 
+        let node = Node { x, y, opacity, parent };
         let pressed = false;
         let animator = Option::None; 
         let clicks = vec![];    
         let event_handler = Option::None; 
         Button { node, pressed, animator, clicks, event_handler } 
     }
-
+/*
     pub fn set_click_handler(&mut self, handler : Option<ClickHandler>) {
         self.event_handler = handler;
     }
+    */
+    pub fn set_click_handler(&mut self, handler : Option<Box<Fn(&mut Page, &MouseEvent)>>) {
+//        self.event_handler = handler;
+     }
 }
 
 impl Draw for Button {
@@ -57,7 +63,7 @@ impl Draw for Button {
         match self.event_handler {
             Some(ref handler) => {
                 web_sys::console::log_1(&"calling calback".into());   
-                handler(&event.event);
+           //     handler(&event.event);
             },
             None => {
                 web_sys::console::log_1(&"Calback is none".into());   
