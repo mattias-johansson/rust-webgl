@@ -11,8 +11,9 @@ pub struct Node {
 impl Node {
 
     pub fn get_parent(&self) -> Option<Rc<Node>> {
+        // Rust way of checking optional
         if let Some(parent) = &self.parent {
-            return Some(Rc::clone(&parent))            
+            return Some(Rc::clone(&parent))
         }
         None
     }

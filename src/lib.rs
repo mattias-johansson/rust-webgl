@@ -35,8 +35,6 @@ pub struct Application {
 }
 
 
-serialize_trait_object!(Draw);
-
 #[wasm_bindgen]
 impl Application {
 
@@ -117,13 +115,12 @@ impl Application {
  
     pub fn render(&mut self, dt: f32) {
 
-        let node_tree = self.page.get_tree();
 //        let js: JsValue = dt.into();
 //        web_sys::console::log_1(&js);
         let x = self.events.borrow().event.x;
         let y = self.events.borrow().event.y;
         if x != 0 && y != 0 {
-            for node in self.page.get_tree().iter_mut() {
+            for node in self.page.get_tree() {
                 let xy = node.position();
                 if xy.0 < x as f32 && xy.2 > x as f32 && 
                    xy.1 < y as f32 && xy.3 > y as f32 {
@@ -134,7 +131,7 @@ impl Application {
         }
         let mouse_event = Mouse::new(0,0, MouseEvent::None);
         self.events.borrow_mut().set_event(mouse_event);
-        for node in self.page.get_tree().iter_mut() {
+        for node in self.page.get_tree() {
             node.draw(&self.gl, &self.program, dt);
         }
     }

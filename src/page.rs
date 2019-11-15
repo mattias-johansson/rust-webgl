@@ -44,7 +44,7 @@ impl Page {
 
     }
 
-    pub fn get_tree(&self) -> &[Vec<Box<dyn Draw>>] {
-        &[self.node_tree]
+    pub fn get_tree(&mut self) -> &mut [Box<dyn Draw>] {
+        self.node_tree.as_mut_slice()
     }
 }
