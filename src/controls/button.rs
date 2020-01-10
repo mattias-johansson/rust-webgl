@@ -1,3 +1,6 @@
+use core::cell::RefCell;
+use std::rc::Weak;
+use crate::events::handler::Handler;
 use crate::events::click_handler::ClickHandler;
 use std::rc::Rc;
 use crate::rnd::texture_unit::*;
@@ -22,7 +25,8 @@ pub struct Button {
     pressed: bool,
     animator: Option<Animator>,
     clicks: Vec<Click>,
-    event_handler: Option<Box<Fn(&mut Node, &MouseEvent)>>,
+    event_handler: Option<Box<Fn(&mut Page, &MouseEvent)>>,
+    callback: Option<Weak<dyn ClickHandler<MouseEvent>>>,
 }
 
 
@@ -33,20 +37,25 @@ impl Button {
         let animator = Option::None; 
         let clicks = vec![];    
         let event_handler = Option::None; 
-        Button { node, pressed, animator, clicks, event_handler } 
+        let callback = Option::None;
+        Button { node, pressed, animator, clicks, event_handler, callback } 
     }
 /*
     pub fn set_click_handler(&mut self, handler : Option<ClickHandler>) {
         self.event_handler = handler;
     }
     */
+
+    pub fn set_callback(&mut self, callback: Option<Weak<dyn ClickHandler<MouseEvent>>>) {
+        self.callback = callback;
+    }
     pub fn set_click_handler(&mut self, handler : Option<Box<Fn(&mut Page, &MouseEvent)>>) {
-//        self.event_handler = handler;
+        self.event_handler = handler;
      }
 }
 
 impl Draw for Button {
-    fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
+    fn draw(&self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
         if self.pressed {
             render(&context, &program, 145.0, 34.0, self.node.x + 0.0, self.node.y + 0.0, TextureUnit::ButtonPressed);
         } else {
@@ -55,6 +64,7 @@ impl Draw for Button {
     }
 
     fn event(&mut self, event: &Mouse) {
+        web_sys::console::log_1(&"button handling event".into());   
         if event.event == MouseEvent::Up {
             self.pressed = false;
         } else if event.event == MouseEvent::Down {
@@ -63,7 +73,7 @@ impl Draw for Button {
         match self.event_handler {
             Some(ref handler) => {
                 web_sys::console::log_1(&"calling calback".into());   
-           //     handler(&event.event);
+  //              handler(&event.event);
             },
             None => {
                 web_sys::console::log_1(&"Calback is none".into());   

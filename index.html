@@ -28,14 +28,14 @@
         window.wasm_bindgen('/webgl_bg.wasm')
           .then(function () {
             // Start our rust application. You can find `WebClient` in `src/lib.rs`
-            const appilcation = new window.wasm_bindgen.Application()
-            appilcation.start()
+            const application = new window.wasm_bindgen.Application()
+            application.start()
   
             let time = Date.now();
             function render () {
               const dt = Date.now() - time
               //appilcation.update(dt)
-              appilcation.render(dt)
+              application.render(dt)
               window.requestAnimationFrame(render)
   
 //              time = Date.now()

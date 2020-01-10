@@ -1,4 +1,5 @@
 
+use crate::events::handler::Handler;
 use crate::events::mouse::*;
 use crate::controls::draw::Draw;
 use crate::controls::toggle_button::*;
@@ -29,9 +30,9 @@ impl Page {
         self.node_tree.push(Box::new(tb1));
         let mut tb2 = Button::new (10.0, 50.0, 0.0, None);
 
-        let closure = move |Page: &mut Page, event: &MouseEvent| {
+        let closure = move |page: &mut Page, _event: &MouseEvent| {
             web_sys::console::log_1(&"click".into());
-            Page.node_tree.push(Box::new(Button::new (10.0, 90.0, 0.0, None)));
+            page.node_tree.push(Box::new(Button::new (50.0, 90.0, 0.0, None)));
         };
         let handler = Some(Box::new(closure) as Box<Fn(&mut Page, &MouseEvent)>);
 
@@ -46,5 +47,11 @@ impl Page {
 
     pub fn get_tree(&mut self) -> &mut [Box<dyn Draw>] {
         self.node_tree.as_mut_slice()
+    }
+}
+
+impl ClickHandler<MouseEvent> for Page {
+    fn do_things(&mut self, event : MouseEvent) {
+        self.node_tree.push(Box::new(Button::new (10.0, 90.0, 0.0, None)));
     }
 }

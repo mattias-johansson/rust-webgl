@@ -5,7 +5,7 @@ pub struct Node {
     pub x: f32,
     pub y: f32,
     pub opacity: f32,
-    parent: Option<Rc<Node>>,
+    pub parent: Option<Rc<Node>>,
 }
 
 impl Node {

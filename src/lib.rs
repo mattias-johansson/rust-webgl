@@ -95,7 +95,8 @@ impl Application {
 
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
-        let page = Page::new();
+        let mut page = Page::new();
+        page.create();
         Application { page, gl, program, events }
     }
 
@@ -114,17 +115,18 @@ impl Application {
     }
  
     pub fn render(&mut self, dt: f32) {
-
+//        web_sys::console::log_1(&"render".into());
 //        let js: JsValue = dt.into();
 //        web_sys::console::log_1(&js);
         let x = self.events.borrow().event.x;
         let y = self.events.borrow().event.y;
         if x != 0 && y != 0 {
             for node in self.page.get_tree() {
+
                 let xy = node.position();
                 if xy.0 < x as f32 && xy.2 > x as f32 && 
                    xy.1 < y as f32 && xy.3 > y as f32 {
-//                        web_sys::console::log_1(&"sending event".into());
+                        web_sys::console::log_1(&"sending event".into());
                         node.event(&self.events.borrow().event);
                 }
             }
@@ -132,6 +134,7 @@ impl Application {
         let mouse_event = Mouse::new(0,0, MouseEvent::None);
         self.events.borrow_mut().set_event(mouse_event);
         for node in self.page.get_tree() {
+//            web_sys::console::log_1(&"drawing node".into());
             node.draw(&self.gl, &self.program, dt);
         }
     }

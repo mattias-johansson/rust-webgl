@@ -13,7 +13,6 @@ extern crate erased_serde;
 
 pub struct ToggleButton {
     node: Node,
-    pressed: bool,
     value: bool,
     animator: Option<Animator>,
     event_handler: Option<Box<Fn(&MouseEvent)>>,
@@ -22,21 +21,17 @@ pub struct ToggleButton {
 impl ToggleButton {
     pub fn new(x: f32, y: f32, opacity: f32, parent: Option<Rc<Node>>) -> ToggleButton { 
         let node = Node { x, y, opacity, parent };
-        let pressed = false;
         let value = false;
         let animator = Option::None;
         let event_handler = Option::None;
-        ToggleButton { node, pressed, value, animator, event_handler } 
+        ToggleButton { node, value, animator, event_handler } 
     }
 }
 
 impl Draw for ToggleButton {
-    fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
-        if self.pressed {
-            self.pressed = false;
-            self.animator = Option::Some(Animator::new(Ease::OutCubic, time, 250.0));
-        }
-        if self.value {
+    fn draw(&self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
+        self.animator.unwrap().setStartTime(time);
+        if self.value {        
             render(&context, &program, 107.0, 36.0, self.node.x + 0.0, self.node.y + 0.0, TextureUnit::ToggelBackground);
             let end = self.node.x + 74.0;
             if self.animator.is_some() {
@@ -50,16 +45,12 @@ impl Draw for ToggleButton {
                 let x = x * (end - start);
                 render(&context, &program, 30.0, 30.0, start + x, self.node.y + 3.0, TextureUnit::ToggleActive);
                 if x == 1.0 {
-                    self.animator = None;
+                    self.animator.unwrap().setRunning(false);
                 }
             } else {
                 render(&context, &program, 30.0, 30.0, end, self.node.y + 3.0, TextureUnit::ToggleActive);
             }
         } else {
-            if self.pressed {
-                self.pressed = false;
-                self.animator = Option::Some(Animator::new(Ease::OutCubic, time, 250.0));
-            }
             render(&context, &program, 107.0, 36.0, self.node.x + 0.0, self.node.y + 0.0, TextureUnit::ToggelBackground);
             let end = self.node.x + 3.0;
             if self.animator.is_some() {
@@ -81,7 +72,7 @@ impl Draw for ToggleButton {
 
     fn event(&mut self, event: &Mouse) {
         if event.event == MouseEvent::Up {
-            self.pressed = true;
+            self.animator = Option::Some(Animator::new(false, Ease::OutCubic, 0.0, 250.0));
             self.value = !self.value;
         }
         match self.event_handler {
