@@ -3,7 +3,8 @@ use serde::{Serialize, Deserialize};
 
 #[derive(PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub struct Animator {
-    running: bool,
+    pub running: bool,
+    pub pressed: bool,
     pub easing: Ease,
     pub start_time: f32,
     pub duration: f32,
@@ -11,7 +12,8 @@ pub struct Animator {
 
 impl Animator {
     pub fn new(running: bool, easing: Ease, start_time: f32, duration: f32) -> Animator {
-        Animator { running, easing, start_time, duration }
+        let pressed = true;
+        Animator { running, pressed, easing, start_time, duration }
     } 
 
     pub fn setRunning(&mut self, running: bool) {
@@ -20,5 +22,10 @@ impl Animator {
 
     pub fn setStartTime(&mut self, start_time: f32) {
         self.start_time = start_time;
+        self.pressed = false;
+    }
+
+    pub fn set_pressed(&mut self) {
+        self.pressed = true;
     }
 }

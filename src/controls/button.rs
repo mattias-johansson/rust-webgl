@@ -55,7 +55,7 @@ impl Button {
 }
 
 impl Draw for Button {
-    fn draw(&self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
+    fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
         if self.pressed {
             render(&context, &program, 145.0, 34.0, self.node.x + 0.0, self.node.y + 0.0, TextureUnit::ButtonPressed);
         } else {
