@@ -1,4 +1,7 @@
 
+use std::rc::Weak;
+use std::rc::Rc;
+
 use crate::events::handler::Handler;
 use crate::events::mouse::*;
 use crate::controls::draw::Draw;
@@ -8,6 +11,7 @@ use crate::events::click_handler::ClickHandler;
 
 pub struct Page {
     node_tree: Vec<Box<dyn Draw>>,
+    handler: Rc<Box<Fn(&MouseEvent)>>,
 }
 
 impl Page {
@@ -18,7 +22,13 @@ impl Page {
 
     pub fn new() ->  Page {
         let node_tree : Vec<Box<dyn Draw>> = vec![];
-        Page { node_tree }
+        let closure = move |event: &MouseEvent| {
+            web_sys::console::log_1(&"click".into());
+            self.node_tree.push(Box::new(Button::new (50.0, 90.0, 0.0, None)));
+        };
+        let handler = Rc::new(Box::new(closure) as Box<Fn(&MouseEvent)>);
+
+        Page { node_tree, handler }
     }
 
     pub fn do_things(&mut self, event: &MouseEvent) {
@@ -30,14 +40,10 @@ impl Page {
         self.node_tree.push(Box::new(tb1));
         let mut tb2 = Button::new (10.0, 50.0, 0.0, None);
 
-        let closure = move |page: &mut Page, _event: &MouseEvent| {
-            web_sys::console::log_1(&"click".into());
-            page.node_tree.push(Box::new(Button::new (50.0, 90.0, 0.0, None)));
-        };
-        let handler = Some(Box::new(closure) as Box<Fn(&mut Page, &MouseEvent)>);
 
         //Some(Page::do_things)
-        tb2.set_click_handler(handler);
+        let weak_ref = Rc::downgrade(&self.handler);
+        tb2.set_click_handler(weak_ref);
         self.node_tree.push(Box::new(tb2));
 
 //        let json = serde_json::to_string(&self.node_tree).unwrap();

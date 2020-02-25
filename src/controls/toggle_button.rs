@@ -1,4 +1,5 @@
 
+use std::rc::Weak;
 use std::rc::Rc;
 use crate::rnd::texture_unit::*;
 use crate::rnd::draw::*;
@@ -8,14 +9,13 @@ use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::animation::animator::*;
 use crate::animation::ease::*;
-use serde::{Serialize, Deserialize};
 extern crate erased_serde;
 
 pub struct ToggleButton {
     node: Node,
     value: bool,
     animator: Animator,
-    event_handler: Option<Box<Fn(&MouseEvent)>>,
+    event_handler: Weak<Box<Fn(&MouseEvent)>>,
 }
 
 impl ToggleButton {
@@ -23,7 +23,7 @@ impl ToggleButton {
         let node = Node { x, y, opacity, parent };
         let value = false;
         let animator = Animator::new(false, Ease::OutCubic, 0.0, 250.0);
-        let event_handler = Option::None;
+        let event_handler = Weak::new();
         ToggleButton { node, value, animator, event_handler } 
     }
 }
@@ -77,7 +77,7 @@ impl Draw for ToggleButton {
             self.animator = Animator::new(true, Ease::OutCubic, 0.0, 250.0);
             self.value = !self.value;
         }
-        match self.event_handler {
+        match self.event_handler.upgrade() {
             Some(ref handler) => handler(&event.event),
             None => (),
         }

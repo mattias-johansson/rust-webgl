@@ -25,7 +25,7 @@ pub struct Button {
     pressed: bool,
     animator: Option<Animator>,
     clicks: Vec<Click>,
-    event_handler: Option<Box<Fn(&mut Page, &MouseEvent)>>,
+    event_handler: Weak<Box<Fn(&MouseEvent)>>,
     callback: Option<Weak<dyn ClickHandler<MouseEvent>>>,
 }
 
@@ -36,7 +36,7 @@ impl Button {
         let pressed = false;
         let animator = Option::None; 
         let clicks = vec![];    
-        let event_handler = Option::None; 
+        let event_handler = Weak::new(); 
         let callback = Option::None;
         Button { node, pressed, animator, clicks, event_handler, callback } 
     }
@@ -49,7 +49,8 @@ impl Button {
     pub fn set_callback(&mut self, callback: Option<Weak<dyn ClickHandler<MouseEvent>>>) {
         self.callback = callback;
     }
-    pub fn set_click_handler(&mut self, handler : Option<Box<Fn(&mut Page, &MouseEvent)>>) {
+    pub fn set_click_handler(&mut self, handler : Weak<Box<Fn(&MouseEvent)>>) {
+        web_sys::console::log_1(&"event hanlder set".into());   
         self.event_handler = handler;
      }
 }
@@ -70,10 +71,10 @@ impl Draw for Button {
         } else if event.event == MouseEvent::Down {
             self.pressed = true; 
         }        
-        match self.event_handler {
+        match self.event_handler.upgrade() {
             Some(ref handler) => {
                 web_sys::console::log_1(&"calling calback".into());   
-  //              handler(&event.event);
+                handler(&event.event);
             },
             None => {
                 web_sys::console::log_1(&"Calback is none".into());   
