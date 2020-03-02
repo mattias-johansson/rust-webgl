@@ -11,24 +11,23 @@ use crate::animation::animator::*;
 use crate::animation::ease::*;
 extern crate erased_serde;
 
-pub struct ToggleButton {
+pub struct ToggleButtonPrivate {
     node: Node,
     value: bool,
     animator: Animator,
-    event_handler: Weak<Box<Fn(&MouseEvent)>>,
 }
 
-impl ToggleButton {
-    pub fn new(x: f32, y: f32, opacity: f32, parent: Option<Rc<Node>>) -> ToggleButton { 
-        let node = Node { x, y, opacity, parent };
+impl ToggleButtonPrivate {
+    pub fn new(x: f32, y: f32, opacity: f32, parent: Option<Rc<Node>>) -> ToggleButtonPrivate { 
+        let children = vec![];
+        let node = Node { x, y, opacity, parent, children };
         let value = false;
         let animator = Animator::new(false, Ease::OutCubic, 0.0, 250.0);
-        let event_handler = Weak::new();
-        ToggleButton { node, value, animator, event_handler } 
+        ToggleButtonPrivate { node, value, animator } 
     }
 }
 
-impl Draw for ToggleButton {
+impl Draw for ToggleButtonPrivate {
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
         if(self.animator.pressed) {
             self.animator.setStartTime(time);
@@ -76,10 +75,6 @@ impl Draw for ToggleButton {
         if event.event == MouseEvent::Up {
             self.animator = Animator::new(true, Ease::OutCubic, 0.0, 250.0);
             self.value = !self.value;
-        }
-        match self.event_handler.upgrade() {
-            Some(ref handler) => handler(&event.event),
-            None => (),
         }
     }
 

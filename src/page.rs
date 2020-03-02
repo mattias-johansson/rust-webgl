@@ -1,17 +1,11 @@
 
-use std::rc::Weak;
-use std::rc::Rc;
 
-use crate::events::handler::Handler;
-use crate::events::mouse::*;
 use crate::controls::draw::Draw;
-use crate::controls::toggle_button::*;
-use crate::controls::button::*;
-use crate::events::click_handler::ClickHandler;
+use crate::controls::node::*;
 
 pub struct Page {
-    node_tree: Vec<Box<dyn Draw>>,
-    handler: Rc<Box<Fn(&MouseEvent)>>,
+    node: Node,
+    child: Option<Box<dyn Draw>>,
 }
 
 impl Page {
@@ -20,44 +14,33 @@ impl Page {
         self
     }
 
+    pub fn setChild(&mut self, node: Box<dyn Draw>) {
+        self.child = Some(node);
+    } 
+
     pub fn new() ->  Page {
-        let node_tree : Vec<Box<dyn Draw>> = vec![];
-        let closure = move |event: &MouseEvent| {
-            web_sys::console::log_1(&"click".into());
-            self.node_tree.push(Box::new(Button::new (50.0, 90.0, 0.0, None)));
-        };
-        let handler = Rc::new(Box::new(closure) as Box<Fn(&MouseEvent)>);
-
-        Page { node_tree, handler }
+        let child = None;
+        let children = vec![];
+        let x:f32 = 0.0;
+        let y:f32 = 0.0;
+        let opacity:f32 = 0.0;
+        let parent = None;
+        let node = Node { x, y, opacity, parent, children };
+        Page { node, child }
     }
 
-    pub fn do_things(&mut self, event: &MouseEvent) {
-        self.node_tree.push(Box::new(Button::new (10.0, 90.0, 0.0, None)));
-    }
-    
-    pub fn create(&mut self) {
-        let tb1 = ToggleButton::new (10.0, 10.0, 0.0, None);
-        self.node_tree.push(Box::new(tb1));
-        let mut tb2 = Button::new (10.0, 50.0, 0.0, None);
-
-
-        //Some(Page::do_things)
-        let weak_ref = Rc::downgrade(&self.handler);
-        tb2.set_click_handler(weak_ref);
-        self.node_tree.push(Box::new(tb2));
-
-//        let json = serde_json::to_string(&self.node_tree).unwrap();
-//        web_sys::console::log_1(&json.into());
-
-    }
-
-    pub fn get_tree(&mut self) -> &mut [Box<dyn Draw>] {
-        self.node_tree.as_mut_slice()
+    pub fn get_child(&mut self) -> &mut Option<Box<dyn Draw>> {
+        &mut self.child
     }
 }
 
-impl ClickHandler<MouseEvent> for Page {
+
+//Type for reference to mutable slice of Box<dyn Draw>
+// &mut [Box<dyn Draw>]
+/*
+impl ClickHandler<MouseEvent> for Container {
     fn do_things(&mut self, event : MouseEvent) {
-        self.node_tree.push(Box::new(Button::new (10.0, 90.0, 0.0, None)));
+        self.node_tree.push(Box::new(ButtonPrivate::new (10.0, 90.0, 0.0, None)));
     }
 }
+*/

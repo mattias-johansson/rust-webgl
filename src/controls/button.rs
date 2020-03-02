@@ -1,7 +1,4 @@
-use core::cell::RefCell;
-use std::rc::Weak;
-use crate::events::handler::Handler;
-use crate::events::click_handler::ClickHandler;
+
 use std::rc::Rc;
 use crate::rnd::texture_unit::*;
 use crate::rnd::draw::*;
@@ -10,52 +7,29 @@ use crate::controls::draw::*;
 use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::animation::animator::*;
-use serde::{Serialize, Deserialize};
 use crate::page::*;
 
 extern crate erased_serde;
 
-#[derive(Serialize, Deserialize)]
-pub struct Click {
-    handled: bool,
-}
-
-pub struct Button {
+pub struct ButtonPrivate {
     node: Node,
     pressed: bool,
-    animator: Option<Animator>,
-    clicks: Vec<Click>,
-    event_handler: Weak<Box<Fn(&MouseEvent)>>,
-    callback: Option<Weak<dyn ClickHandler<MouseEvent>>>,
+    animator: Option<Animator>
 }
 
 
-impl Button {
-    pub fn new(x: f32, y: f32, opacity: f32, parent: Option<Rc<Node>>) -> Button { 
-        let node = Node { x, y, opacity, parent };
+impl ButtonPrivate {
+    pub fn new(x: f32, y: f32, opacity: f32, parent: Option<Rc<Node>>) -> ButtonPrivate { 
+        let children = vec![];
+        let node = Node { x, y, opacity, parent, children };
         let pressed = false;
         let animator = Option::None; 
-        let clicks = vec![];    
-        let event_handler = Weak::new(); 
-        let callback = Option::None;
-        Button { node, pressed, animator, clicks, event_handler, callback } 
+        ButtonPrivate { node, pressed, animator } 
     }
-/*
-    pub fn set_click_handler(&mut self, handler : Option<ClickHandler>) {
-        self.event_handler = handler;
-    }
-    */
-
-    pub fn set_callback(&mut self, callback: Option<Weak<dyn ClickHandler<MouseEvent>>>) {
-        self.callback = callback;
-    }
-    pub fn set_click_handler(&mut self, handler : Weak<Box<Fn(&MouseEvent)>>) {
-        web_sys::console::log_1(&"event hanlder set".into());   
-        self.event_handler = handler;
-     }
 }
 
-impl Draw for Button {
+
+impl Draw for ButtonPrivate {
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
         if self.pressed {
             render(&context, &program, 145.0, 34.0, self.node.x + 0.0, self.node.y + 0.0, TextureUnit::ButtonPressed);
@@ -71,15 +45,6 @@ impl Draw for Button {
         } else if event.event == MouseEvent::Down {
             self.pressed = true; 
         }        
-        match self.event_handler.upgrade() {
-            Some(ref handler) => {
-                web_sys::console::log_1(&"calling calback".into());   
-                handler(&event.event);
-            },
-            None => {
-                web_sys::console::log_1(&"Calback is none".into());   
-            },
-        }
     }
 
    fn position(&self) -> (f32, f32, f32, f32) {

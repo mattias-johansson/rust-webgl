@@ -1,28 +1,23 @@
 extern crate wasm_bindgen;
+use std::cell::RefCell;
+use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader, WebGlUniformLocation};
-use std::rc::Rc;
-use std::cell::RefCell;
-use serde::{Serialize, Deserialize};
 
 #[macro_use]
 extern crate erased_serde;
 use self::page::*;
-use crate::controls::draw::Draw;
-use crate::rnd::draw::init_textures;
 use crate::controls::toggle_button::*;
-use crate::controls::button::*;
-use crate::events::mouse::*;
 use crate::events::handler::*;
-use crate::animation::animator::*;
-use crate::events::click_handler::*;
+use crate::events::mouse::*;
+use crate::rnd::draw::init_textures;
 
-mod page;
-mod rnd;
+mod animation;
 mod controls;
 mod events;
-mod animation;
+mod page;
+mod rnd;
 
 /// Used to run the application from the web
 #[wasm_bindgen]
@@ -31,32 +26,32 @@ pub struct Application {
     gl: Rc<WebGlRenderingContext>,
     program: WebGlProgram,
     events: Rc<RefCell<Handler>>,
-//    renderer: WebRenderer,
+    //    renderer: WebRenderer,
 }
-
 
 #[wasm_bindgen]
 impl Application {
-
     /// Create a new Application
     #[wasm_bindgen(constructor)]
     pub fn new() -> Application {
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
-        
-        let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
 
+        let canvas: web_sys::HtmlCanvasElement =
+            canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
         let gl = canvas
-            .get_context("webgl").unwrap()
+            .get_context("webgl")
             .unwrap()
-            .dyn_into::<WebGlRenderingContext>().unwrap();
+            .unwrap()
+            .dyn_into::<WebGlRenderingContext>()
+            .unwrap();
 
         let gl = Rc::new(gl);
 
         let vert_shader = compile_shader(
             &gl,
             WebGlRenderingContext::VERTEX_SHADER,
-        r#"
+            r#"
             attribute vec4 vertexData;
             varying vec2 texCoords;
             
@@ -69,12 +64,13 @@ impl Application {
                 texCoords = vertexData.zw;
             }
         "#,
-        ).unwrap();
+        )
+        .unwrap();
 
         let frag_shader = compile_shader(
             &gl,
             WebGlRenderingContext::FRAGMENT_SHADER,
-        r#"
+            r#"
             precision mediump float;
             varying vec2 texCoords;
             uniform sampler2D texture;
@@ -84,7 +80,8 @@ impl Application {
                 gl_FragColor.rgb *= gl_FragColor.a;
             }
             "#,
-        ).unwrap();
+        )
+        .unwrap();
 
         let program = link_program(&gl, &vert_shader, &frag_shader).unwrap();
 
@@ -96,8 +93,19 @@ impl Application {
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
         let mut page = Page::new();
-        page.create();
-        Application { page, gl, program, events }
+        page.setChild(Box::new(ToggleButtonPrivate::new(10.0, 10.0, 0.0, None)));
+/*
+        let tb1 = 
+        self.node_tree.push(Box::new(tb1));
+        let mut tb2 = ButtonPrivate::new (10.0, 50.0, 0.0, None);
+        self.node_tree.push(Box::new(tb2));
+*/
+        Application {
+            page,
+            gl,
+            program,
+            events,
+        }
     }
 
     /// Start our application. `index.html` will call this function in order
@@ -107,36 +115,49 @@ impl Application {
         init_textures(Rc::clone(gl));
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
-        let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+        let canvas: web_sys::HtmlCanvasElement =
+            canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
         attach_mouse_down_handler(&canvas, Rc::clone(&self.events));
         attach_mouse_up_handler(&canvas, Rc::clone(&self.events));
 
         Ok(())
     }
- 
-    pub fn render(&mut self, dt: f32) {
-//        web_sys::console::log_1(&"render".into());
-//        let js: JsValue = dt.into();
-//        web_sys::console::log_1(&js);
+    pub fn event_loop(&mut self, dt: f32) {
+        //        web_sys::console::log_1(&"render".into());
+        //        let js: JsValue = dt.into();
+        //        web_sys::console::log_1(&js);
+
+        //////////////////////////////////////
+        // First handle all events
+        //
+        // Currently we only support one 
+        // Mouse event per frame
+        /////////////////////////////////////
         let x = self.events.borrow().event.x;
         let y = self.events.borrow().event.y;
+        
         if x != 0 && y != 0 {
-            for node in self.page.get_tree() {
-
+//            for node in self.page.get_child()() {
+            if let Some(node) = self.page.get_child().as_mut() {
                 let xy = node.position();
-                if xy.0 < x as f32 && xy.2 > x as f32 && 
-                   xy.1 < y as f32 && xy.3 > y as f32 {
-                        web_sys::console::log_1(&"sending event".into());
-                        node.event(&self.events.borrow().event);
+                if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
+                    web_sys::console::log_1(&"sending event".into());
+                    node.event(&self.events.borrow().event);
                 }
             }
         }
-        let mouse_event = Mouse::new(0,0, MouseEvent::None);
+        // Mark the event as handled by setting a "default" MouseEvent
+        let mouse_event = Mouse::new(0, 0, MouseEvent::None);
         self.events.borrow_mut().set_event(mouse_event);
-        for node in self.page.get_tree() {
-//            web_sys::console::log_1(&"drawing node".into());
+
+        //Draw all nodes1q
+        //for node in self.page.get_child()() {
+            
+        if let Some(node) = self.page.get_child().as_mut() {
+//          web_sys::console::log_1(&"drawing node".into());
             node.draw(&self.gl, &self.program, dt);
         }
+        
     }
 }
 
@@ -193,16 +214,19 @@ pub fn link_program(
 pub fn get_uniform_location(
     gl: &WebGlRenderingContext,
     uniform_name: &str,
-    program: &WebGlProgram
+    program: &WebGlProgram,
 ) -> Option<WebGlUniformLocation> {
-            gl.get_uniform_location(&program, uniform_name)
+    gl.get_uniform_location(&program, uniform_name)
 }
 
-fn attach_mouse_down_handler(canvas: &web_sys::HtmlCanvasElement, handler: Rc<RefCell<Handler>>) -> Result<(), JsValue> {
+fn attach_mouse_down_handler(
+    canvas: &web_sys::HtmlCanvasElement,
+    handler: Rc<RefCell<Handler>>,
+) -> Result<(), JsValue> {
     let handler = move |event: web_sys::MouseEvent| {
         let x = event.client_x() as u16;
         let y = event.client_y() as u16;
-        let mouse_event = Mouse::new(x,y, MouseEvent::Down);
+        let mouse_event = Mouse::new(x, y, MouseEvent::Down);
         handler.borrow_mut().set_event(mouse_event);
     };
 
@@ -214,11 +238,14 @@ fn attach_mouse_down_handler(canvas: &web_sys::HtmlCanvasElement, handler: Rc<Re
 
     Ok(())
 }
-fn attach_mouse_up_handler(canvas: &web_sys::HtmlCanvasElement, events: Rc<RefCell<Handler>>) -> Result<(), JsValue> {
+fn attach_mouse_up_handler(
+    canvas: &web_sys::HtmlCanvasElement,
+    events: Rc<RefCell<Handler>>,
+) -> Result<(), JsValue> {
     let handler = move |event: web_sys::MouseEvent| {
         let x = event.client_x() as u16;
         let y = event.client_y() as u16;
-        let mouse_event = Mouse::new(x,y, MouseEvent::Up);
+        let mouse_event = Mouse::new(x, y, MouseEvent::Up);
         events.borrow_mut().set_event(mouse_event);
     };
 

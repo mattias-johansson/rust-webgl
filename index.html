@@ -27,21 +27,21 @@
       window.addEventListener('load', function () {
         window.wasm_bindgen('/webgl_bg.wasm')
           .then(function () {
-            // Start our rust application. You can find `WebClient` in `src/lib.rs`
+            // Start our rust application. You can find `Application` in `src/lib.rs`
             const application = new window.wasm_bindgen.Application()
             application.start()
   
             let time = Date.now();
-            function render () {
+            function eventLoop () {
               const dt = Date.now() - time
               //appilcation.update(dt)
-              application.render(dt)
-              window.requestAnimationFrame(render)
+              application.event_loop(dt)
+              window.requestAnimationFrame(eventLoop)
   
 //              time = Date.now()
             }
   
-            render()
+            eventLoop()
           })
       })
       </script>
