@@ -1,11 +1,9 @@
-
-
-use crate::controls::draw::Draw;
+use crate::controls::visual_node::VisualNode;
 use crate::controls::node::*;
 
 pub struct Page {
     node: Node,
-    child: Option<Box<dyn Draw>>,
+    child: Option<Box<dyn VisualNode>>,
 }
 
 impl Page {
@@ -14,7 +12,7 @@ impl Page {
         self
     }
 
-    pub fn setChild(&mut self, node: Box<dyn Draw>) {
+    pub fn set_child(&mut self, node: Box<dyn VisualNode>) {
         self.child = Some(node);
     } 
 
@@ -29,7 +27,7 @@ impl Page {
         Page { node, child }
     }
 
-    pub fn get_child(&mut self) -> &mut Option<Box<dyn Draw>> {
+    pub fn get_child(&mut self) -> &mut Option<Box<dyn VisualNode>> {
         &mut self.child
     }
 }

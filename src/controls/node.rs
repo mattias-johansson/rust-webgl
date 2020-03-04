@@ -11,8 +11,12 @@ pub struct Node {
 
 impl Node {
 
-    pub fn set_parent(&self, node: Node) {
+    pub fn add_child(&mut self, node: Rc<Node>) {
+        self.children.push(Rc::clone(&node));
+    }
 
+    pub fn set_parent(&mut self, node: Node) {
+        self.parent = Some(Rc::new(node));
     }
 
     pub fn get_parent(&self) -> Option<Rc<&Node>> {

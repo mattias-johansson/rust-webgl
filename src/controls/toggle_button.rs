@@ -1,10 +1,9 @@
-
-use std::rc::Weak;
+use std::any::Any;
 use std::rc::Rc;
 use crate::rnd::texture_unit::*;
 use crate::rnd::draw::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
-use crate::controls::draw::*;
+use crate::controls::visual_node::*;
 use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::animation::animator::*;
@@ -25,12 +24,25 @@ impl ToggleButtonPrivate {
         let animator = Animator::new(false, Ease::OutCubic, 0.0, 250.0);
         ToggleButtonPrivate { node, value, animator } 
     }
+
+    pub fn to_toggle_button_private(s: &dyn Any) -> Option<&ToggleButtonPrivate>{
+        if let Some(toggle_button) = s.downcast_ref::<ToggleButtonPrivate>() {
+            Some(&toggle_button)
+        } else {
+            None
+        }
+    }
 }
 
-impl Draw for ToggleButtonPrivate {
+impl VisualNode for ToggleButtonPrivate {
+
+    fn set_parent(&mut self, node: Node) {
+        self.node.set_parent(node);
+    }
+
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
-        if(self.animator.pressed) {
-            self.animator.setStartTime(time);
+        if self.animator.pressed {
+            self.animator.set_start_time(time);
         }
         if self.value {        
             render(&context, &program, 107.0, 36.0, self.node.x + 0.0, self.node.y + 0.0, TextureUnit::ToggelBackground);
@@ -46,7 +58,7 @@ impl Draw for ToggleButtonPrivate {
                 let x = x * (end - start);
                 render(&context, &program, 30.0, 30.0, start + x, self.node.y + 3.0, TextureUnit::ToggleActive);
                 if x == 1.0 {
-                    self.animator.setRunning(false);
+                    self.animator.set_running(false);
                 }
             } else {
                 render(&context, &program, 30.0, 30.0, end, self.node.y + 3.0, TextureUnit::ToggleActive);

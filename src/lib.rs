@@ -93,7 +93,7 @@ impl Application {
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
         let mut page = Page::new();
-        page.setChild(Box::new(ToggleButtonPrivate::new(10.0, 10.0, 0.0, None)));
+        page.set_child(Box::new(ToggleButtonPrivate::new(10.0, 10.0, 0.0, None)));
 /*
         let tb1 = 
         self.node_tree.push(Box::new(tb1));
@@ -150,7 +150,7 @@ impl Application {
         let mouse_event = Mouse::new(0, 0, MouseEvent::None);
         self.events.borrow_mut().set_event(mouse_event);
 
-        //Draw all nodes1q
+        //Draw all nodes
         //for node in self.page.get_child()() {
             
         if let Some(node) = self.page.get_child().as_mut() {

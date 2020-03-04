@@ -1,26 +1,30 @@
 
 use crate::events::mouse::*;
-use crate::controls::draw::Draw;
+use crate::controls::visual_node::VisualNode;
 use crate::controls::button::ButtonPrivate;
 use crate::controls::node::*;
 
 pub struct Container {
     node: Node,
-    node_tree: Vec<Box<dyn Draw>>,
+    node_tree: Vec<Box<dyn VisualNode>>,
 }
 
 impl Container {
+
+    fn add_parent(&mut self, node: Node) {
+        self.node.set_parent(node);
+    }
 
     pub fn get(&mut self) -> &mut Container {
         self
     }
 
-    pub fn addChild(&mut self, node: Box<dyn Draw>) {
+    pub fn add_child(&mut self, node: Box<dyn VisualNode>) {
         self.node_tree.push(node)
     } 
 
     pub fn new() ->  Container {
-        let node_tree : Vec<Box<dyn Draw>> = vec![];
+        let node_tree : Vec<Box<dyn VisualNode>> = vec![];
         let children = vec![];
         let x:f32 = 0.0;
         let y:f32 = 0.0;
@@ -28,10 +32,6 @@ impl Container {
         let parent = None;
         let node = Node { x, y, opacity, parent, children };
         Container { node_tree, node }
-    }
-
-    pub fn do_things(&mut self, event: &MouseEvent) {
-        self.node_tree.push(Box::new(ButtonPrivate::new (10.0, 90.0, 0.0, None)));
     }
   /*  
     pub fn create(&mut self) {
@@ -45,7 +45,7 @@ impl Container {
 
     }
 */
-    pub fn get_tree(&mut self) -> &mut [Box<dyn Draw>] {
+    pub fn get_tree(&mut self) -> &mut [Box<dyn VisualNode>] {
         self.node_tree.as_mut_slice()
     }
 }

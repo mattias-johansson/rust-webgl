@@ -16,11 +16,11 @@ impl Animator {
         Animator { running, pressed, easing, start_time, duration }
     } 
 
-    pub fn setRunning(&mut self, running: bool) {
+    pub fn set_running(&mut self, running: bool) {
         self.running = running;
     }
 
-    pub fn setStartTime(&mut self, start_time: f32) {
+    pub fn set_start_time(&mut self, start_time: f32) {
         self.start_time = start_time;
         self.pressed = false;
     }
