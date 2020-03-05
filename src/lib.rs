@@ -122,6 +122,12 @@ impl Application {
 
         Ok(())
     }
+
+    /**
+     * The event loop called from JavaScript
+     */
+
+
     pub fn event_loop(&mut self, dt: f32) {
         //        web_sys::console::log_1(&"render".into());
         //        let js: JsValue = dt.into();

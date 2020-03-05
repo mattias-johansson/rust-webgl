@@ -35,6 +35,10 @@ impl ToggleButtonPrivate {
 }
 
 impl VisualNode for ToggleButtonPrivate {
+    
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 
     fn set_parent(&mut self, node: Node) {
         self.node.set_parent(node);
