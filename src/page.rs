@@ -1,6 +1,8 @@
 use crate::controls::visual_node::VisualNode;
 use crate::controls::node::*;
 
+use std::rc::Weak;
+
 pub struct Page {
     node: Node,
     child: Option<Box<dyn VisualNode>>,
@@ -22,7 +24,7 @@ impl Page {
         let x:f32 = 0.0;
         let y:f32 = 0.0;
         let opacity:f32 = 0.0;
-        let parent = None;
+        let parent = Weak::new();;
         let node = Node { x, y, opacity, parent, children };
         Page { node, child }
     }

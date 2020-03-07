@@ -1,5 +1,6 @@
 use std::any::Any;
 use std::rc::Rc;
+use std::rc::Weak;
 use crate::rnd::texture_unit::*;
 use crate::rnd::draw::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
@@ -18,7 +19,7 @@ pub struct ButtonPrivate {
 
 
 impl ButtonPrivate {
-    pub fn new(x: f32, y: f32, opacity: f32, parent: Option<Rc<Node>>) -> ButtonPrivate { 
+    pub fn new(x: f32, y: f32, opacity: f32, parent: Weak<Node>) -> ButtonPrivate { 
         let children = vec![];
         let node = Node { x, y, opacity, parent, children };
         let pressed = false;
@@ -41,9 +42,9 @@ impl VisualNode for ButtonPrivate {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    
+
     fn set_parent(&mut self, node: Node) {
-        self.node.set_parent(node);
+        self.node.set_parent(Rc::new(node));
     }
 
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {

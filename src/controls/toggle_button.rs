@@ -1,5 +1,6 @@
 use std::any::Any;
 use std::rc::Rc;
+use std::rc::Weak;
 use crate::rnd::texture_unit::*;
 use crate::rnd::draw::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
@@ -17,7 +18,7 @@ pub struct ToggleButtonPrivate {
 }
 
 impl ToggleButtonPrivate {
-    pub fn new(x: f32, y: f32, opacity: f32, parent: Option<Rc<Node>>) -> ToggleButtonPrivate { 
+    pub fn new(x: f32, y: f32, opacity: f32, parent: Weak<Node>) -> ToggleButtonPrivate { 
         let children = vec![];
         let node = Node { x, y, opacity, parent, children };
         let value = false;
@@ -41,7 +42,7 @@ impl VisualNode for ToggleButtonPrivate {
     }
 
     fn set_parent(&mut self, node: Node) {
-        self.node.set_parent(node);
+        self.node.set_parent(Rc::new(node));
     }
 
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {

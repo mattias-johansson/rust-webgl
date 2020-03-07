@@ -1,4 +1,6 @@
 
+use std::rc::Rc;
+use std::rc::Weak;
 use crate::controls::visual_node::VisualNode;
 use crate::controls::node::*;
 
@@ -10,7 +12,7 @@ pub struct Container {
 impl Container {
 
     fn add_parent(&mut self, node: Node) {
-        self.node.set_parent(node);
+        self.node.set_parent(Rc::new(node));
     }
 
     pub fn get(&mut self) -> &mut Container {
@@ -27,7 +29,7 @@ impl Container {
         let x:f32 = 0.0;
         let y:f32 = 0.0;
         let opacity:f32 = 0.0;
-        let parent = None;
+        let parent = Weak::new();
         let node = Node { x, y, opacity, parent, children };
         Container { node_tree, node }
     }
