@@ -1,26 +1,27 @@
 use std::rc::Rc;
 use std::rc::Weak;
+use crate::controls::visual_node::*;
 
 //#[derive(Copy)]
 pub struct Node {
     pub x: f32,
     pub y: f32,
     pub opacity: f32,
-    pub parent: Weak<Node>,
-    pub children: Vec<Rc<Node>>,
+    pub parent: Weak<dyn VisualNode>,
+    pub children: Vec<Rc<dyn VisualNode>>,
 }
 
 impl Node {
 
-    pub fn add_child(&mut self, node: Rc<Node>) {
+    pub fn add_child(&mut self, node: Rc<dyn VisualNode>) {
         self.children.push(Rc::clone(&node));
     }
 
-    pub fn set_parent(&mut self, node: Rc<Node>) {
+    pub fn set_parent(&mut self, node: Rc<dyn VisualNode>) {
         self.parent = Rc::downgrade(&node);
     }
 
-    pub fn get_parent(&self) -> Weak<Node> {
+    pub fn get_parent(&self) -> Weak<dyn VisualNode> {
         /*
         // Rust way of checking optional
         if let Some(parent) = &self.parent {  // Null check
@@ -33,13 +34,13 @@ impl Node {
         Weak::clone(&self.parent)
     }
 
-    pub fn get_root(self) -> Rc<Node> {
+    pub fn get_root(self) -> Rc<dyn VisualNode> {
         let mut parent = self.get_parent().upgrade();
-        let mut prev_parent : Option<Rc<Node>> = None;
+        let mut prev_parent : Option<Rc<dyn VisualNode>> = None;
         while parent.is_some() {
             match parent {
                 Some(rc_parent) => { 
-                    parent = rc_parent.get_parent().upgrade(); 
+                    parent = rc_parent.get_node().get_parent().upgrade(); 
                     prev_parent = Some(rc_parent); 
                     
                 },
