@@ -19,7 +19,7 @@ pub struct ButtonPrivate {
 
 
 impl ButtonPrivate {
-    pub fn new(x: f32, y: f32, opacity: f32, parent: Weak<Node>) -> ButtonPrivate { 
+    pub fn new(x: f32, y: f32, opacity: f32, parent: Weak<dyn VisualNode>) -> ButtonPrivate { 
         let children = vec![];
         let node = Node { x, y, opacity, parent, children };
         let pressed = false;
@@ -39,12 +39,16 @@ impl ButtonPrivate {
 
 impl VisualNode for ButtonPrivate {
 
+    fn get_node(&self) -> &Node {
+        &self.node
+    }
+
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn set_parent(&mut self, node: Node) {
-        self.node.set_parent(Rc::new(node));
+    fn set_parent(&mut self, node: Rc<dyn VisualNode>) {
+        self.node.set_parent(node);
     }
 
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {

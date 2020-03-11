@@ -18,7 +18,7 @@ pub struct ToggleButtonPrivate {
 }
 
 impl ToggleButtonPrivate {
-    pub fn new(x: f32, y: f32, opacity: f32, parent: Weak<Node>) -> ToggleButtonPrivate { 
+    pub fn new(x: f32, y: f32, opacity: f32, parent: Weak<dyn VisualNode>) -> ToggleButtonPrivate { 
         let children = vec![];
         let node = Node { x, y, opacity, parent, children };
         let value = false;
@@ -37,12 +37,16 @@ impl ToggleButtonPrivate {
 
 impl VisualNode for ToggleButtonPrivate {
     
+    fn get_node(&self) -> &Node {
+        &self.node
+    }
+
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn set_parent(&mut self, node: Node) {
-        self.node.set_parent(Rc::new(node));
+    fn set_parent(&mut self, node: Rc<VisualNode>) {
+        self.node.set_parent(node);
     }
 
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {

@@ -5,6 +5,7 @@ use std::rc::Weak;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader, WebGlUniformLocation};
+use crate::controls::button::*;
 
 #[macro_use]
 extern crate erased_serde;
@@ -94,7 +95,8 @@ impl Application {
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
         let mut page = Page::new();
-        page.set_child(Box::new(ToggleButtonPrivate::new(10.0, 10.0, 0.0, Weak::new())));
+        let none : Weak<ButtonPrivate> = Weak::new();
+        page.set_child(Box::new(ToggleButtonPrivate::new(10.0, 10.0, 0.0, none)));
 /*
         let tb1 = 
         self.node_tree.push(Box::new(tb1));
