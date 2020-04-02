@@ -6,6 +6,8 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader, WebGlUniformLocation};
 use crate::controls::button::*;
+use crate::controls::visual_node::VisualNode;
+use crate::controls::node::Node;
 
 #[macro_use]
 extern crate erased_serde;
@@ -96,13 +98,13 @@ impl Application {
         let events = Rc::new(RefCell::new(events));
         let mut page = Page::new();
         let none : Weak<ButtonPrivate> = Weak::new();
-        page.set_child(Box::new(ToggleButtonPrivate::new(10.0, 10.0, 0.0, none)));
-/*
+        page.add_child(Rc::new(ToggleButtonPrivate::new(10.0, 10.0, 0.0, none)));
+        /*
         let tb1 = 
         self.node_tree.push(Box::new(tb1));
         let mut tb2 = ButtonPrivate::new (10.0, 50.0, 0.0, None);
         self.node_tree.push(Box::new(tb2));
-*/
+        */
         Application {
             page,
             gl,
@@ -132,6 +134,9 @@ impl Application {
 
 
     pub fn event_loop(&mut self, dt: f32) {
+
+        let root_node = &mut self.page;
+        get_children(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
         //        web_sys::console::log_1(&"render".into());
         //        let js: JsValue = dt.into();
         //        web_sys::console::log_1(&js);
@@ -142,11 +147,12 @@ impl Application {
         // Currently we only support one 
         // Mouse event per frame
         /////////////////////////////////////
-        let x = self.events.borrow().event.x;
+     /*   let x = self.events.borrow().event.x;
         let y = self.events.borrow().event.y;
         
         if x != 0 && y != 0 {
-//            for node in self.page.get_child()() {
+            let root_node = self.page.get_node();
+            //for node in self.page.get_child()() {
             if let Some(node) = self.page.get_child().as_mut() {
                 let xy = node.position();
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
@@ -166,8 +172,40 @@ impl Application {
 //          web_sys::console::log_1(&"drawing node".into());
             node.draw(&self.gl, &self.program, dt);
         }
+
+        */
         
     }
+
+}
+
+pub fn get_children(gl: &WebGlRenderingContext, 
+                    program: &WebGlProgram, 
+                    events: Rc<RefCell<Handler>>, 
+                    visual_node: &mut VisualNode, 
+                    dt: f32) {
+    let node : &Node = visual_node.get_node();
+    let vector: Vec<Rc<dyn VisualNode>> = node.get_children(); 
+    for mut child in vector {
+        get_children(gl, program, Rc::clone(&events), Rc::get_mut(&mut child).unwrap(), dt);
+    }
+    //Later all send_events should be done before all draw 
+    send_event(events, visual_node);
+    draw(gl, program, visual_node, dt);
+}
+
+pub fn send_event(events: Rc<RefCell<Handler>>,  node: &mut VisualNode) {
+    let x = events.borrow().event.x;
+    let y = events.borrow().event.y;
+    let xy = node.position();
+    if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
+        web_sys::console::log_1(&"sending event".into());
+        node.event(&events.borrow().event);
+    }
+}
+
+pub fn draw(gl: &WebGlRenderingContext, program: &WebGlProgram, node: &mut VisualNode, dt: f32) {
+    node.draw(&gl, &program, dt);
 }
 
 pub fn compile_shader(
@@ -247,6 +285,7 @@ fn attach_mouse_down_handler(
 
     Ok(())
 }
+
 fn attach_mouse_up_handler(
     canvas: &web_sys::HtmlCanvasElement,
     events: Rc<RefCell<Handler>>,

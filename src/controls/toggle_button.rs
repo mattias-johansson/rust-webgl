@@ -49,6 +49,10 @@ impl VisualNode for ToggleButtonPrivate {
         self.node.set_parent(node);
     }
 
+    fn add_child(&mut self, node: Rc<VisualNode>) {
+        self.node.add_child(node);
+    }
+
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
         if self.animator.pressed {
             self.animator.set_start_time(time);

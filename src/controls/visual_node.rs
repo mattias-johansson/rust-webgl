@@ -14,6 +14,8 @@ pub trait VisualNode {
 
     fn set_parent(&mut self, node: Rc<dyn VisualNode>);
 
+    fn add_child(&mut self, node: Rc<dyn VisualNode>);
+
     fn get_node(&self) -> &Node;
 
     fn as_any(&self) -> &dyn Any;

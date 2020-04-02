@@ -19,6 +19,10 @@ impl VisualNode for Container {
         &self.node
     }
 
+    fn add_child(&mut self, node: Rc<VisualNode>) {
+        self.node.add_child(node);
+    }
+
     fn as_any(&self) -> &dyn Any {
         self
     }

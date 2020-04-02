@@ -22,6 +22,10 @@ impl VisualNode for Page {
         self
     }
 
+    fn add_child(&mut self, node: Rc<VisualNode>) {
+        self.node.add_child(node);
+    }
+
     fn set_parent(&mut self, node: Rc<VisualNode>) {
         self.node.set_parent(node);
     }
@@ -44,11 +48,11 @@ impl Page {
     pub fn get(&mut self) -> &mut Page {
         self
     }
-
+/*
     pub fn set_child(&mut self, node: Box<dyn VisualNode>) {
         self.child = Some(node);
     } 
-
+*/
     pub fn new() ->  Page {
         let child = None;
         let children = vec![];
@@ -59,10 +63,11 @@ impl Page {
         let node = Node { x, y, opacity, parent, children };
         Page { node, child }
     }
-
+/*
     pub fn get_child(&mut self) -> &mut Option<Box<dyn VisualNode>> {
         &mut self.child
     }
+    */
 }
 
 

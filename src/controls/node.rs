@@ -13,6 +13,10 @@ pub struct Node {
 
 impl Node {
 
+    pub fn get_children(&self) -> Vec<Rc<dyn VisualNode>> {
+        self.children.as_slice().to_owned()
+    }
+
     pub fn add_child(&mut self, node: Rc<dyn VisualNode>) {
         self.children.push(Rc::clone(&node));
     }
@@ -34,7 +38,7 @@ impl Node {
         Weak::clone(&self.parent)
     }
 
-    pub fn get_root(self) -> Rc<dyn VisualNode> {
+    pub fn get_root(&self) -> Rc<dyn VisualNode> {
         let mut parent = self.get_parent().upgrade();
         let mut prev_parent : Option<Rc<dyn VisualNode>> = None;
         while parent.is_some() {
