@@ -136,7 +136,7 @@ impl Application {
     pub fn event_loop(&mut self, dt: f32) {
 
         let root_node = &mut self.page;
-        get_children(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
+        draw_tree(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
         //        web_sys::console::log_1(&"render".into());
         //        let js: JsValue = dt.into();
         //        web_sys::console::log_1(&js);
@@ -179,15 +179,28 @@ impl Application {
 
 }
 
+pub fn draw_tree(gl: &WebGlRenderingContext, 
+                    program: &WebGlProgram, 
+                    events: Rc<RefCell<Handler>>, 
+                    visual_node: &mut VisualNode, 
+                    dt: f32) {
+    visual_node.propagate_events_(events);
+    visual_node.draw_children_(gl, program, dt);
+
+    }
+
 pub fn get_children(gl: &WebGlRenderingContext, 
                     program: &WebGlProgram, 
                     events: Rc<RefCell<Handler>>, 
                     visual_node: &mut VisualNode, 
                     dt: f32) {
     let node : &Node = visual_node.get_node();
-    let vector: Vec<Rc<dyn VisualNode>> = node.get_children(); 
+    let vector: &[Rc<dyn VisualNode>] = node.get_children(); 
     for mut child in vector {
-        get_children(gl, program, Rc::clone(&events), Rc::get_mut(&mut child).unwrap(), dt);
+        let count = Rc::strong_count(&child);
+
+        web_sys::console::log_1(&count.to_string().into());
+//        get_children(gl, program, Rc::clone(&events), Rc::get_mut(&mut child).unwrap(), dt);
     }
     //Later all send_events should be done before all draw 
     send_event(events, visual_node);

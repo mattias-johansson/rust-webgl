@@ -1,6 +1,9 @@
+use crate::events::handler::Handler;
 use std::rc::Rc;
 use std::rc::Weak;
 use crate::controls::visual_node::*;
+use web_sys::{WebGlProgram, WebGlRenderingContext};
+use std::cell::RefCell;
 
 //#[derive(Copy)]
 pub struct Node {
@@ -13,8 +16,46 @@ pub struct Node {
 
 impl Node {
 
-    pub fn get_children(&self) -> Vec<Rc<dyn VisualNode>> {
-        self.children.as_slice().to_owned()
+    pub fn draw_children(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
+        for node in self.children.iter_mut() {
+            web_sys::console::log_1(&"draw_children".into());
+            let mut_node = Rc::get_mut(node).unwrap();
+            mut_node.draw_children_(context, program, time);
+        }
+        for node in self.children.iter_mut() {
+            let mut_node = Rc::get_mut(node).unwrap();
+            mut_node.draw(context, program, time);
+        }
+    }
+
+    pub fn propagate_events(&mut self, events: Rc<RefCell<Handler>>) {
+        for node in self.children.iter_mut() {
+            web_sys::console::log_1(&"propagate_events".into());
+            let mut_node = Rc::get_mut(node).unwrap();
+            mut_node.propagate_events_(Rc::clone(&events));
+        }
+        for node in self.children.iter_mut() {
+            let mut_node = Rc::get_mut(node).unwrap();
+            Node::send_event(Rc::clone(&events), mut_node);
+        }
+    }
+
+    fn draw(gl: &WebGlRenderingContext, program: &WebGlProgram, node: &mut VisualNode, dt: f32) {
+        node.draw(&gl, &program, dt);
+    }
+
+   fn send_event(events: Rc<RefCell<Handler>>,  node: &mut VisualNode) {
+        let x = events.borrow().event.x;
+        let y = events.borrow().event.y;
+        let xy = node.position();
+        if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
+            web_sys::console::log_1(&"sending event".into());
+            node.event(&events.borrow().event);
+        }
+    }
+
+    pub fn get_children(&self) -> &[Rc<dyn VisualNode>] {
+        self.children.as_slice()
     }
 
     pub fn add_child(&mut self, node: Rc<dyn VisualNode>) {

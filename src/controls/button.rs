@@ -8,6 +8,8 @@ use crate::controls::visual_node::*;
 use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::animation::animator::*;
+use std::cell::RefCell;
+use crate::events::handler::Handler;
 
 extern crate erased_serde;
 
@@ -38,6 +40,15 @@ impl ButtonPrivate {
 
 
 impl VisualNode for ButtonPrivate {
+
+    fn draw_children_(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
+        self.node.draw_children(context, program, time);
+        self.draw(context, program, time);
+    }
+
+    fn propagate_events_(&mut self, events: Rc<RefCell<Handler>>) {
+        self.node.propagate_events(events);
+    }
 
     fn get_node(&self) -> &Node {
         &self.node

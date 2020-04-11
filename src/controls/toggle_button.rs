@@ -10,6 +10,8 @@ use crate::events::mouse::*;
 use crate::animation::animator::*;
 use crate::animation::ease::*;
 extern crate erased_serde;
+use std::cell::RefCell;
+use crate::events::handler::Handler;
 
 pub struct ToggleButtonPrivate {
     node: Node,
@@ -36,6 +38,14 @@ impl ToggleButtonPrivate {
 }
 
 impl VisualNode for ToggleButtonPrivate {
+
+    fn draw_children_(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
+        self.node.draw_children(context, program, time);
+    }
+
+    fn propagate_events_(&mut self, events: Rc<RefCell<Handler>>) {
+        self.node.propagate_events(events);
+    }
     
     fn get_node(&self) -> &Node {
         &self.node

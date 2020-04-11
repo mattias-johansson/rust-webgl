@@ -7,6 +7,8 @@ use crate::controls::button::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 use std::any::Any;
 use crate::events::mouse::*;
+use std::cell::RefCell;
+use crate::events::handler::Handler;
 
 pub struct Container {
     node: Node,
@@ -14,6 +16,14 @@ pub struct Container {
 }
 
 impl VisualNode for Container {
+
+    fn draw_children_(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
+        self.node.draw_children(context, program, time);
+    }
+
+    fn propagate_events_(&mut self, events: Rc<RefCell<Handler>>) {
+        self.node.propagate_events(events);
+    }
 
     fn get_node(&self) -> &Node {
         &self.node
