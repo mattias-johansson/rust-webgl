@@ -14,7 +14,7 @@ pub trait VisualNode {
 
     fn propagate_events_(&mut self, events: Rc<RefCell<Handler>>);
 
-    fn event(&mut self, event: &Mouse);
+    fn event(&mut self, event: &Mouse) -> bool;
 
     fn position(&self) -> (f32, f32, f32, f32);
 

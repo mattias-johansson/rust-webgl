@@ -4,6 +4,7 @@ use std::rc::Weak;
 use crate::controls::visual_node::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 use std::cell::RefCell;
+use crate::events::mouse::*;
 
 //#[derive(Copy)]
 pub struct Node {
@@ -50,7 +51,11 @@ impl Node {
         let xy = node.position();
         if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
             web_sys::console::log_1(&"sending event".into());
-            node.event(&events.borrow().event);
+            let handled = node.event(&events.borrow().event);
+            if handled {
+                let mouse_event = Mouse::new(0, 0, MouseEvent::None);
+                events.borrow_mut().set_event(mouse_event);
+            }
         }
     }
 

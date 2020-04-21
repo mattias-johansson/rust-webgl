@@ -106,11 +106,12 @@ impl VisualNode for ToggleButtonPrivate {
         }
     }
 
-    fn event(&mut self, event: &Mouse) {
+    fn event(&mut self, event: &Mouse)  -> bool {
         if event.event == MouseEvent::Up {
             self.animator = Animator::new(true, Ease::OutCubic, 0.0, 250.0);
             self.value = !self.value;
         }
+        true
     }
 
     fn position(&self) -> (f32, f32, f32, f32) {

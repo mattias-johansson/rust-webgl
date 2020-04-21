@@ -30,8 +30,8 @@ impl ButtonPrivate {
     }
 
     pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
-        if let Some(toggle_button) = s.downcast_ref::<ButtonPrivate>() {
-            Some(&toggle_button)
+        if let Some(button) = s.downcast_ref::<ButtonPrivate>() {
+            Some(&button)
         } else {
             None
         }
@@ -75,13 +75,14 @@ impl VisualNode for ButtonPrivate {
         }
     }
 
-    fn event(&mut self, event: &Mouse) {
+    fn event(&mut self, event: &Mouse) -> bool {
         web_sys::console::log_1(&"button handling event".into());   
         if event.event == MouseEvent::Up {
             self.pressed = false;
         } else if event.event == MouseEvent::Down {
             self.pressed = true; 
-        }        
+        }      
+        true  
     }
 
    fn position(&self) -> (f32, f32, f32, f32) {
