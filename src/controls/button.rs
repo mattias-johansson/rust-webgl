@@ -1,8 +1,8 @@
 use std::any::Any;
 use std::rc::Rc;
 use std::rc::Weak;
-use crate::rnd::texture_unit::*;
-use crate::rnd::draw::*;
+use crate::render::texture_unit::*;
+use crate::render::draw::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
@@ -11,7 +11,6 @@ use crate::animation::animator::*;
 use std::cell::RefCell;
 use crate::events::handler::Handler;
 
-extern crate erased_serde;
 
 pub struct ButtonPrivate {
     node: Node,

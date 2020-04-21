@@ -1,9 +1,8 @@
-use std::rc::Rc;
-use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader, WebGlUniformLocation};
+use web_sys::{WebGlProgram, WebGlRenderingContext};
 use wasm_bindgen::JsCast;
 
-use crate::rnd::shaders::compile_shader;
-use crate::rnd::shaders::link_program;
+use crate::render::shaders::compile_shader;
+use crate::render::shaders::link_program;
 
 pub fn get_webgl_context() -> WebGlRenderingContext {
     let document = web_sys::window().unwrap().document().unwrap();

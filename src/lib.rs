@@ -10,20 +10,18 @@ use crate::controls::page::*;
 use crate::controls::visual_node::VisualNode;
 use crate::controls::node::Node;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
-use web_sys::WebGlUniformLocation;
 
-#[macro_use]
-extern crate erased_serde;
 use crate::controls::toggle_button::*;
 use crate::events::handler::*;
-use crate::events::mouse::*;
-use crate::rnd::draw::init_textures;
-use crate::rnd::gl_context::*;
+use crate::render::draw::init_textures;
+use crate::render::gl_context::*;
+use crate::web::events::*;
 
 mod animation;
 mod controls;
 mod events;
-mod rnd;
+mod render;
+mod web;
 
 /// Used to run the application from the web
 #[wasm_bindgen]
@@ -177,52 +175,3 @@ pub fn draw(gl: &WebGlRenderingContext, program: &WebGlProgram, node: &mut Visua
     node.draw(&gl, &program, dt);
 }
 */
-
-
-pub fn get_uniform_location(
-    gl: &WebGlRenderingContext,
-    uniform_name: &str,
-    program: &WebGlProgram,
-) -> Option<WebGlUniformLocation> {
-    gl.get_uniform_location(&program, uniform_name)
-}
-
-fn attach_mouse_down_handler(
-    canvas: &web_sys::HtmlCanvasElement,
-    handler: Rc<RefCell<Handler>>,
-) -> Result<(), JsValue> {
-    let handler = move |event: web_sys::MouseEvent| {
-        let x = event.client_x() as u16;
-        let y = event.client_y() as u16;
-        let mouse_event = Mouse::new(x, y, MouseEvent::Down);
-        handler.borrow_mut().set_event(mouse_event);
-    };
-
-    let handler = Closure::wrap(Box::new(handler) as Box<FnMut(_)>);
-
-    canvas.add_event_listener_with_callback("mousedown", handler.as_ref().unchecked_ref())?;
-
-    handler.forget();
-
-    Ok(())
-}
-
-fn attach_mouse_up_handler(
-    canvas: &web_sys::HtmlCanvasElement,
-    events: Rc<RefCell<Handler>>,
-) -> Result<(), JsValue> {
-    let handler = move |event: web_sys::MouseEvent| {
-        let x = event.client_x() as u16;
-        let y = event.client_y() as u16;
-        let mouse_event = Mouse::new(x, y, MouseEvent::Up);
-        events.borrow_mut().set_event(mouse_event);
-    };
-
-    let handler = Closure::wrap(Box::new(handler) as Box<FnMut(_)>);
-
-    canvas.add_event_listener_with_callback("mouseup", handler.as_ref().unchecked_ref())?;
-
-    handler.forget();
-
-    Ok(())
-}

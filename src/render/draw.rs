@@ -4,8 +4,8 @@ use nalgebra_glm as glm;
 use js_sys::WebAssembly;
 use wasm_bindgen::JsCast;
 
-use crate::rnd::texture_unit::*;
-use crate::rnd::lti::*;
+use crate::render::texture_unit::*;
+use crate::render::lti::*;
 use std::rc::Rc;
 
 pub fn init_textures(gl: Rc<WebGlRenderingContext>) {    

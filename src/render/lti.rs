@@ -1,4 +1,4 @@
-use crate::rnd::texture_unit::TextureUnit;
+use crate::render::texture_unit::TextureUnit;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
