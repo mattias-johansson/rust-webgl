@@ -8,7 +8,6 @@ use crate::controls::button::*;
 use crate::controls::container::*;
 use crate::controls::page::*;
 use crate::controls::visual_node::VisualNode;
-use crate::controls::node::Node;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
 use crate::controls::toggle_button::*;
@@ -29,8 +28,7 @@ pub struct Application {
     page: Page,
     gl: Rc<WebGlRenderingContext>,
     program: WebGlProgram,
-    events: Rc<RefCell<Handler>>,
-    //    renderer: WebRenderer,
+    events: Rc<RefCell<Handler>>
 }
 
 #[wasm_bindgen]
@@ -47,18 +45,6 @@ impl Application {
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
         let mut page = Page::new();
-        let none : Weak<ButtonPrivate> = Weak::new();
-        let none2 : Weak<ButtonPrivate> = Weak::new();
-        let mut container = Rc::new(Container::new());
-        Rc::get_mut(&mut container).unwrap().add_child(Rc::new(ToggleButtonPrivate::new(10.0, 10.0, 0.0, none)));
-        Rc::get_mut(&mut container).unwrap().add_child(Rc::new(ButtonPrivate::new (10.0, 50.0, 0.0, none2)));
-        page.add_child(container);
-        /*
-        let tb1 = 
-        self.node_tree.push(Box::new(tb1));
-        let mut tb2 = 
-        self.node_tree.push(Box::new(tb2));
-        */
         Application {
             page,
             gl,
@@ -90,7 +76,7 @@ impl Application {
     pub fn event_loop(&mut self, dt: f32) {
 
         let root_node = &mut self.page;
-        draw_tree(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
+//        draw_tree(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
         //        web_sys::console::log_1(&"render".into());
         //        let js: JsValue = dt.into();
         //        web_sys::console::log_1(&js);
@@ -133,15 +119,6 @@ impl Application {
 
 }
 
-pub fn draw_tree(gl: &WebGlRenderingContext, 
-                    program: &WebGlProgram, 
-                    events: Rc<RefCell<Handler>>, 
-                    visual_node: &mut VisualNode, 
-                    dt: f32) {
-    visual_node.propagate_events_(events);
-    visual_node.draw_children_(gl, program, dt);
-
-    }
 /*
 pub fn get_children(gl: &WebGlRenderingContext, 
                     program: &WebGlProgram, 

@@ -12,20 +12,64 @@ use crate::animation::ease::*;
 extern crate erased_serde;
 use std::cell::RefCell;
 use crate::events::handler::Handler;
+use uuid::Uuid;
+
+#[derive(PartialEq, Clone, Copy)]
+enum ToggleButtonState {
+    On,
+    Off,
+    ToOn,
+    ToOff,
+}
+
 
 pub struct ToggleButtonPrivate {
-    node: Node,
+    background: Node,
+    toggle: Node,
     value: bool,
-    animator: Animator,
+    on_animation: Animation,
+    off_animation: Animation,
+    state: ToggleButtonState,
 }
 
 impl ToggleButtonPrivate {
-    pub fn new(x: f32, y: f32, opacity: f32, parent: Weak<dyn VisualNode>) -> ToggleButtonPrivate { 
-        let children = vec![];
-        let node = Node { x, y, opacity, parent, children };
+    pub fn new(x: f32, y: f32, opacity: f32) -> ToggleButtonPrivate { 
         let value = false;
-        let animator = Animator::new(false, Ease::OutCubic, 0.0, 250.0);
-        ToggleButtonPrivate { node, value, animator } 
+        let background = ToggleButtonPrivate::create_background(x, y, opacity);
+        let toggle = ToggleButtonPrivate::create_toggle(x, y, opacity);
+        let state = ToggleButtonState::Off;
+
+        let mut on_animation = Animation::new(toggle.uuid, Attribute::X);
+        on_animation.duration = 2000.0;
+        on_animation.start_value = 0.0;
+        on_animation.end_value = 74.0;
+        on_animation.easing = Ease::InElastic;
+
+        let mut off_animation = Animation::new(toggle.uuid, Attribute::X);
+        off_animation.duration = 2000.0;
+        off_animation.start_value = 74.0;
+        off_animation.end_value = 0.0;
+        off_animation.easing = Ease::InElastic;
+
+        ToggleButtonPrivate { background, toggle, value, on_animation, off_animation, state } 
+    }
+
+    fn create_background(x: f32, y: f32, opacity: f32) -> Node {
+        let width = 107.0;
+        let height = 36.0;
+        let texture = TextureUnit::ToggelBackground;
+        let mut node = Node::new(x, y, width, height);
+        node.texture = texture;
+        node
+    }
+
+    fn create_toggle(x: f32, y: f32, opacity: f32) -> Node {
+        let width = 30.0;
+        let height = 30.0;
+        let texture = TextureUnit::Toggle;
+        let mut node = Node::new(x, y, width, height);
+        node.texture = texture;
+        node
     }
 
     pub fn to_toggle_button_private(s: &dyn Any) -> Option<&ToggleButtonPrivate>{
@@ -35,34 +79,44 @@ impl ToggleButtonPrivate {
             None
         }
     }
+
+    pub fn on_button_pressed(&mut self) {
+        match self.state {
+            ToggleButtonState::Off => (),
+            ToggleButtonState::On => (),
+            ToggleButtonState::ToOff => self.set_off(),
+            ToggleButtonState::ToOn => self.set_on(),
+        }
+    }
+
+    pub fn on_animation_ended(&mut self) {
+        match self.state {
+            ToggleButtonState::Off => (),
+            ToggleButtonState::On => (),
+            ToggleButtonState::ToOff => self.state = ToggleButtonState::Off,
+            ToggleButtonState::ToOn => self.state = ToggleButtonState::On,
+        }
+    }
+    
+    pub fn set_on(&mut self) {
+        self.toggle.texture = TextureUnit::ToggleActive;
+        self.on_animation.play();
+
+    }
+
+    fn set_off(&mut self) {
+        self.toggle.texture = TextureUnit::Toggle;
+        self.off_animation.play();
+    }
 }
 
 impl VisualNode for ToggleButtonPrivate {
 
-    fn draw_children_(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
-        self.node.draw_children(context, program, time);
-    }
-
-    fn propagate_events_(&mut self, events: Rc<RefCell<Handler>>) {
-        self.node.propagate_events(events);
-    }
-    
-    fn get_node(&self) -> &Node {
-        &self.node
-    }
 
     fn as_any(&self) -> &dyn Any {
         self
     }
-
-    fn set_parent(&mut self, node: Rc<VisualNode>) {
-        self.node.set_parent(node);
-    }
-
-    fn add_child(&mut self, node: Rc<VisualNode>) {
-        self.node.add_child(node);
-    }
-
+/*
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
         if self.animator.pressed {
             self.animator.set_start_time(time);
@@ -105,16 +159,28 @@ impl VisualNode for ToggleButtonPrivate {
             }
         }
     }
+*/
 
-    fn event(&mut self, event: &Mouse)  -> bool {
-        if event.event == MouseEvent::Up {
-            self.animator = Animator::new(true, Ease::OutCubic, 0.0, 250.0);
-            self.value = !self.value;
+    fn event_handler(&mut self, message: &Event) {
+        match message {
+            Event::Mouse(event) => {
+                if event.event == MouseEvent::Up {
+                    self.on_button_pressed();
+                }
+            },
+            Event::Message(message) => {
+                match message {
+                    AnimationEnded => self.on_animation_ended(),
+                    _ => (),
+                }
+            },
+            _ => ()
         }
-        true
     }
-
+/*
     fn position(&self) -> (f32, f32, f32, f32) {
         (self.node.x, self.node.y, self.node.x + 107.0, self.node.y + 36.0)
     }
+*/
+
 }

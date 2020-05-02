@@ -8,21 +8,7 @@ use std::cell::RefCell;
 
 pub trait VisualNode {
 
-    fn draw_children_(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32);
-
-    fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32);
-
-    fn propagate_events_(&mut self, events: Rc<RefCell<Handler>>);
-
-    fn event(&mut self, event: &Mouse) -> bool;
-
-    fn position(&self) -> (f32, f32, f32, f32);
-
-    fn set_parent(&mut self, node: Rc<dyn VisualNode>);
-
-    fn add_child(&mut self, node: Rc<dyn VisualNode>);
-
-    fn get_node(&self) -> &Node;
+    fn event_handler(&mut self, event: &Event);
 
     fn as_any(&self) -> &dyn Any;
 

@@ -10,22 +10,28 @@ use crate::events::mouse::*;
 use crate::animation::animator::*;
 use std::cell::RefCell;
 use crate::events::handler::Handler;
-
+use uuid::Uuid;
 
 pub struct ButtonPrivate {
     node: Node,
     pressed: bool,
-    animator: Option<Animator>
+    animation: Option<Animation>
 }
-
 
 impl ButtonPrivate {
     pub fn new(x: f32, y: f32, opacity: f32, parent: Weak<dyn VisualNode>) -> ButtonPrivate { 
-        let children = vec![];
-        let node = Node { x, y, opacity, parent, children };
+        let width = 145.0;
+        let height = 34.0;
+        let translate_x = 0.0;
+        let translate_y = 0.0;
+        let height = 34.0;
+        let texture = TextureUnit::Button;
+        let dirty = true;
+        let uuid = Uuid::new_v4();
+        let node = Node { uuid, x, y, width, height, translate_x,translate_y, opacity, texture, dirty };
         let pressed = false;
-        let animator = Option::None; 
-        ButtonPrivate { node, pressed, animator } 
+        let animation = Option::None; 
+        ButtonPrivate { node, pressed, animation } 
     }
 
     pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
@@ -40,51 +46,25 @@ impl ButtonPrivate {
 
 impl VisualNode for ButtonPrivate {
 
-    fn draw_children_(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
-        self.node.draw_children(context, program, time);
-        self.draw(context, program, time);
-    }
-
-    fn propagate_events_(&mut self, events: Rc<RefCell<Handler>>) {
-        self.node.propagate_events(events);
-    }
-
-    fn get_node(&self) -> &Node {
-        &self.node
-    }
-
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    fn set_parent(&mut self, node: Rc<dyn VisualNode>) {
-        self.node.set_parent(node);
-    }
-
-    fn add_child(&mut self, node: Rc<VisualNode>) {
-        self.node.add_child(node);
-    }
-
-
-    fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
-        if self.pressed {
-            render(&context, &program, 145.0, 34.0, self.node.x + 0.0, self.node.y + 0.0, TextureUnit::ButtonPressed);
-        } else {
-            render(&context, &program, 145.0, 34.0, self.node.x + 0.0, self.node.y + 0.0, TextureUnit::Button);    
+    fn event_handler(&mut self, message: &Event) {
+        match message {
+            Event::Mouse(event) => {
+                if event.event == MouseEvent::Up {
+                    self.pressed = false;
+                } else if event.event == MouseEvent::Down {
+                    self.pressed = true; 
+                }      
+            },
+            _ => ()
         }
     }
-
-    fn event(&mut self, event: &Mouse) -> bool {
-        web_sys::console::log_1(&"button handling event".into());   
-        if event.event == MouseEvent::Up {
-            self.pressed = false;
-        } else if event.event == MouseEvent::Down {
-            self.pressed = true; 
-        }      
-        true  
-    }
-
+/*
    fn position(&self) -> (f32, f32, f32, f32) {
         (self.node.x, self.node.y, self.node.x + 145.0, self.node.y + 34.0)
     }
+*/
 }

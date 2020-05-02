@@ -1,4 +1,9 @@
 
+pub enum Event {
+    Mouse(Mouse),
+    Message(Message),
+}
+
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub enum MouseEvent {
     None,
@@ -14,4 +19,9 @@ pub struct Mouse {
 
 impl Mouse {
     pub fn new(x: u16, y: u16, event: MouseEvent ) -> Mouse { Mouse {x, y, event} }
+}
+
+pub enum Message {
+    AnimationStarted,
+    AnimationEnded,
 }

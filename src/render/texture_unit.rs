@@ -2,6 +2,7 @@ use web_sys::WebGlRenderingContext as GL;
 
 #[derive(Clone, Copy)]
 pub enum TextureUnit {
+    None = -1,
     Button = 0,
     Toggle = 1,
     ToggleActive = 2,
@@ -19,6 +20,7 @@ impl TextureUnit {
             TextureUnit::ToggleActive => GL::TEXTURE2,
             TextureUnit::ToggelBackground => GL::TEXTURE3,
             TextureUnit::ButtonPressed => GL::TEXTURE4,
+            _ => 0 // TODO Error
         }
     }
 

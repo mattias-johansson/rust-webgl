@@ -4,9 +4,12 @@ use nalgebra_glm as glm;
 use js_sys::WebAssembly;
 use wasm_bindgen::JsCast;
 
+use std::rc::Rc;
+
 use crate::render::texture_unit::*;
 use crate::render::lti::*;
-use std::rc::Rc;
+
+use crate::controls::node::*;
 
 pub fn init_textures(gl: Rc<WebGlRenderingContext>) {    
 
@@ -42,7 +45,13 @@ pub fn init_textures(gl: Rc<WebGlRenderingContext>) {
     );
 }
 
-pub fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, texture: TextureUnit) {
+pub fn draw_scene(context : &WebGlRenderingContext, program: &WebGlProgram, nodes: Vec<Node>) {
+    for node in nodes {
+        render(context, program, node.width, node.height, node.x, node.y, node.texture);
+    }
+}
+
+fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, texture: TextureUnit) {
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
 

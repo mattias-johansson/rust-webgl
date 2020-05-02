@@ -1,7 +1,6 @@
 use std::f32::consts::PI;
-use serde::{Serialize, Deserialize};
 
-#[derive(PartialEq, Clone, Copy,  Serialize, Deserialize)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum Ease {
     Lin,
     InQuad,
