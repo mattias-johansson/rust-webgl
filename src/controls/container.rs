@@ -11,6 +11,7 @@ use std::cell::RefCell;
 use crate::events::handler::Handler;
 use uuid::Uuid;
 use crate::render::texture_unit::*;
+use crate::application::context::*;
 
 pub struct Container {
     node: Node
@@ -32,7 +33,7 @@ impl Container {
         self
     }
 
-    pub fn new() ->  Container {
+    pub fn new(cx: &mut Context) ->  Container {
         let x:f32 = 0.0;
         let y:f32 = 0.0;
         let translate_x = 0.0;

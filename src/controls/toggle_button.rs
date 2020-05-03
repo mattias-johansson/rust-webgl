@@ -7,12 +7,13 @@ use web_sys::{WebGlProgram, WebGlRenderingContext};
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
 use crate::events::mouse::*;
-use crate::animation::animator::*;
+use crate::animation::animation::*;
 use crate::animation::ease::*;
 extern crate erased_serde;
 use std::cell::RefCell;
 use crate::events::handler::Handler;
 use uuid::Uuid;
+use crate::application::context::*;
 
 #[derive(PartialEq, Clone, Copy)]
 enum ToggleButtonState {
@@ -21,7 +22,6 @@ enum ToggleButtonState {
     ToOn,
     ToOff,
 }
-
 
 pub struct ToggleButtonPrivate {
     background: Node,
@@ -33,10 +33,10 @@ pub struct ToggleButtonPrivate {
 }
 
 impl ToggleButtonPrivate {
-    pub fn new(x: f32, y: f32, opacity: f32) -> ToggleButtonPrivate { 
+    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ToggleButtonPrivate { 
         let value = false;
-        let background = ToggleButtonPrivate::create_background(x, y, opacity);
-        let toggle = ToggleButtonPrivate::create_toggle(x, y, opacity);
+        let background = ToggleButtonPrivate::create_background(cx, x, y, opacity);
+        let toggle = ToggleButtonPrivate::create_toggle(cx, x, y, opacity);
         let state = ToggleButtonState::Off;
 
         let mut on_animation = Animation::new(toggle.uuid, Attribute::X);
@@ -54,20 +54,20 @@ impl ToggleButtonPrivate {
         ToggleButtonPrivate { background, toggle, value, on_animation, off_animation, state } 
     }
 
-    fn create_background(x: f32, y: f32, opacity: f32) -> Node {
+    fn create_background(cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
         let width = 107.0;
         let height = 36.0;
         let texture = TextureUnit::ToggelBackground;
-        let mut node = Node::new(x, y, width, height);
+        let mut node = Node::new(cx, x, y, width, height);
         node.texture = texture;
         node
     }
 
-    fn create_toggle(x: f32, y: f32, opacity: f32) -> Node {
+    fn create_toggle(cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
         let width = 30.0;
         let height = 30.0;
         let texture = TextureUnit::Toggle;
-        let mut node = Node::new(x, y, width, height);
+        let mut node = Node::new(cx, x, y, width, height);
         node.texture = texture;
         node
     }

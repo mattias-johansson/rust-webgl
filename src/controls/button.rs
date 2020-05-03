@@ -7,11 +7,13 @@ use web_sys::{WebGlProgram, WebGlRenderingContext};
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
 use crate::events::mouse::*;
-use crate::animation::animator::*;
+use crate::animation::animation::*;
+use crate::application::context::*;
 use std::cell::RefCell;
 use crate::events::handler::Handler;
 use uuid::Uuid;
 
+use crate::application::*;
 pub struct ButtonPrivate {
     node: Node,
     pressed: bool,
@@ -19,7 +21,7 @@ pub struct ButtonPrivate {
 }
 
 impl ButtonPrivate {
-    pub fn new(x: f32, y: f32, opacity: f32, parent: Weak<dyn VisualNode>) -> ButtonPrivate { 
+    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32, parent: Weak<dyn VisualNode>) -> ButtonPrivate { 
         let width = 145.0;
         let height = 34.0;
         let translate_x = 0.0;
@@ -28,7 +30,7 @@ impl ButtonPrivate {
         let texture = TextureUnit::Button;
         let dirty = true;
         let uuid = Uuid::new_v4();
-        let node = Node { uuid, x, y, width, height, translate_x,translate_y, opacity, texture, dirty };
+        let node = Node { uuid, x, y, width, height, translate_x, translate_y, opacity, texture, dirty };
         let pressed = false;
         let animation = Option::None; 
         ButtonPrivate { node, pressed, animation } 

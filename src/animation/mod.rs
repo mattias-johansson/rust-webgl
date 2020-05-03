@@ -1,2 +1,2 @@
-pub mod animator;
+pub mod animation;
 pub mod ease;

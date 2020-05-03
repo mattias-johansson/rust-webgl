@@ -7,6 +7,7 @@ use std::rc::Weak;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 use std::cell::RefCell;
 use uuid::Uuid;
+use crate::application::context::*;
 
 //#[derive(Copy)]
 pub struct Node {
@@ -24,7 +25,7 @@ pub struct Node {
 
 impl Node {
 
-    pub fn new(x: f32, y: f32, width: f32, height: f32) -> Node {
+    pub fn new(cx: &mut Context, x: f32, y: f32, width: f32, height: f32) -> Node {
         Node {uuid: Uuid::new_v4(), 
             x: x, 
             y: y, 

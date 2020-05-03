@@ -4,10 +4,12 @@ use std::rc::Rc;
 use std::rc::Weak;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
+use crate::application::context::*;
 use crate::controls::button::*;
 use crate::controls::container::*;
 use crate::controls::page::*;
 use crate::controls::visual_node::VisualNode;
+use crate::controls::node::Node;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
 use crate::controls::toggle_button::*;
@@ -16,6 +18,7 @@ use crate::render::draw::init_textures;
 use crate::render::gl_context::*;
 use crate::web::events::*;
 
+mod application;
 mod animation;
 mod controls;
 mod events;
@@ -28,7 +31,8 @@ pub struct Application {
     page: Page,
     gl: Rc<WebGlRenderingContext>,
     program: WebGlProgram,
-    events: Rc<RefCell<Handler>>
+    events: Rc<RefCell<Handler>>,
+    context: Context,
 }
 
 #[wasm_bindgen]
@@ -44,12 +48,15 @@ impl Application {
 
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
-        let mut page = Page::new();
+        let mut context = Context::new();
+        let mut page = Page::new(&mut context);
+        
         Application {
             page,
             gl,
             program,
             events,
+            context
         }
     }
 
