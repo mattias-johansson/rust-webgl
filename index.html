@@ -23,12 +23,23 @@
   <body id="app">
     <canvas id="canvas" width="1280px" height="703px"/>
     <script src="/webgl.js"> </script>
-    <script>
-      window.addEventListener('load', function () {
-        window.wasm_bindgen('/webgl_bg.wasm')
-          .then(function () {
-            // Start our rust application. You can find `Application` in `src/lib.rs`
-            const application = new window.wasm_bindgen.Application()
+
+    <script type=module>
+      // Like with the `--target web` output the exports are immediately
+      // available but they won't work until we initialize the module. Unlike
+      // `--target web`, however, the globals are all stored on a
+      // `wasm_bindgen` global. The global itself is the initialization
+      // function and then the properties of the global are all the exported
+      // functions.
+      //
+      // Note that the name `wasm_bindgen` can be configured with the
+      // `--no-modules-global` CLI flag
+      const { Application } = wasm_bindgen;
+
+      async function run() {
+        await wasm_bindgen('/webgl_bg.wasm');
+
+        const application = new Application()
             application.start()
   
             let time = Date.now();
@@ -37,13 +48,11 @@
               //appilcation.update(dt)
               application.event_loop(dt)
               window.requestAnimationFrame(eventLoop)
-  
-//              time = Date.now()
             }
   
-            eventLoop()
-          })
-      })
+      }
+
+      run();
       </script>
   </body>
 </html>
