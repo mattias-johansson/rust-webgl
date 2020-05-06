@@ -1,3 +1,4 @@
+use crate::application::context::Context;
 use crate::events::handler::Handler;
 use std::any::Any;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
@@ -8,7 +9,7 @@ use std::cell::RefCell;
 
 pub trait VisualNode {
 
-    fn event_handler(&mut self, event: &Event);
+    fn event_handler(&mut self, cx: &mut Context, event: &Event);
 
     fn as_any(&self) -> &dyn Any;
 

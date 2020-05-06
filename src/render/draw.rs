@@ -45,7 +45,7 @@ pub fn init_textures(gl: Rc<WebGlRenderingContext>) {
     );
 }
 
-pub fn draw_scene(context : &WebGlRenderingContext, program: &WebGlProgram, nodes: Vec<Node>) {
+pub fn draw_scene(context : &WebGlRenderingContext, program: &WebGlProgram, nodes: &[Node]) {
     for node in nodes {
         render(context, program, node.width, node.height, node.x, node.y, node.texture);
     }

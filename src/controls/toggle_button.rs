@@ -24,8 +24,8 @@ enum ToggleButtonState {
 }
 
 pub struct ToggleButtonPrivate {
-    background: Node,
-    toggle: Node,
+    background_uuid: Uuid,
+    toggle_uuid: Uuid,
     value: bool,
     on_animation: Animation,
     off_animation: Animation,
@@ -51,7 +51,15 @@ impl ToggleButtonPrivate {
         off_animation.end_value = 0.0;
         off_animation.easing = Ease::InElastic;
 
-        ToggleButtonPrivate { background, toggle, value, on_animation, off_animation, state } 
+        let background_uuid = background.uuid;
+        let toggle_uuid = toggle.uuid;
+
+        let toggleButtonPrivate = ToggleButtonPrivate { background_uuid, toggle_uuid, value, on_animation, off_animation, state }; 
+
+        cx.nodes.push(background);
+        cx.nodes.push(toggle);
+
+        toggleButtonPrivate
     }
 
     fn create_background(cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
@@ -80,12 +88,12 @@ impl ToggleButtonPrivate {
         }
     }
 
-    pub fn on_button_pressed(&mut self) {
+    pub fn on_button_pressed(&mut self, cx: &mut Context) {
         match self.state {
             ToggleButtonState::Off => (),
             ToggleButtonState::On => (),
-            ToggleButtonState::ToOff => self.set_off(),
-            ToggleButtonState::ToOn => self.set_on(),
+            ToggleButtonState::ToOff => self.set_off(cx),
+            ToggleButtonState::ToOn => self.set_on(cx),
         }
     }
 
@@ -98,14 +106,16 @@ impl ToggleButtonPrivate {
         }
     }
     
-    pub fn set_on(&mut self) {
-        self.toggle.texture = TextureUnit::ToggleActive;
+    pub fn set_on(&mut self, cx: &mut Context) {
+        let node = cx.get_node(self.toggle_uuid).unwrap();
+        node.texture = TextureUnit::ToggleActive;
         self.on_animation.play();
 
     }
 
-    fn set_off(&mut self) {
-        self.toggle.texture = TextureUnit::Toggle;
+    fn set_off(&mut self, cx: &mut Context) {
+        let node = cx.get_node(self.toggle_uuid).unwrap();
+        node.texture = TextureUnit::Toggle;
         self.off_animation.play();
     }
 }
@@ -161,11 +171,11 @@ impl VisualNode for ToggleButtonPrivate {
     }
 */
 
-    fn event_handler(&mut self, message: &Event) {
+    fn event_handler(&mut self, cx: &mut Context, message: &Event) {
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
-                    self.on_button_pressed();
+                    self.on_button_pressed(cx);
                 }
             },
             Event::Message(message) => {

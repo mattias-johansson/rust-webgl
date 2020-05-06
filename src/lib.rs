@@ -10,11 +10,12 @@ use crate::controls::container::*;
 use crate::controls::page::*;
 use crate::controls::visual_node::VisualNode;
 use crate::controls::node::Node;
+use crate::events::mouse::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
 use crate::controls::toggle_button::*;
 use crate::events::handler::*;
-use crate::render::draw::init_textures;
+use crate::render::draw::*;
 use crate::render::gl_context::*;
 use crate::web::events::*;
 
@@ -50,6 +51,7 @@ impl Application {
         let events = Rc::new(RefCell::new(events));
         let mut context = Context::new();
         let mut page = Page::new(&mut context);
+        ToggleButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
         
         Application {
             page,
@@ -82,7 +84,9 @@ impl Application {
 
 
     pub fn event_loop(&mut self, dt: f32) {
-
+        self.send_events();
+        draw_scene(&self.gl, &self.program, self.context.nodes.as_slice());
+ 
         let root_node = &mut self.page;
 //        draw_tree(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
         //        web_sys::console::log_1(&"render".into());
@@ -125,6 +129,13 @@ impl Application {
         
     }
 
+    pub fn send_events(&self) {
+        let cx = &mut self.context; 
+        for node in &self.context.nodes {
+            send_event(Rc::clone(&self.events), cx, node)
+        }
+    }
+
 }
 
 /*
@@ -145,17 +156,31 @@ pub fn get_children(gl: &WebGlRenderingContext,
     send_event(events, visual_node);
     draw(gl, program, visual_node, dt);
 }
+*/
 
-pub fn send_event(events: Rc<RefCell<Handler>>,  node: &mut VisualNode) {
-    let x = events.borrow().event.x;
-    let y = events.borrow().event.y;
-    let xy = node.position();
-    if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-        web_sys::console::log_1(&"sending event".into());
-        node.event(&events.borrow().event);
+pub fn send_events(events: Rc<RefCell<Handler>>, cx: &mut Context, nodes: &[Node]) {
+    for node in nodes {
+//        send_event(events, cx, node, visual_node: &mut dyn VisualNode)
     }
 }
 
+pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node) {
+        let event = events.borrow().event;
+        match event {
+            Event::Mouse(event) => {
+            let x = event.x;
+            let y = event.y;
+            let xy = node.position();
+            if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
+                let visual_node = cx.get_owner(node.uuid);
+                web_sys::console::log_1(&"sending event".into());
+                visual_node.event_handler(cx, &events.borrow().event);
+            }
+        },
+        _ => ()
+    }
+}
+/*
 pub fn draw(gl: &WebGlRenderingContext, program: &WebGlProgram, node: &mut VisualNode, dt: f32) {
     node.draw(&gl, &program, dt);
 }

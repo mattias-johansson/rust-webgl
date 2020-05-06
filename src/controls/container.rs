@@ -23,7 +23,7 @@ impl VisualNode for Container {
         self
     }
 
-    fn event_handler(&mut self, message: &Event) {
+    fn event_handler(&mut self, cx: &mut Context, message: &Event) {
     }
 }
 
