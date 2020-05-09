@@ -34,6 +34,7 @@ pub struct Application {
     program: WebGlProgram,
     events: Rc<RefCell<Handler>>,
     context: Context,
+    visual_nodes: Vec<Box<dyn VisualNode>>
 }
 
 #[wasm_bindgen]
@@ -50,22 +51,26 @@ impl Application {
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
         let mut context = Context::new();
-        let mut page = Page::new(&mut context);
-        ToggleButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
+        let page = Page::new(&mut context);
+        let toggleButton = ToggleButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
         
+        let mut visual_nodes = vec![];
+        visual_nodes.push(Box::new(toggleButton) as Box<dyn VisualNode>);
+
         Application {
             page,
             gl,
             program,
             events,
-            context
+            context,
+            visual_nodes
         }
     }
 
     /// Start our application. `index.html` will call this function in order
     /// to begin rendering.
     pub fn start(&mut self) -> Result<(), JsValue> {
-        web_sys::console::log_1(&"starting".into());
+
         let gl = &self.gl;
         init_textures(Rc::clone(gl));
         let document = web_sys::window().unwrap().document().unwrap();
@@ -77,13 +82,20 @@ impl Application {
 
         Ok(())
     }
-
+/*
+    pub fn get_owner(&self, node: Uuid) -> &Box<dyn VisualNode> {
+        let visual_node = self.visual_nodes.first(); //TODO
+        let visual_node = visual_node.unwrap();
+        visual_node
+    }
+    */
     /**
      * The event loop called from JavaScript
      */
 
 
     pub fn event_loop(&mut self, dt: f32) {
+
         self.send_events();
         draw_scene(&self.gl, &self.program, self.context.nodes.as_slice());
  
@@ -129,10 +141,13 @@ impl Application {
         
     }
 
-    pub fn send_events(&self) {
+    pub fn send_events(&mut self) {
+        let nodes =  &self.context.nodes.clone();
         let cx = &mut self.context; 
-        for node in &self.context.nodes {
-            send_event(Rc::clone(&self.events), cx, node)
+        for node in nodes {
+            let visual_node = self.visual_nodes.first(); //TODO
+            let visual_node = visual_node.unwrap();
+            send_event(Rc::clone(&self.events), cx, node, visual_node)
         }
     }
 
@@ -164,15 +179,14 @@ pub fn send_events(events: Rc<RefCell<Handler>>, cx: &mut Context, nodes: &[Node
     }
 }
 
-pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node) {
-        let event = events.borrow().event;
+pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node, visual_node: &Box<dyn VisualNode>) {
+        let event = &events.borrow().event;
         match event {
             Event::Mouse(event) => {
             let x = event.x;
             let y = event.y;
             let xy = node.position();
             if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-                let visual_node = cx.get_owner(node.uuid);
                 web_sys::console::log_1(&"sending event".into());
                 visual_node.event_handler(cx, &events.borrow().event);
             }

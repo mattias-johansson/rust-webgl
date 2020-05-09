@@ -52,13 +52,13 @@ impl VisualNode for ButtonPrivate {
         self
     }
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) {
+    fn event_handler(&self, cx: &mut Context, message: &Event) {
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
-                    self.pressed = false;
+            //        self.pressed = false;
                 } else if event.event == MouseEvent::Down {
-                    self.pressed = true; 
+              //      self.pressed = true; 
                 }      
             },
             _ => ()

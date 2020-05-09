@@ -9,7 +9,7 @@ use std::cell::RefCell;
 use uuid::Uuid;
 use crate::application::context::*;
 
-//#[derive(Copy)]
+#[derive(Clone, Copy)]
 pub struct Node {
     pub uuid: Uuid,
     pub x: f32,

@@ -13,7 +13,6 @@ use crate::controls::node::*;
 
 pub fn init_textures(gl: Rc<WebGlRenderingContext>) {    
 
-
     load_texture_image(
         Rc::clone(&gl),
         "/assets/button.png",
@@ -52,6 +51,7 @@ pub fn draw_scene(context : &WebGlRenderingContext, program: &WebGlProgram, node
 }
 
 fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, texture: TextureUnit) {
+   
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
 

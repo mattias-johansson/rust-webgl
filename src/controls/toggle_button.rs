@@ -74,6 +74,8 @@ impl ToggleButtonPrivate {
     fn create_toggle(cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
         let width = 30.0;
         let height = 30.0;
+        let x = x + 3.0;
+        let y = y + 3.0;
         let texture = TextureUnit::Toggle;
         let mut node = Node::new(cx, x, y, width, height);
         node.texture = texture;
@@ -88,7 +90,7 @@ impl ToggleButtonPrivate {
         }
     }
 
-    pub fn on_button_pressed(&mut self, cx: &mut Context) {
+    pub fn on_button_pressed(&self, cx: &mut Context) {
         match self.state {
             ToggleButtonState::Off => (),
             ToggleButtonState::On => (),
@@ -97,26 +99,27 @@ impl ToggleButtonPrivate {
         }
     }
 
-    pub fn on_animation_ended(&mut self) {
+    pub fn on_animation_ended(&self) {
         match self.state {
             ToggleButtonState::Off => (),
             ToggleButtonState::On => (),
-            ToggleButtonState::ToOff => self.state = ToggleButtonState::Off,
-            ToggleButtonState::ToOn => self.state = ToggleButtonState::On,
+//            ToggleButtonState::ToOff => self.state = ToggleButtonState::Off,
+///            ToggleButtonState::ToOn => self.state = ToggleButtonState::On,
+             _ => ()
         }
     }
     
-    pub fn set_on(&mut self, cx: &mut Context) {
+    pub fn set_on(&self, cx: &mut Context) {
         let node = cx.get_node(self.toggle_uuid).unwrap();
         node.texture = TextureUnit::ToggleActive;
-        self.on_animation.play();
+       // self.on_animation.play();
 
     }
 
-    fn set_off(&mut self, cx: &mut Context) {
+    fn set_off(&self, cx: &mut Context) {
         let node = cx.get_node(self.toggle_uuid).unwrap();
         node.texture = TextureUnit::Toggle;
-        self.off_animation.play();
+     //   self.off_animation.play();
     }
 }
 
@@ -171,7 +174,7 @@ impl VisualNode for ToggleButtonPrivate {
     }
 */
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) {
+    fn event_handler(&self, cx: &mut Context, message: &Event) {
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {

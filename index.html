@@ -49,9 +49,9 @@
               application.event_loop(dt)
               window.requestAnimationFrame(eventLoop)
             }
-  
+            eventLoop ();
       }
-
+      console.log("run");
       run();
       </script>
   </body>
