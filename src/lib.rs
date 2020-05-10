@@ -180,6 +180,8 @@ pub fn send_events(events: Rc<RefCell<Handler>>, cx: &mut Context, nodes: &[Node
 }
 
 pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node, visual_node: &Box<dyn VisualNode>) {
+    let mut handled = false;
+    {
         let event = &events.borrow().event;
         match event {
             Event::Mouse(event) => {
@@ -189,16 +191,18 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node, v
                 let xy = node.position();
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
                     web_sys::console::log_1(&"sending event".into());
-                    let handled = visual_node.event_handler(cx, &events.borrow().event);
-                    if handled {
-
-                    web_sys::console::log_1(&"handled".into());
-//                        events.borrow_mut().event = Event::Mouse(Mouse::new(0, 0, MouseEvent::None));
-                    }
+                    handled = visual_node.event_handler(cx, &events.borrow().event);
                 }
             }
         },
         _ => ()
+        }
+    }
+    if handled {
+        web_sys::console::log_1(&"handled".into());
+ 
+        let mouse_event = Event::Mouse(Mouse::new(0, 0, MouseEvent::None));
+        events.borrow_mut().set_event(mouse_event);
     }
 }
 /*
