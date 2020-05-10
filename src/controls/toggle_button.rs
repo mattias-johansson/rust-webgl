@@ -27,8 +27,8 @@ pub struct ToggleButtonPrivate {
     background_uuid: Uuid,
     toggle_uuid: Uuid,
     value: bool,
-    on_animation: Animation,
-    off_animation: Animation,
+    on_animation_uuid: Uuid,
+    off_animation_uuid: Uuid,
     state: ToggleButtonState,
 }
 
@@ -54,11 +54,16 @@ impl ToggleButtonPrivate {
         let background_uuid = background.uuid;
         let toggle_uuid = toggle.uuid;
 
-        let toggleButtonPrivate = ToggleButtonPrivate { background_uuid, toggle_uuid, value, on_animation, off_animation, state }; 
+        let on_animation_uuid = on_animation.uuid;
+        let off_animation_uuid = off_animation.uuid;
+
+        let toggleButtonPrivate = ToggleButtonPrivate { background_uuid, toggle_uuid, value, on_animation_uuid, off_animation_uuid, state }; 
 
         cx.nodes.push(background);
         cx.nodes.push(toggle);
 
+        cx.animations.push(on_animation);
+        cx.animations.push(off_animation);
         toggleButtonPrivate
     }
 
@@ -91,9 +96,10 @@ impl ToggleButtonPrivate {
     }
 
     pub fn on_button_pressed(&self, cx: &mut Context) {
+        web_sys::console::log_1(&"set on".into());
         match self.state {
-            ToggleButtonState::Off => (),
-            ToggleButtonState::On => (),
+            ToggleButtonState::Off => self.play_off_animation(cx),
+            ToggleButtonState::On => self.play_on_animation(cx),
             ToggleButtonState::ToOff => self.set_off(cx),
             ToggleButtonState::ToOn => self.set_on(cx),
         }
@@ -110,17 +116,27 @@ impl ToggleButtonPrivate {
     }
     
     pub fn set_on(&self, cx: &mut Context) {
+        web_sys::console::log_1(&"set on".into());
         let node = cx.get_node(self.toggle_uuid).unwrap();
         node.texture = TextureUnit::ToggleActive;
-       // self.on_animation.play();
-
     }
 
     fn set_off(&self, cx: &mut Context) {
+        web_sys::console::log_1(&"set off".into());
         let node = cx.get_node(self.toggle_uuid).unwrap();
         node.texture = TextureUnit::Toggle;
-     //   self.off_animation.play();
     }
+
+    fn play_off_animation(&self, context: &mut Context) {
+        let on_animation = context.get_animation(self.on_animation_uuid);
+        on_animation.unwrap().play();
+    }
+
+    fn play_on_animation(&self, context: &mut Context) {
+        let on_animation = context.get_animation(self.on_animation_uuid);
+        on_animation.unwrap().play();
+    }
+    
 }
 
 impl VisualNode for ToggleButtonPrivate {
@@ -174,12 +190,16 @@ impl VisualNode for ToggleButtonPrivate {
     }
 */
 
-    fn event_handler(&self, cx: &mut Context, message: &Event) {
+    fn event_handler(&self, cx: &mut Context, message: &Event) -> bool{
+        web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
+                web_sys::console::log_1(&"pressed".into());
                 if event.event == MouseEvent::Up {
+                    web_sys::console::log_1(&"pressed".into());
                     self.on_button_pressed(cx);
                 }
+                return true;
             },
             Event::Message(message) => {
                 match message {
@@ -189,6 +209,9 @@ impl VisualNode for ToggleButtonPrivate {
             },
             _ => ()
         }
+
+        web_sys::console::log_1(&"false".into());
+        return false;
     }
 /*
     fn position(&self) -> (f32, f32, f32, f32) {

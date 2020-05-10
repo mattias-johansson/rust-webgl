@@ -20,6 +20,7 @@ pub enum AnimationState {
 
 #[derive(PartialEq, Clone, Copy)]
 pub struct Animation {
+    pub uuid: Uuid,
     pub easing: Ease,
     pub start_time: f32,
     pub duration: f32,
@@ -33,22 +34,25 @@ pub struct Animation {
 impl Animation {
 
     pub fn new(target_node: Uuid, target_attribute: Attribute) -> Animation {
+        let uuid = Uuid::new_v4();
         let easing= Ease::Lin;
         let start_time = 0.0; 
         let duration = 0.0;
         let start_value = 0.0;
         let end_value = 0.0;
         let state = AnimationState::Stopped;
-        Animation { easing, start_time, duration, start_value, end_value, target_node, target_attribute, state }
+        Animation { uuid, easing, start_time, duration, start_value, end_value, target_node, target_attribute, state }
     } 
 
     pub fn play(&mut self) {
+        web_sys::console::log_1(&"animation started".into());
         self.state = AnimationState::Started;
     }
     
     pub fn create(easing: Ease, start_time: f32, duration: f32, start_value: f32, end_value: f32, target_node: Uuid, target_attribute: Attribute) -> Animation {
         let state = AnimationState::Stopped;
-        Animation { easing, start_time, duration, start_value, end_value, target_node, target_attribute, state }
+        let uuid = Uuid::new_v4();
+        Animation { uuid, easing, start_time, duration, start_value, end_value, target_node, target_attribute, state }
     } 
 
     pub fn running(&self, time: f32) -> bool {

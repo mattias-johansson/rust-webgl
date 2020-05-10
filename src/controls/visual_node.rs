@@ -9,7 +9,7 @@ use std::cell::RefCell;
 
 pub trait VisualNode {
 
-    fn event_handler(&self, cx: &mut Context, event: &Event);
+    fn event_handler(&self, cx: &mut Context, event: &Event) -> bool;
 
     fn as_any(&self) -> &dyn Any;
 

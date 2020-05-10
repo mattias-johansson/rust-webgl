@@ -45,7 +45,6 @@
             let time = Date.now();
             function eventLoop () {
               const dt = Date.now() - time
-              //appilcation.update(dt)
               application.event_loop(dt)
               window.requestAnimationFrame(eventLoop)
             }

@@ -23,7 +23,8 @@ impl VisualNode for Container {
         self
     }
 
-    fn event_handler(&self, cx: &mut Context, message: &Event) {
+    fn event_handler(&self, cx: &mut Context, message: &Event) -> bool{
+        return false;
     }
 }
 
