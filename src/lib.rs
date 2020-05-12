@@ -97,6 +97,7 @@ impl Application {
     pub fn event_loop(&mut self, dt: f32) {
 
         self.send_events();
+        update_animations(dt, &mut self.context);
         draw_scene(&self.gl, &self.program, self.context.nodes.as_slice());
  
         let root_node = &mut self.page;
@@ -200,7 +201,6 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node, v
     }
     if handled {
         web_sys::console::log_1(&"handled".into());
- 
         let mouse_event = Event::Mouse(Mouse::new(0, 0, MouseEvent::None));
         events.borrow_mut().set_event(mouse_event);
     }

@@ -28,7 +28,7 @@ pub struct Animation {
     pub end_value: f32,
     pub target_node: Uuid,
     pub target_attribute: Attribute,
-    state: AnimationState,
+    pub state: AnimationState,
 }
 
 impl Animation {

@@ -12,8 +12,8 @@ use crate::application::context::*;
 use std::cell::RefCell;
 use crate::events::handler::Handler;
 use uuid::Uuid;
-
 use crate::application::*;
+
 pub struct ButtonPrivate {
     node: Node,
     pressed: bool,

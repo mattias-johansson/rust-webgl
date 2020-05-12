@@ -3,6 +3,8 @@ use nalgebra::{Isometry3, Vector3};
 use nalgebra_glm as glm;
 use js_sys::WebAssembly;
 use wasm_bindgen::JsCast;
+use crate::animation::animation::*;
+use crate::application::context::*;
 
 use std::rc::Rc;
 
@@ -44,9 +46,33 @@ pub fn init_textures(gl: Rc<WebGlRenderingContext>) {
     );
 }
 
+pub fn update_animations(dt: f32, cx: &mut Context) {
+    let animations = cx.animations.clone();
+    for animation in animations {
+        if animation.state == AnimationState::Started {
+            update_animation(dt, cx, &animation)
+        }
+    }
+}
+
+fn update_animation(dt: f32, cx: &mut Context, animation: &Animation) {
+    let target_node = cx.get_node(animation.target_node);
+    if target_node.is_some() {
+        let value = animation.get_animated_value(dt);
+        match animation.target_attribute {
+            Attribute::X => { target_node.unwrap().translate_x = value; },
+            Attribute::Y => { target_node.unwrap().translate_y = value; },
+            Attribute::OPACITY => ()
+        }
+    }
+}
+
 pub fn draw_scene(context : &WebGlRenderingContext, program: &WebGlProgram, nodes: &[Node]) {
     for node in nodes {
-        render(context, program, node.width, node.height, node.x, node.y, node.texture);
+        //TODO I think GL can handle this
+        let x = node.x + node.translate_x;
+        let y = node.y + node.translate_y;
+        render(context, program, node.width, node.height, x, y, node.texture);
     }
 }
 
