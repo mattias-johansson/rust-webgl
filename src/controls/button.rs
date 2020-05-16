@@ -15,25 +15,20 @@ use uuid::Uuid;
 use crate::application::*;
 
 pub struct ButtonPrivate {
-    node: Node,
+    node_uuid: Uuid,
     pressed: bool,
     animation: Option<Animation>
 }
 
 impl ButtonPrivate {
-    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32, parent: Weak<dyn VisualNode>) -> ButtonPrivate { 
-        let width = 145.0;
-        let height = 34.0;
-        let translate_x = 0.0;
-        let translate_y = 0.0;
-        let height = 34.0;
-        let texture = TextureUnit::Button;
-        let dirty = true;
-        let uuid = Uuid::new_v4();
-        let node = Node { uuid, x, y, width, height, translate_x, translate_y, opacity, texture, dirty };
+    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
         let pressed = false;
         let animation = Option::None; 
-        ButtonPrivate { node, pressed, animation } 
+        let node = ButtonPrivate::create(cx, x, y, opacity);
+        let node_uuid = node.uuid;
+        
+        cx.nodes.push(node);
+        ButtonPrivate { node_uuid, pressed, animation } 
     }
 
     pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
@@ -43,6 +38,16 @@ impl ButtonPrivate {
             None
         }
     }
+
+    pub fn create(cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
+        let width =  145.0;
+        let height = 34.0;
+        let texture = TextureUnit::Button;
+        let mut node = Node::new(cx, x, y, width, height);
+        node.texture = texture;
+        node
+    }
+
 }
 
 

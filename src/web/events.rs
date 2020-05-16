@@ -18,7 +18,7 @@ pub fn attach_mouse_down_handler(
         handler.borrow_mut().set_event(mouse_event);
     };
 
-    let handler = Closure::wrap(Box::new(handler) as Box<FnMut(_)>);
+    let handler = Closure::wrap(Box::new(handler) as Box<dyn FnMut(_)>);
 
     canvas.add_event_listener_with_callback("mousedown", handler.as_ref().unchecked_ref())?;
 
@@ -38,7 +38,7 @@ pub fn attach_mouse_up_handler(
         events.borrow_mut().set_event(mouse_event);
     };
 
-    let handler = Closure::wrap(Box::new(handler) as Box<FnMut(_)>);
+    let handler = Closure::wrap(Box::new(handler) as Box<dyn FnMut(_)>);
 
     canvas.add_event_listener_with_callback("mouseup", handler.as_ref().unchecked_ref())?;
 

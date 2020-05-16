@@ -29,11 +29,12 @@ pub struct ToggleButtonPrivate {
     value: bool,
     on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
-    state: ToggleButtonState,
+    state: ToggleButtonState, 
+    closure: Box<dyn Fn()>,
 }
 
 impl ToggleButtonPrivate {
-    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ToggleButtonPrivate { 
+    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32, closure: Box<dyn Fn()>) -> ToggleButtonPrivate { 
         let value = false;
         let background = ToggleButtonPrivate::create_background(cx, x, y, opacity);
         let toggle = ToggleButtonPrivate::create_toggle(cx, x, y, opacity);
@@ -43,13 +44,13 @@ impl ToggleButtonPrivate {
         on_animation.duration = 2000.0;
         on_animation.start_value = 0.0;
         on_animation.end_value = 74.0;
-        on_animation.easing = Ease::InElastic;
+        on_animation.easing = Ease::Lin;
 
         let mut off_animation = Animation::new(toggle.uuid, Attribute::X);
         off_animation.duration = 2000.0;
         off_animation.start_value = 74.0;
         off_animation.end_value = 0.0;
-        off_animation.easing = Ease::InElastic;
+        off_animation.easing = Ease::Lin;
 
         let background_uuid = background.uuid;
         let toggle_uuid = toggle.uuid;
@@ -57,7 +58,7 @@ impl ToggleButtonPrivate {
         let on_animation_uuid = on_animation.uuid;
         let off_animation_uuid = off_animation.uuid;
 
-        let toggleButtonPrivate = ToggleButtonPrivate { background_uuid, toggle_uuid, value, on_animation_uuid, off_animation_uuid, state }; 
+        let toggleButtonPrivate = ToggleButtonPrivate { background_uuid, toggle_uuid, value, on_animation_uuid, off_animation_uuid, state, closure }; 
 
         cx.nodes.push(background);
         cx.nodes.push(toggle);
@@ -198,6 +199,7 @@ impl VisualNode for ToggleButtonPrivate {
                 if event.event == MouseEvent::Up {
                     web_sys::console::log_1(&"pressed".into());
                     self.on_button_pressed(cx);
+                    (self.closure)();
                 }
                 return true;
             },

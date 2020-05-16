@@ -52,10 +52,19 @@ impl Application {
         let events = Rc::new(RefCell::new(events));
         let mut context = Context::new();
         let page = Page::new(&mut context);
-        let toggleButton = ToggleButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
+        
+        let handler = move || {
+            web_sys::console::log_1(&"Click:".into());
+        };
+    
+        let handler = Box::new(handler) as Box<dyn Fn()>;
+
+        let toggle_button = ToggleButtonPrivate::new(&mut context, 5.0, 5.0, 0.5, handler);
+        let button = ButtonPrivate::new(&mut context, 5.0, 45.0, 0.5);
         
         let mut visual_nodes = vec![];
-        visual_nodes.push(Box::new(toggleButton) as Box<dyn VisualNode>);
+        visual_nodes.push(Box::new(toggle_button) as Box<dyn VisualNode>);
+        visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
 
         Application {
             page,
@@ -190,6 +199,14 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node, v
                 let x = event.x;
                 let y = event.y;
                 let xy = node.position();
+                web_sys::console::log_1(&"EVENT:".into());
+                web_sys::console::log_1(&x.to_string().into());
+                web_sys::console::log_1(&y.to_string().into());
+                web_sys::console::log_1(&"POSITION:".into());
+                web_sys::console::log_1(&xy.0.to_string().into());
+                web_sys::console::log_1(&xy.1.to_string().into());
+                web_sys::console::log_1(&xy.2.to_string().into());
+                web_sys::console::log_1(&xy.3.to_string().into());
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
                     web_sys::console::log_1(&"sending event".into());
                     handled = visual_node.event_handler(cx, &events.borrow().event);
