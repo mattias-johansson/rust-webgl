@@ -30,11 +30,11 @@ pub struct ToggleButtonPrivate {
     on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
     state: ToggleButtonState, 
-    closure: Box<dyn Fn()>,
+    pub closure: Option<Box<dyn FnMut() >>,
 }
 
 impl ToggleButtonPrivate {
-    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32, closure: Box<dyn Fn()>) -> ToggleButtonPrivate { 
+    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ToggleButtonPrivate { 
         let value = false;
         let background = ToggleButtonPrivate::create_background(cx, x, y, opacity);
         let toggle = ToggleButtonPrivate::create_toggle(cx, x, y, opacity);
@@ -57,6 +57,8 @@ impl ToggleButtonPrivate {
 
         let on_animation_uuid = on_animation.uuid;
         let off_animation_uuid = off_animation.uuid;
+
+        let closure = Option::None;
 
         let toggleButtonPrivate = ToggleButtonPrivate { background_uuid, toggle_uuid, value, on_animation_uuid, off_animation_uuid, state, closure }; 
 
@@ -140,12 +142,13 @@ impl ToggleButtonPrivate {
     
 }
 
-impl VisualNode for ToggleButtonPrivate {
+impl <'a> VisualNode for ToggleButtonPrivate {
 
 
-    fn as_any(&self) -> &dyn Any {
+    fn as_any(&mut self) -> &mut dyn Any {
         self
     }
+
 /*
     fn draw(&mut self, context: &WebGlRenderingContext, program: &WebGlProgram, time: f32) {
         if self.animator.pressed {
@@ -191,7 +194,7 @@ impl VisualNode for ToggleButtonPrivate {
     }
 */
 
-    fn event_handler(&self, cx: &mut Context, message: &Event) -> bool{
+    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool{
         web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
@@ -199,7 +202,8 @@ impl VisualNode for ToggleButtonPrivate {
                 if event.event == MouseEvent::Up {
                     web_sys::console::log_1(&"pressed".into());
                     self.on_button_pressed(cx);
-                    (self.closure)();
+                    let callback : &mut Box<dyn FnMut()> = &mut self.closure.as_mut().unwrap();
+                    callback();
                 }
                 return true;
             },

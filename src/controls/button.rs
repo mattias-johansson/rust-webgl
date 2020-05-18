@@ -53,11 +53,11 @@ impl ButtonPrivate {
 
 impl VisualNode for ButtonPrivate {
 
-    fn as_any(&self) -> &dyn Any {
+    fn as_any(&mut self) -> &mut dyn Any {
         self
     }
 
-    fn event_handler(&self, cx: &mut Context, message: &Event) -> bool {
+    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool {
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {

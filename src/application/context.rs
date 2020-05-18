@@ -6,14 +6,16 @@ use uuid::Uuid;
 #[derive(Clone)]
 pub struct Context {
     pub nodes: Vec<Node>,
-    pub animations: Vec<Animation>
+    pub animations: Vec<Animation>,
+    pub events: Vec<Uuid>
 }
 
 impl Context {
     pub fn new() -> Context {
         let nodes = vec![];
         let animations = vec![];
-        Context { nodes, animations }
+        let events = vec![];
+        Context { nodes, animations, events }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {
