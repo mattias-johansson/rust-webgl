@@ -142,8 +142,7 @@ impl ToggleButtonPrivate {
     
 }
 
-impl <'a> VisualNode for ToggleButtonPrivate {
-
+impl VisualNode for ToggleButtonPrivate {
 
     fn as_any(&mut self) -> &mut dyn Any {
         self
@@ -200,9 +199,10 @@ impl <'a> VisualNode for ToggleButtonPrivate {
             Event::Mouse(event) => {
                 web_sys::console::log_1(&"pressed".into());
                 if event.event == MouseEvent::Up {
-                    web_sys::console::log_1(&"pressed".into());
+                    web_sys::console::log_1(&"pressed tooooo".into());
                     self.on_button_pressed(cx);
                     let callback : &mut Box<dyn FnMut()> = &mut self.closure.as_mut().unwrap();
+                    web_sys::console::log_1(&"Calling callback".into());
                     callback();
                 }
                 return true;

@@ -33,7 +33,7 @@ pub struct Application {
     gl: Rc<WebGlRenderingContext>,
     program: WebGlProgram,
     events: Rc<RefCell<Handler>>,
-    context: Context,
+    context: Rc<RefCell<Context>>,
     visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>
 }
 
@@ -43,6 +43,7 @@ impl Application {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Application {
             
+        web_sys::console::log_1(&"Application".into());
         let webgl_context = get_webgl_context();
         let program = create_webgl_program(&webgl_context);
         setup_redering_context(&webgl_context, &program);
@@ -50,8 +51,8 @@ impl Application {
 
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
-        let mut context = Context::new();
-        let page = Page::new(&mut context);
+        let mut context =  Rc::new(RefCell::new(Context::new()));
+        let page = Page::new(&mut context.borrow_mut());
         
    
         
@@ -70,7 +71,9 @@ impl Application {
     /// Start our application. `index.html` will call this function in order
     /// to begin rendering.
     pub fn start(&mut self) -> Result<(), JsValue> {
+        web_sys::console::log_1(&"start".into());
         
+        create(Rc::clone(&self.context), Rc::clone(&self.visual_nodes));
         let gl = &self.gl;
         init_textures(Rc::clone(gl));
         let document = web_sys::window().unwrap().document().unwrap();
@@ -96,9 +99,10 @@ impl Application {
 
     pub fn event_loop(&mut self, dt: f32) {
 
+        web_sys::console::log_1(&"event_loop".into());
         self.send_events();
-        update_animations(dt, &mut self.context);
-        draw_scene(&self.gl, &self.program, self.context.nodes.as_slice());
+        update_animations(dt, &mut self.context.borrow_mut());
+        draw_scene(&self.gl, &self.program, &mut self.context.borrow().nodes.as_slice());
  
         let root_node = &mut self.page;
 //        draw_tree(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
@@ -143,13 +147,12 @@ impl Application {
     }
 
     pub fn send_events(&mut self) {
-        let nodes =  &self.context.nodes.clone();
-        let cx = &mut self.context; 
+        let nodes =  &self.context.borrow().nodes.clone();
         for node in nodes {
             let mut visual_node = self.visual_nodes.borrow_mut(); //TODO
             let visual_node = visual_node.first_mut();
             let mut visual_node = visual_node.unwrap();
-            send_event(Rc::clone(&self.events), cx, node, &mut visual_node)
+            send_event(Rc::clone(&self.events), &mut self.context.borrow_mut(), node, &mut visual_node)
         }
     }
 
@@ -175,19 +178,22 @@ pub fn get_children(gl: &WebGlRenderingContext,
 }
 */
 
-pub fn create(mut context: &'static mut application::context::Context, mut visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
-   
-    let mut toggle_button = ToggleButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
+pub fn create(mut context: Rc<RefCell<application::context::Context>>, mut visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
+  
+    let mut toggle_button = ToggleButtonPrivate::new(&mut context.borrow_mut(), 5.0, 5.0, 0.5);
     let v_n = Rc::clone(&visual_nodes);
-
     let handler = move || {
+        let context = context.clone();
         web_sys::console::log_1(&"Click:".into());
-        let button = ButtonPrivate::new(&mut context, 5.0, 45.0, 0.5);
+        let button = ButtonPrivate::new(&mut context.borrow_mut(), 5.0, 45.0, 0.5);
+        web_sys::console::log_1(&"button:".into());
         let mut visual_nodes = visual_nodes.borrow_mut(); //TODO
+        web_sys::console::log_1(&"visual_nodes:".into());
         visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+        web_sys::console::log_1(&"push push:".into());
     };
 
-    let handler = Box::new(handler) as Box<dyn FnMut()>;
+    let handler : Box<dyn FnMut()> = Box::new(handler) as Box<dyn FnMut()>;
     let mut v_n = v_n.borrow_mut();
     toggle_button.closure = Some(handler);
     v_n.push(Box::new(toggle_button) as Box<dyn VisualNode>);
