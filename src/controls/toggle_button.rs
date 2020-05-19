@@ -30,7 +30,7 @@ pub struct ToggleButtonPrivate {
     on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
     state: ToggleButtonState, 
-    pub closure: Option<Box<dyn FnMut() >>,
+    pub closure: Option<Box<dyn FnMut(&mut Context) >>,
 }
 
 impl ToggleButtonPrivate {
@@ -193,7 +193,7 @@ impl VisualNode for ToggleButtonPrivate {
     }
 */
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool{
+    fn event_handler(&mut self, mut cx: &mut Context, message: &Event) -> bool{
         web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
@@ -201,9 +201,9 @@ impl VisualNode for ToggleButtonPrivate {
                 if event.event == MouseEvent::Up {
                     web_sys::console::log_1(&"pressed tooooo".into());
                     self.on_button_pressed(cx);
-                    let callback : &mut Box<dyn FnMut()> = &mut self.closure.as_mut().unwrap();
+                    let callback : &mut Box<dyn FnMut(&mut Context)> = self.closure.as_mut().unwrap();
                     web_sys::console::log_1(&"Calling callback".into());
-                    callback();
+                    callback(&mut cx);
                 }
                 return true;
             },

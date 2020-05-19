@@ -22,11 +22,14 @@ pub struct ButtonPrivate {
 
 impl ButtonPrivate {
     pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
+
+        web_sys::console::log_1(&"ButtonPrivate".into());
         let pressed = false;
         let animation = Option::None; 
+        web_sys::console::log_1(&"ButtonPrivate".into());
         let node = ButtonPrivate::create(cx, x, y, opacity);
         let node_uuid = node.uuid;
-        
+        web_sys::console::log_1(&"ButtonPrivate".into());
         cx.nodes.push(node);
         ButtonPrivate { node_uuid, pressed, animation } 
     }

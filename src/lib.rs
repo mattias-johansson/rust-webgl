@@ -33,8 +33,9 @@ pub struct Application {
     gl: Rc<WebGlRenderingContext>,
     program: WebGlProgram,
     events: Rc<RefCell<Handler>>,
-    context: Rc<RefCell<Context>>,
-    visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>
+    context: Context,
+    visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>,
+    visual_nodes2: Rc<RefCell<Vec<Box<dyn VisualNode>>>>
 }
 
 #[wasm_bindgen]
@@ -51,12 +52,13 @@ impl Application {
 
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
-        let mut context =  Rc::new(RefCell::new(Context::new()));
-        let page = Page::new(&mut context.borrow_mut());
+        let mut context = Context::new();
+        let page = Page::new(&mut context);
         
    
         
         let visual_nodes = Rc::new(RefCell::new(vec![]));
+        let visual_nodes2 = Rc::new(RefCell::new(vec![]));
 
         Application {
             page,
@@ -64,7 +66,8 @@ impl Application {
             program,
             events,
             context,
-            visual_nodes
+            visual_nodes,
+            visual_nodes2
         }
     }
 
@@ -72,8 +75,15 @@ impl Application {
     /// to begin rendering.
     pub fn start(&mut self) -> Result<(), JsValue> {
         web_sys::console::log_1(&"start".into());
-        
-        create(Rc::clone(&self.context), Rc::clone(&self.visual_nodes));
+        create(&mut self.context, Rc::clone(&self.visual_nodes2));
+
+        if self.visual_nodes2.borrow_mut().len() > 0 {
+           self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
+        }
+
+        self.visual_nodes2 =  Rc::new(RefCell::new(vec![]));
+
+
         let gl = &self.gl;
         init_textures(Rc::clone(gl));
         let document = web_sys::window().unwrap().document().unwrap();
@@ -101,8 +111,8 @@ impl Application {
 
         web_sys::console::log_1(&"event_loop".into());
         self.send_events();
-        update_animations(dt, &mut self.context.borrow_mut());
-        draw_scene(&self.gl, &self.program, &mut self.context.borrow().nodes.as_slice());
+        update_animations(dt, &mut self.context);
+        draw_scene(&self.gl, &self.program, self.context.nodes.as_slice());
  
         let root_node = &mut self.page;
 //        draw_tree(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
@@ -147,13 +157,21 @@ impl Application {
     }
 
     pub fn send_events(&mut self) {
-        let nodes =  &self.context.borrow().nodes.clone();
+        let nodes =  &self.context.nodes.clone();
+        let cx = &mut self.context; 
         for node in nodes {
             let mut visual_node = self.visual_nodes.borrow_mut(); //TODO
             let visual_node = visual_node.first_mut();
             let mut visual_node = visual_node.unwrap();
-            send_event(Rc::clone(&self.events), &mut self.context.borrow_mut(), node, &mut visual_node)
+            send_event(Rc::clone(&self.events), cx, node, &mut visual_node)
         }
+        web_sys::console::log_1(&"event_loop".into());
+        if self.visual_nodes2.borrow_mut().len() > 0 {
+           self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
+        }
+
+        web_sys::console::log_1(&"event_loop".into());
+        self.visual_nodes2 =  Rc::new(RefCell::new(vec![]));
     }
 
 }
@@ -178,22 +196,20 @@ pub fn get_children(gl: &WebGlRenderingContext,
 }
 */
 
-pub fn create(mut context: Rc<RefCell<application::context::Context>>, mut visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
+pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
   
-    let mut toggle_button = ToggleButtonPrivate::new(&mut context.borrow_mut(), 5.0, 5.0, 0.5);
+
+    let mut toggle_button = ToggleButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
     let v_n = Rc::clone(&visual_nodes);
-    let handler = move || {
-        let context = context.clone();
+    let handler = move |mut cx : &mut Context| {
+        let button = ButtonPrivate::new(&mut cx, 5.0, 45.0, 0.5);
         web_sys::console::log_1(&"Click:".into());
-        let button = ButtonPrivate::new(&mut context.borrow_mut(), 5.0, 45.0, 0.5);
-        web_sys::console::log_1(&"button:".into());
         let mut visual_nodes = visual_nodes.borrow_mut(); //TODO
-        web_sys::console::log_1(&"visual_nodes:".into());
+        web_sys::console::log_1(&"Click:".into());
         visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
-        web_sys::console::log_1(&"push push:".into());
     };
 
-    let handler : Box<dyn FnMut()> = Box::new(handler) as Box<dyn FnMut()>;
+    let handler : Box<dyn FnMut(&mut Context)> = Box::new(handler) as Box<dyn FnMut(&mut Context)>;
     let mut v_n = v_n.borrow_mut();
     toggle_button.closure = Some(handler);
     v_n.push(Box::new(toggle_button) as Box<dyn VisualNode>);
