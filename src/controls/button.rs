@@ -1,16 +1,11 @@
 use std::any::Any;
 use std::rc::Rc;
-use std::rc::Weak;
 use crate::render::texture_unit::*;
-use crate::render::draw::*;
-use web_sys::{WebGlProgram, WebGlRenderingContext};
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::animation::animation::*;
 use crate::application::context::*;
-use std::cell::RefCell;
-use crate::events::handler::Handler;
 use uuid::Uuid;
 use crate::application::*;
 
@@ -64,10 +59,10 @@ impl VisualNode for ButtonPrivate {
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
-            //        self.pressed = false;
+                    self.pressed = false;
                      return true;
                 } else if event.event == MouseEvent::Down {
-              //      self.pressed = true; 
+                    self.pressed = true; 
                     return true;
                 }      
             },
@@ -75,9 +70,4 @@ impl VisualNode for ButtonPrivate {
         }
         return false;
     }
-/*
-   fn position(&self) -> (f32, f32, f32, f32) {
-        (self.node.x, self.node.y, self.node.x + 145.0, self.node.y + 34.0)
-    }
-*/
 }

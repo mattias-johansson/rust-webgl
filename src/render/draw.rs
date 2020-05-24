@@ -47,15 +47,27 @@ pub fn init_textures(gl: Rc<WebGlRenderingContext>) {
 }
 
 pub fn update_animations(dt: f32, cx: &mut Context) {
-    let animations = cx.animations.clone();
-    for animation in animations {
+    for i in 0..cx.animations.len() {
+        let animation : &mut Animation = cx.animations.get_mut(i).unwrap();
         if animation.state == AnimationState::Started {
-            update_animation(dt, cx, &animation)
+            animation.set_start_time(dt);
+            animation.state = AnimationState::Playing;
         }
     }
 }
 
-fn update_animation(dt: f32, cx: &mut Context, animation: &Animation) {
+
+pub fn update_target_attributes(dt: f32, cx: &mut Context) {
+    for i in 0..cx.animations.len() {
+        let animation : Animation = *cx.animations.get(i).unwrap();
+      if animation.state == AnimationState::Playing {
+            update_target_attribute(dt, cx, &animation)
+        }
+    }
+}
+
+fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
+    web_sys::console::log_1(&"update_animation:".into());
     let target_node = cx.get_node(animation.target_node);
     if target_node.is_some() {
         let value = animation.get_animated_value(dt);

@@ -1,7 +1,6 @@
 extern crate wasm_bindgen;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::rc::Weak;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use crate::application::context::*;
@@ -90,8 +89,8 @@ impl Application {
         let canvas = document.get_element_by_id("canvas").unwrap();
         let canvas: web_sys::HtmlCanvasElement =
             canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
-        attach_mouse_down_handler(&canvas, Rc::clone(&self.events));
-        attach_mouse_up_handler(&canvas, Rc::clone(&self.events));
+        let _ = attach_mouse_down_handler(&canvas, Rc::clone(&self.events));
+        let _ = attach_mouse_up_handler(&canvas, Rc::clone(&self.events));
 
         Ok(())
     }
@@ -108,13 +107,11 @@ impl Application {
 
 
     pub fn event_loop(&mut self, dt: f32) {
-
-        web_sys::console::log_1(&"event_loop".into());
         self.send_events();
         update_animations(dt, &mut self.context);
+        update_target_attributes(dt, &mut self.context);
         draw_scene(&self.gl, &self.program, self.context.nodes.as_slice());
  
-        let root_node = &mut self.page;
 //        draw_tree(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
         //        web_sys::console::log_1(&"render".into());
         //        let js: JsValue = dt.into();
@@ -165,12 +162,9 @@ impl Application {
             let mut visual_node = visual_node.unwrap();
             send_event(Rc::clone(&self.events), cx, node, &mut visual_node)
         }
-        web_sys::console::log_1(&"event_loop".into());
         if self.visual_nodes2.borrow_mut().len() > 0 {
            self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
         }
-
-        web_sys::console::log_1(&"event_loop".into());
         self.visual_nodes2 =  Rc::new(RefCell::new(vec![]));
     }
 
@@ -214,12 +208,6 @@ pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<
     toggle_button.closure = Some(handler);
     v_n.push(Box::new(toggle_button) as Box<dyn VisualNode>);
 
-}
-
-pub fn send_events(events: Rc<RefCell<Handler>>, cx: &mut Context, nodes: &[Node]) {
-    for node in nodes {
-//        send_event(events, cx, node, visual_node: &mut dyn VisualNode)
-    }
 }
 
 pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node, visual_node: &mut Box<dyn VisualNode>) {
