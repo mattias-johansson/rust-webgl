@@ -35,13 +35,13 @@ impl ToggleButtonPrivate {
         let state = ToggleButtonState::Off;
 
         let mut on_animation = Animation::new(toggle.uuid, Attribute::X);
-        on_animation.duration = 2000.0;
+        on_animation.duration = 800.0;
         on_animation.start_value = 0.0;
         on_animation.end_value = 74.0;
         on_animation.easing = Ease::OutCubic;
 
         let mut off_animation = Animation::new(toggle.uuid, Attribute::X);
-        off_animation.duration = 2000.0;
+        off_animation.duration = 800.0;
         off_animation.start_value = 74.0;
         off_animation.end_value = 0.0;
         off_animation.easing = Ease::OutCubic;
@@ -92,46 +92,52 @@ impl ToggleButtonPrivate {
         }
     }
 
-    pub fn on_button_pressed(&self, cx: &mut Context) {
+    pub fn on_button_pressed(&mut self, cx: &mut Context) {
         web_sys::console::log_1(&"set on".into());
         match self.state {
-            ToggleButtonState::Off => self.play_off_animation(cx),
-            ToggleButtonState::On => self.play_on_animation(cx),
-            ToggleButtonState::ToOff => self.set_off(cx),
-            ToggleButtonState::ToOn => self.set_on(cx),
+            ToggleButtonState::Off => self.play_on_animation(cx),
+            ToggleButtonState::On => self.play_off_animation(cx),
+            ToggleButtonState::ToOff => (),
+            ToggleButtonState::ToOn => (),
         }
     }
 
-    pub fn on_animation_ended(&mut self) {
+    pub fn on_animation_ended(&mut self, cx: &mut Context) {
 
         web_sys::console::log_1(&"on_animation_ended".into());
         match self.state {
             ToggleButtonState::Off => (),
             ToggleButtonState::On => (),
-            ToggleButtonState::ToOff => self.state = ToggleButtonState::Off,
-            ToggleButtonState::ToOn => self.state = ToggleButtonState::On,
+            ToggleButtonState::ToOff => self.set_off(cx),
+            ToggleButtonState::ToOn => self.set_on(cx),
              _ => ()
         }
     }
     
-    pub fn set_on(&self, cx: &mut Context) {
+    pub fn set_on(&mut self, cx: &mut Context) {
         web_sys::console::log_1(&"set on".into());
+        self.state = ToggleButtonState::On;
         let node = cx.get_node(self.toggle_uuid).unwrap();
         node.texture = TextureUnit::ToggleActive;
     }
 
-    fn set_off(&self, cx: &mut Context) {
+    fn set_off(&mut self, cx: &mut Context) {
         web_sys::console::log_1(&"set off".into());
+        self.state = ToggleButtonState::Off;
         let node = cx.get_node(self.toggle_uuid).unwrap();
         node.texture = TextureUnit::Toggle;
     }
 
-    fn play_off_animation(&self, context: &mut Context) {
-        let on_animation = context.get_animation(self.on_animation_uuid);
+    fn play_off_animation(&mut self, context: &mut Context) {
+        web_sys::console::log_1(&"play off".into());
+        self.state = ToggleButtonState::ToOff;
+        let on_animation = context.get_animation(self.off_animation_uuid);
         on_animation.unwrap().play();
     }
 
-    fn play_on_animation(&self, context: &mut Context) {
+    fn play_on_animation(&mut self, context: &mut Context) {
+        web_sys::console::log_1(&"play on".into());
+        self.state = ToggleButtonState::ToOn;
         let on_animation = context.get_animation(self.on_animation_uuid);
         on_animation.unwrap().play();
     }
@@ -158,7 +164,7 @@ impl VisualNode for ToggleButtonPrivate {
             },
             Event::Message(message) => {
                 match message {
-                    Message::AnimationEnded(Uuid) => self.on_animation_ended(),
+                    Message::AnimationEnded(Uuid) => self.on_animation_ended(cx),
                     _ => ()
                 }
             }

@@ -156,11 +156,13 @@ impl Application {
         let cx = &mut self.context; 
         let mut vn = self.visual_nodes.borrow_mut();
         for event in events {
-        for i in 0..vn.len() {
-            web_sys::console::log_1(&"ev2:".into());
-                vn.get_mut(i).unwrap().event_handler(cx, &event);
+            for i in 0..vn.len() {
+                web_sys::console::log_1(&"ev2:".into());
+                    vn.get_mut(i).unwrap().event_handler(cx, &event);
             }
+
         }
+        self.context.events = vec![];
         while self.visual_nodes2.borrow_mut().len() > 0 {
            self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
         }

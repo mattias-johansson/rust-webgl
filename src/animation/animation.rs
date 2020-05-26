@@ -64,12 +64,21 @@ impl Animation {
 
     pub fn get_animated_value(&self,  time: f32) -> f32 {
         let time = (time - self.start_time) / self.duration;
-        let x = self.easing.map((time) as f32);
-        let start = self.start_value + x;
-        let x = x * (self.end_value - start);
+        let ease = self.easing.map((time) as f32);
+        let mut x = 0.0;
+        if self.end_value > self.start_value {
+            let start = self.start_value;
+            let end = self.end_value;
+            x = ease * (end - start);
+        } else {
+            let start = self.start_value;
+            let end = self.end_value;
+            web_sys::console::log_1(&start.into());
+            x = start + (ease * (end - start));
+        }
 
-//        web_sys::console::log_1(&"animation value".into());
-//        web_sys::console::log_1(&x.into());
+        web_sys::console::log_1(&"animation value".into());
+        web_sys::console::log_1(&x.into());
 
         x
     } 
