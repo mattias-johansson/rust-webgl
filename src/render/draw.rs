@@ -1,3 +1,5 @@
+use crate::events::mouse::Message::AnimationEnded;
+use crate::events::mouse::Event;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 use nalgebra::{Isometry3, Vector3};
 use nalgebra_glm as glm;
@@ -52,6 +54,13 @@ pub fn update_animations(dt: f32, cx: &mut Context) {
         if animation.state == AnimationState::Started {
             animation.set_start_time(dt);
             animation.state = AnimationState::Playing;
+        } else if animation.state == AnimationState::Playing {
+            if !animation.running(dt) {
+                animation.state = AnimationState::Ending
+            }
+        } else if animation.state == AnimationState::Ending {
+            animation.state = AnimationState::Ended;
+            cx.events.push(Event::Message(AnimationEnded(animation.uuid)));
         }
     }
 }

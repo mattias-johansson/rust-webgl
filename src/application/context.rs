@@ -1,13 +1,14 @@
 use crate::animation::animation::Animation;
 use crate::controls::node::*;
 use crate::controls::visual_node::*;
+use crate::events::mouse::*;
 use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct Context {
     pub nodes: Vec<Node>,
     pub animations: Vec<Animation>,
-    pub events: Vec<Uuid>
+    pub events: Vec<Event>
 }
 
 impl Context {

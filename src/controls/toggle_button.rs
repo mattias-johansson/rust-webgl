@@ -103,6 +103,8 @@ impl ToggleButtonPrivate {
     }
 
     pub fn on_animation_ended(&mut self) {
+
+        web_sys::console::log_1(&"on_animation_ended".into());
         match self.state {
             ToggleButtonState::Off => (),
             ToggleButtonState::On => (),
@@ -146,9 +148,7 @@ impl VisualNode for ToggleButtonPrivate {
         web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
-                web_sys::console::log_1(&"pressed".into());
                 if event.event == MouseEvent::Up {
-                    web_sys::console::log_1(&"pressed tooooo".into());
                     self.on_button_pressed(cx);
                     let callback : &mut Box<dyn FnMut(&mut Context)> = self.closure.as_mut().unwrap();
                     web_sys::console::log_1(&"Calling callback".into());
@@ -158,7 +158,7 @@ impl VisualNode for ToggleButtonPrivate {
             },
             Event::Message(message) => {
                 match message {
-                    Message::AnimationEnded => self.on_animation_ended(),
+                    Message::AnimationEnded(Uuid) => self.on_animation_ended(),
                     _ => ()
                 }
             }

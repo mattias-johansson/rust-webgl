@@ -54,8 +54,6 @@ impl Application {
         let mut context = Context::new();
         let page = Page::new(&mut context);
         
-   
-        
         let visual_nodes = Rc::new(RefCell::new(vec![]));
         let visual_nodes2 = Rc::new(RefCell::new(vec![]));
 
@@ -82,7 +80,6 @@ impl Application {
 
         self.visual_nodes2 =  Rc::new(RefCell::new(vec![]));
 
-
         let gl = &self.gl;
         init_textures(Rc::clone(gl));
         let document = web_sys::window().unwrap().document().unwrap();
@@ -107,6 +104,7 @@ impl Application {
 
 
     pub fn event_loop(&mut self, dt: f32) {
+        self.send_events_from_context();
         self.send_events();
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
@@ -153,16 +151,32 @@ impl Application {
         
     }
 
+    pub fn send_events_from_context(&mut self) {
+        let events =  &self.context.events.clone();
+        let cx = &mut self.context; 
+        let mut vn = self.visual_nodes.borrow_mut();
+        for event in events {
+        for i in 0..vn.len() {
+            web_sys::console::log_1(&"ev2:".into());
+                vn.get_mut(i).unwrap().event_handler(cx, &event);
+            }
+        }
+        while self.visual_nodes2.borrow_mut().len() > 0 {
+           self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
+        }
+        self.visual_nodes2 =  Rc::new(RefCell::new(vec![]));
+    }
+
     pub fn send_events(&mut self) {
         let nodes =  &self.context.nodes.clone();
         let cx = &mut self.context; 
         for node in nodes {
-            let mut visual_node = self.visual_nodes.borrow_mut(); //TODO
-            let visual_node = visual_node.first_mut();
-            let mut visual_node = visual_node.unwrap();
-            send_event(Rc::clone(&self.events), cx, node, &mut visual_node)
+            let mut visual_nodes = self.visual_nodes.borrow_mut(); //TODO
+            let optional_visual_node = visual_nodes.first_mut();
+            let mut visual_node = optional_visual_node.unwrap();
+            send_event(Rc::clone(&self.events), cx, node.position(), &mut visual_node)
         }
-        if self.visual_nodes2.borrow_mut().len() > 0 {
+        while self.visual_nodes2.borrow_mut().len() > 0 {
            self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
         }
         self.visual_nodes2 =  Rc::new(RefCell::new(vec![]));
@@ -207,10 +221,9 @@ pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<
     let mut v_n = v_n.borrow_mut();
     toggle_button.closure = Some(handler);
     v_n.push(Box::new(toggle_button) as Box<dyn VisualNode>);
-
 }
 
-pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node, visual_node: &mut Box<dyn VisualNode>) {
+pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32, f32, f32), visual_node: &mut Box<dyn VisualNode>) {
     let mut handled = false;
     {
         let event = &events.borrow().event;
@@ -219,8 +232,8 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node, v
                 if event.event != MouseEvent::None {
                 let x = event.x;
                 let y = event.y;
-                let xy = node.position();
-                web_sys::console::log_1(&"EVENT:".into());
+
+/*              web_sys::console::log_1(&"EVENT:".into());
                 web_sys::console::log_1(&x.to_string().into());
                 web_sys::console::log_1(&y.to_string().into());
                 web_sys::console::log_1(&"POSITION:".into());
@@ -228,8 +241,9 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, node: &Node, v
                 web_sys::console::log_1(&xy.1.to_string().into());
                 web_sys::console::log_1(&xy.2.to_string().into());
                 web_sys::console::log_1(&xy.3.to_string().into());
+*/
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-                    web_sys::console::log_1(&"sending event".into());
+//                    web_sys::console::log_1(&"sending event".into());
                     handled = visual_node.event_handler(cx, &events.borrow().event);
                 }
             }

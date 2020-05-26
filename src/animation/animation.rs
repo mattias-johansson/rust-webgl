@@ -45,7 +45,6 @@ impl Animation {
     } 
 
     pub fn play(&mut self) {
-        web_sys::console::log_1(&"animation started".into());
         self.state = AnimationState::Started;
     }
     
@@ -64,16 +63,13 @@ impl Animation {
     }
 
     pub fn get_animated_value(&self,  time: f32) -> f32 {
-
-        web_sys::console::log_1(&"animation start".into());
-        web_sys::console::log_1(&self.start_time.to_string().into());
         let time = (time - self.start_time) / self.duration;
         let x = self.easing.map((time) as f32);
         let start = self.start_value + x;
         let x = x * (self.end_value - start);
 
-        web_sys::console::log_1(&"animation value".into());
-        web_sys::console::log_1(&x.into());
+//        web_sys::console::log_1(&"animation value".into());
+//        web_sys::console::log_1(&x.into());
 
         x
     } 
