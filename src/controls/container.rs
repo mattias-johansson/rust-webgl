@@ -10,6 +10,7 @@ use crate::render::texture_unit::*;
 use crate::application::context::*;
 
 pub struct Container {
+    this: Uuid,
     node: Node
 }
 
@@ -21,6 +22,10 @@ impl VisualNode for Container {
 
     fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool{
         return false;
+    }
+
+    fn get_uuid(&self) -> uuid::Uuid { 
+        self.this
     }
 }
 
@@ -41,7 +46,8 @@ impl Container {
         let texture = TextureUnit::None;
         let dirty = true;
         let uuid = Uuid::new_v4();
-        let node = Node { uuid, x, y, width, height, translate_x, translate_y, opacity, texture, dirty };
-        Container { node }
+        let parent = Uuid::new_v4();
+        let node = Node { parent, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, dirty };
+        Container { this: parent, node: node }
     }
 }

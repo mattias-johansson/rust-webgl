@@ -19,7 +19,7 @@ rand = "0.7.3"
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen", "v1"] }
 
 [dependencies.web-sys]
-version = "0.3.4"
+version = "0.3.39"
 features = [
   'CssStyleDeclaration',
   'Document',

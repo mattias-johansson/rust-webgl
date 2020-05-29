@@ -18,6 +18,7 @@ enum ToggleButtonState {
 }
 
 pub struct ToggleButtonPrivate {
+    this: Uuid,
     background_uuid: Uuid,
     toggle_uuid: Uuid,
     value: bool,
@@ -29,20 +30,21 @@ pub struct ToggleButtonPrivate {
 
 impl ToggleButtonPrivate {
     pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ToggleButtonPrivate { 
+        let this = Uuid::new_v4();
         let value = false;
-        let background = ToggleButtonPrivate::create_background(cx, x, y, opacity);
-        let toggle = ToggleButtonPrivate::create_toggle(cx, x, y, opacity);
+        let background = ToggleButtonPrivate::create_background(this, cx, x, y, opacity);
+        let toggle = ToggleButtonPrivate::create_toggle(this,cx, x, y, opacity);
         let state = ToggleButtonState::Off;
 
         let mut on_animation = Animation::new(toggle.uuid, Attribute::X);
-        on_animation.duration = 800.0;
+        on_animation.duration = 600.0;
         on_animation.start_value = 0.0;
-        on_animation.end_value = 74.0;
+        on_animation.end_value = 70.0;
         on_animation.easing = Ease::OutCubic;
 
         let mut off_animation = Animation::new(toggle.uuid, Attribute::X);
-        off_animation.duration = 800.0;
-        off_animation.start_value = 74.0;
+        off_animation.duration = 600.0;
+        off_animation.start_value = 70.0;
         off_animation.end_value = 0.0;
         off_animation.easing = Ease::OutCubic;
 
@@ -54,7 +56,7 @@ impl ToggleButtonPrivate {
 
         let closure = Option::None;
 
-        let toggle_button_private = ToggleButtonPrivate { background_uuid, toggle_uuid, value, on_animation_uuid, off_animation_uuid, state, closure }; 
+        let toggle_button_private = ToggleButtonPrivate { this, background_uuid, toggle_uuid, value, on_animation_uuid, off_animation_uuid, state, closure }; 
 
         cx.nodes.push(background);
         cx.nodes.push(toggle);
@@ -64,22 +66,22 @@ impl ToggleButtonPrivate {
         toggle_button_private
     }
 
-    fn create_background(cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
+    fn create_background(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
         let width = 107.0;
         let height = 36.0;
         let texture = TextureUnit::ToggelBackground;
-        let mut node = Node::new(cx, x, y, width, height);
+        let mut node = Node::new(this, cx, x, y, width, height);
         node.texture = texture;
         node
     }
 
-    fn create_toggle(cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
+    fn create_toggle(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
         let width = 30.0;
         let height = 30.0;
         let x = x + 3.0;
         let y = y + 3.0;
         let texture = TextureUnit::Toggle;
-        let mut node = Node::new(cx, x, y, width, height);
+        let mut node = Node::new(this, cx, x, y, width, height);
         node.texture = texture;
         node
     }
@@ -172,6 +174,10 @@ impl VisualNode for ToggleButtonPrivate {
 
         web_sys::console::log_1(&"false".into());
         return false;
+    }
+
+    fn get_uuid(&self) -> uuid::Uuid { 
+        self.this
     }
 
 }

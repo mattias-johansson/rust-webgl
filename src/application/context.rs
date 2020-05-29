@@ -4,8 +4,8 @@ use crate::controls::visual_node::*;
 use crate::events::mouse::*;
 use uuid::Uuid;
 
-#[derive(Clone)]
 pub struct Context {
+    pub visual_nodes: Vec<Box<dyn VisualNode>>,
     pub nodes: Vec<Node>,
     pub animations: Vec<Animation>,
     pub events: Vec<Event>
@@ -13,10 +13,11 @@ pub struct Context {
 
 impl Context {
     pub fn new() -> Context {
+        let visual_nodes = vec![];
         let nodes = vec![];
         let animations = vec![];
         let events = vec![];
-        Context { nodes, animations, events }
+        Context { visual_nodes, nodes, animations, events }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {

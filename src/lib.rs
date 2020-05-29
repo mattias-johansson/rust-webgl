@@ -1,4 +1,5 @@
 extern crate wasm_bindgen;
+use uuid::Uuid;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -173,10 +174,15 @@ impl Application {
         let nodes =  &self.context.nodes.clone();
         let cx = &mut self.context; 
         for node in nodes {
-            let mut visual_nodes = self.visual_nodes.borrow_mut(); //TODO
-            let optional_visual_node = visual_nodes.first_mut();
-            let mut visual_node = optional_visual_node.unwrap();
-            send_event(Rc::clone(&self.events), cx, node.position(), &mut visual_node)
+            let mut vn = self.visual_nodes.borrow_mut();
+            web_sys::console::log_1(&vn.len().to_string().into());
+            for i in 0..vn.len() {
+                let mut vn = vn.get_mut(i).unwrap();
+
+                if vn.get_uuid() == node.parent {
+                    send_event(Rc::clone(&self.events), cx, node.position(), &mut vn)
+                }
+            }
         }
         while self.visual_nodes2.borrow_mut().len() > 0 {
            self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
@@ -208,14 +214,13 @@ pub fn get_children(gl: &WebGlRenderingContext,
 
 pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
   
-
     let mut toggle_button = ToggleButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
     let v_n = Rc::clone(&visual_nodes);
     let handler = move |mut cx : &mut Context| {
-        let button = ButtonPrivate::new(&mut cx, 5.0, 45.0, 0.5);
-        web_sys::console::log_1(&"Click:".into());
-        let mut visual_nodes = visual_nodes.borrow_mut(); //TODO
-        web_sys::console::log_1(&"Click:".into());
+
+        let mut visual_nodes = visual_nodes.borrow_mut();
+        let y = 45 + visual_nodes.len() * 45;
+        let button = ToggleButtonPrivate::new(&mut cx, 5.0, y as f32, 0.5);
         visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
     };
 
@@ -235,8 +240,8 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 let x = event.x;
                 let y = event.y;
 
-/*              web_sys::console::log_1(&"EVENT:".into());
-                web_sys::console::log_1(&x.to_string().into());
+              web_sys::console::log_1(&visual_node.get_uuid().to_string().into());
+/*                web_sys::console::log_1(&x.to_string().into());
                 web_sys::console::log_1(&y.to_string().into());
                 web_sys::console::log_1(&"POSITION:".into());
                 web_sys::console::log_1(&xy.0.to_string().into());
@@ -247,6 +252,7 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
 //                    web_sys::console::log_1(&"sending event".into());
                     handled = visual_node.event_handler(cx, &events.borrow().event);
+                      web_sys::console::log_1(&"sent event".into());
                 }
             }
         },

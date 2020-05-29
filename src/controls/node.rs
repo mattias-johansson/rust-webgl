@@ -1,16 +1,11 @@
-use crate::events::handler::Handler;
-use crate::events::mouse::*;
+
 use crate::render::texture_unit::*;
-use crate::controls::visual_node::*;
-use std::rc::Rc;
-use std::rc::Weak;
-use web_sys::{WebGlProgram, WebGlRenderingContext};
-use std::cell::RefCell;
 use uuid::Uuid;
 use crate::application::context::*;
 
 #[derive(Clone, Copy)]
 pub struct Node {
+    pub parent: Uuid,
     pub uuid: Uuid,
     pub x: f32,
     pub y: f32,
@@ -25,8 +20,9 @@ pub struct Node {
 
 impl Node {
 
-    pub fn new(cx: &mut Context, x: f32, y: f32, width: f32, height: f32) -> Node {
-        Node {uuid: Uuid::new_v4(), 
+    pub fn new(parent: Uuid, cx: &mut Context, x: f32, y: f32, width: f32, height: f32) -> Node {
+        Node { parent: parent,
+            uuid: Uuid::new_v4(), 
             x: x, 
             y: y, 
             width: width, 
