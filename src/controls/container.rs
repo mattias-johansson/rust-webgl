@@ -9,6 +9,7 @@ use uuid::Uuid;
 use crate::render::texture_unit::*;
 use crate::application::context::*;
 
+#[derive(Clone)]
 pub struct Container {
     this: Uuid,
     node: Node

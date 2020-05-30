@@ -17,6 +17,7 @@ enum ToggleButtonState {
     ToOff,
 }
 
+
 pub struct ToggleButtonPrivate {
     this: Uuid,
     background_uuid: Uuid,

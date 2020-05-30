@@ -9,6 +9,7 @@ use crate::application::context::*;
 use uuid::Uuid;
 use crate::application::*;
 
+#[derive(Clone)]
 pub struct ButtonPrivate {
     this: Uuid,
     node_uuid: Uuid,
