@@ -92,64 +92,16 @@ impl Application {
 
         Ok(())
     }
-/*
-    pub fn get_owner(&self, node: Uuid) -> &Box<dyn VisualNode> {
-        let visual_node = self.visual_nodes.first(); //TODO
-        let visual_node = visual_node.unwrap();
-        visual_node
-    }
-    */
+
     /**
      * The event loop called from JavaScript
      */
-
-
     pub fn event_loop(&mut self, dt: f32) {
         self.send_events_from_context();
         self.send_events();
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
         draw_scene(&self.gl, &self.program, self.context.nodes.as_slice());
- 
-//        draw_tree(&self.gl, &self.program, Rc::clone(&self.events), root_node, dt);
-        //        web_sys::console::log_1(&"render".into());
-        //        let js: JsValue = dt.into();
-        //        web_sys::console::log_1(&js);
-
-        //////////////////////////////////////
-        // First handle all events
-        //
-        // Currently we only support one 
-        // Mouse event per frame
-        /////////////////////////////////////
-     /*   let x = self.events.borrow().event.x;
-        let y = self.events.borrow().event.y;
-        
-        if x != 0 && y != 0 {
-            let root_node = self.page.get_node();
-            //for node in self.page.get_child()() {
-            if let Some(node) = self.page.get_child().as_mut() {
-                let xy = node.position();
-                if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-                    web_sys::console::log_1(&"sending event".into());
-                    node.event(&self.events.borrow().event);
-                }
-            }
-        }
-        // Mark the event as handled by setting a "default" MouseEvent
-        let mouse_event = Mouse::new(0, 0, MouseEvent::None);
-        self.events.borrow_mut().set_event(mouse_event);
-
-        //Draw all nodes
-        //for node in self.page.get_child()() {
-            
-        if let Some(node) = self.page.get_child().as_mut() {
-//          web_sys::console::log_1(&"drawing node".into());
-            node.draw(&self.gl, &self.program, dt);
-        }
-
-        */
-        
     }
 
     pub fn send_events_from_context(&mut self) {
@@ -192,25 +144,6 @@ impl Application {
 
 }
 
-/*
-pub fn get_children(gl: &WebGlRenderingContext, 
-                    program: &WebGlProgram, 
-                    events: Rc<RefCell<Handler>>, 
-                    visual_node: &mut VisualNode, 
-                    dt: f32) {
-    let node : &Node = visual_node.get_node();
-    let vector: &[Rc<dyn VisualNode>] = node.get_children(); 
-    for mut child in vector {
-        let count = Rc::strong_count(&child);
-
-        web_sys::console::log_1(&count.to_string().into());
-        get_children(gl, program, Rc::clone(&events), Rc::get_mut(&mut child).unwrap(), dt);
-    }
-    //Later all send_events should be done before all draw 
-    send_event(events, visual_node);
-    draw(gl, program, visual_node, dt);
-}
-*/
 
 pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
   
@@ -241,14 +174,6 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 let y = event.y;
 
               web_sys::console::log_1(&visual_node.get_uuid().to_string().into());
-/*                web_sys::console::log_1(&x.to_string().into());
-                web_sys::console::log_1(&y.to_string().into());
-                web_sys::console::log_1(&"POSITION:".into());
-                web_sys::console::log_1(&xy.0.to_string().into());
-                web_sys::console::log_1(&xy.1.to_string().into());
-                web_sys::console::log_1(&xy.2.to_string().into());
-                web_sys::console::log_1(&xy.3.to_string().into());
-*/
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
 //                    web_sys::console::log_1(&"sending event".into());
                     handled = visual_node.event_handler(cx, &events.borrow().event);
@@ -265,8 +190,3 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
         events.borrow_mut().set_event(mouse_event);
     }
 }
-/*
-pub fn draw(gl: &WebGlRenderingContext, program: &WebGlProgram, node: &mut VisualNode, dt: f32) {
-    node.draw(&gl, &program, dt);
-}
-*/

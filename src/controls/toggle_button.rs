@@ -38,13 +38,13 @@ impl ToggleButtonPrivate {
         let state = ToggleButtonState::Off;
 
         let mut on_animation = Animation::new(toggle.uuid, Attribute::X);
-        on_animation.duration = 600.0;
+        on_animation.duration = 250.0;
         on_animation.start_value = 0.0;
         on_animation.end_value = 70.0;
         on_animation.easing = Ease::OutCubic;
 
         let mut off_animation = Animation::new(toggle.uuid, Attribute::X);
-        off_animation.duration = 600.0;
+        off_animation.duration = 250.0;
         off_animation.start_value = 70.0;
         off_animation.end_value = 0.0;
         off_animation.easing = Ease::OutCubic;
