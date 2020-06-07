@@ -74,13 +74,6 @@ impl Application {
     pub fn start(&mut self) -> Result<(), JsValue> {
         web_sys::console::log_1(&"start".into());
         create(&mut self.context, Rc::clone(&self.visual_nodes2));
-
-        if self.visual_nodes2.borrow_mut().len() > 0 {
-           self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
-        }
-
-        self.visual_nodes2 =  Rc::new(RefCell::new(vec![]));
-
         let gl = &self.gl;
         init_textures(Rc::clone(gl));
         let document = web_sys::window().unwrap().document().unwrap();
@@ -102,6 +95,10 @@ impl Application {
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
         draw_scene(&self.gl, &self.program, self.context.nodes.as_slice());
+        while self.visual_nodes2.borrow_mut().len() > 0 {
+            self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
+         }
+ 
     }
 
     pub fn send_events_from_context(&mut self) {
@@ -116,10 +113,6 @@ impl Application {
 
         }
         self.context.events = vec![];
-        while self.visual_nodes2.borrow_mut().len() > 0 {
-           self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
-        }
-        self.visual_nodes2 =  Rc::new(RefCell::new(vec![]));
     }
 
     pub fn send_events(&mut self) {
@@ -127,7 +120,7 @@ impl Application {
         let cx = &mut self.context; 
         for node in nodes {
             let mut vn = self.visual_nodes.borrow_mut();
-            web_sys::console::log_1(&vn.len().to_string().into());
+//            web_sys::console::log_1(&vn.len().to_string().into());
             for i in 0..vn.len() {
                 let mut vn = vn.get_mut(i).unwrap();
 
@@ -136,10 +129,6 @@ impl Application {
                 }
             }
         }
-        while self.visual_nodes2.borrow_mut().len() > 0 {
-           self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
-        }
-        self.visual_nodes2 =  Rc::new(RefCell::new(vec![]));
     }
 
 }
@@ -152,7 +141,7 @@ pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<
     let handler = move |mut cx : &mut Context| {
 
         let mut visual_nodes = visual_nodes.borrow_mut();
-        let y = 45 + visual_nodes.len() * 45;
+        let y = 45 + visual_nodes.len() * 45; //TODO Cannot get other nodes here
         let button = ToggleButtonPrivate::new(&mut cx, 5.0, y as f32, 0.5);
         visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
     };

@@ -143,6 +143,7 @@ impl ToggleButtonPrivate {
         self.state = ToggleButtonState::ToOn;
         let on_animation = context.get_animation(self.on_animation_uuid);
         on_animation.unwrap().play();
+        web_sys::console::log_1(&"playing".into());
     }
     
 }
@@ -159,9 +160,11 @@ impl VisualNode for ToggleButtonPrivate {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.on_button_pressed(cx);
-                    let callback : &mut Box<dyn FnMut(&mut Context)> = self.closure.as_mut().unwrap();
-                    web_sys::console::log_1(&"Calling callback".into());
-                    callback(&mut cx);
+                    if self.closure.is_some() {
+                        let callback : &mut Box<dyn FnMut(&mut Context)> = self.closure.as_mut().unwrap();
+                        web_sys::console::log_1(&"Calling callback".into());
+                        callback(&mut cx);
+                    }
                 }
                 return true;
             },
