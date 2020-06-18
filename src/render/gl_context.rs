@@ -35,9 +35,11 @@ pub fn create_webgl_program(gl: &WebGlRenderingContext) -> WebGlProgram {
         &gl,
         WebGlRenderingContext::VERTEX_SHADER,
         r#"
+        precision mediump float;
         attribute vec4 vertexData;
         varying vec2 texCoords;
         
+        uniform float transparency;
         uniform mat4 model;
         uniform mat4 view;
         uniform mat4 perspective;
@@ -56,11 +58,13 @@ pub fn create_webgl_program(gl: &WebGlRenderingContext) -> WebGlProgram {
         r#"
         precision mediump float;
         varying vec2 texCoords;
+        uniform float transparency;
         uniform sampler2D texture;
     
         void main() {
             gl_FragColor = texture2D( texture, texCoords ); 
             gl_FragColor.rgb *= gl_FragColor.a;
+            gl_FragColor.w = transparency * gl_FragColor.a;
         }
         "#,
     )

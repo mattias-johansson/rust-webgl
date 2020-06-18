@@ -29,7 +29,7 @@ impl Node {
             height: height, 
             translate_x: 0.0, 
             translate_y: 0.0, 
-            opacity: 0.0, 
+            opacity: 1.0, 
             texture: TextureUnit::None,
             dirty: true
          }

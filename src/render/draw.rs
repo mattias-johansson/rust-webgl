@@ -83,7 +83,7 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
         match animation.target_attribute {
             Attribute::X => { target_node.unwrap().translate_x = value; },
             Attribute::Y => { target_node.unwrap().translate_y = value; },
-            Attribute::OPACITY => ()
+            Attribute::OPACITY => { target_node.unwrap().opacity = value }, 
         }
     }
 }
@@ -93,11 +93,11 @@ pub fn draw_scene(context : &WebGlRenderingContext, program: &WebGlProgram, node
         //TODO I think GL can handle this
         let x = node.x + node.translate_x;
         let y = node.y + node.translate_y;
-        render(context, program, node.width, node.height, x, y, node.texture);
+        render(context, program, node.width, node.height, x, y, node.opacity, node.texture);
     }
 }
 
-fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, texture: TextureUnit) {
+fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, opacity: f32, texture: TextureUnit) {
    
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
@@ -115,7 +115,12 @@ fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: 
 
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
-    
+    context.disable(WebGlRenderingContext::DEPTH_TEST);
+    context.blend_func(WebGlRenderingContext::SRC_ALPHA, WebGlRenderingContext::ONE_MINUS_SRC_ALPHA);
+
+
+    let transparency_data_attrib = context.get_uniform_location(&program, "transparency");
+    context.uniform1f(transparency_data_attrib.as_ref(), opacity);
 
     let model_uni = context.get_uniform_location(&program, "model");
     let model = Isometry3::new(Vector3::new(x+(rect_width), y+(rect_height), 1.0), nalgebra::zero()); //move to 1,1,1

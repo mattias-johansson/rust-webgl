@@ -1,5 +1,4 @@
 use std::any::Any;
-use std::rc::Rc;
 use crate::render::texture_unit::*;
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
@@ -7,28 +6,25 @@ use crate::events::mouse::*;
 use crate::animation::animation::*;
 use crate::application::context::*;
 use uuid::Uuid;
-use crate::application::*;
 
-#[derive(Clone)]
 pub struct ButtonPrivate {
     this: Uuid,
     node_uuid: Uuid,
     pressed: bool,
-    animation: Option<Animation>
+    animation: Option<Animation>,
+    pub closure: Option<Box<dyn FnMut(&mut Context) >>
 }
 
 impl ButtonPrivate {
     pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
         let this = Uuid::new_v4();
-        web_sys::console::log_1(&"ButtonPrivate".into());
         let pressed = false;
         let animation = Option::None; 
-        web_sys::console::log_1(&"ButtonPrivate".into());
         let node = ButtonPrivate::create(this, cx, x, y, opacity);
         let node_uuid = node.uuid;
-        web_sys::console::log_1(&"ButtonPrivate".into());
         cx.nodes.push(node);
-        ButtonPrivate { this, node_uuid, pressed, animation } 
+        let closure = None;
+        ButtonPrivate { this, node_uuid, pressed, animation, closure } 
     }
 
     pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
@@ -57,19 +53,31 @@ impl VisualNode for ButtonPrivate {
         self
     }
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool {
+    fn event_handler(&mut self, mut cx: &mut Context, message: &Event) -> bool {
+        web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.pressed = false;
-                     return true;
-                } else if event.event == MouseEvent::Down {
+//                    self.on_button_pressed(cx);
+                    if self.closure.is_some() {
+                        let callback : &mut Box<dyn FnMut(&mut Context)> = self.closure.as_mut().unwrap();
+                        web_sys::console::log_1(&"Calling callback".into());
+                        callback(&mut cx);
+                    }
+                }else if event.event == MouseEvent::Down {
                     self.pressed = true; 
-                    return true;
                 }      
+                return true;
             },
-            _ => ()
+            Event::Message(message) => {
+                match message {
+//                    Message::AnimationEnded(Uuid) => self.on_animation_ended(cx),
+                    _ => ()
+                }
+            }
         }
+        web_sys::console::log_1(&"false".into());
         return false;
     }
 

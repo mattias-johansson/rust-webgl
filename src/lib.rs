@@ -1,15 +1,12 @@
 extern crate wasm_bindgen;
-use uuid::Uuid;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use crate::application::context::*;
-use crate::controls::button::*;
-use crate::controls::container::*;
 use crate::controls::page::*;
 use crate::controls::visual_node::VisualNode;
-use crate::controls::node::Node;
+
 use crate::events::mouse::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
@@ -118,17 +115,19 @@ impl Application {
     pub fn send_events(&mut self) {
         let nodes =  &self.context.nodes.clone();
         let cx = &mut self.context; 
-        for node in nodes {
-            let mut vn = self.visual_nodes.borrow_mut();
-//            web_sys::console::log_1(&vn.len().to_string().into());
-            for i in 0..vn.len() {
-                let mut vn = vn.get_mut(i).unwrap();
+            for node in nodes {
+                let mut vn = self.visual_nodes.borrow_mut();
+    //            web_sys::console::log_1(&vn.len().to_string().into());
+                for i in (0..vn.len()).rev() {
+                    web_sys::console::log_1(&i.to_string().into());
+                    let mut vn = vn.get_mut(i).unwrap();
 
-                if vn.get_uuid() == node.parent {
-                    send_event(Rc::clone(&self.events), cx, node.position(), &mut vn)
+                    if vn.get_uuid() == node.parent {
+                        send_event(Rc::clone(&self.events), cx, node.position(), &mut vn)
+                    }
                 }
             }
-        }
+            
     }
 
 }
