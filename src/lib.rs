@@ -11,6 +11,7 @@ use crate::events::mouse::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
 use crate::controls::toggle_button::*;
+use crate::controls::button::*;
 use crate::events::handler::*;
 use crate::render::draw::*;
 use crate::render::gl_context::*;
@@ -104,7 +105,7 @@ impl Application {
         let mut vn = self.visual_nodes.borrow_mut();
         for event in events {
             for i in 0..vn.len() {
-                web_sys::console::log_1(&"ev2:".into());
+//                web_sys::console::log_1(&"ev2:".into());
                     vn.get_mut(i).unwrap().event_handler(cx, &event);
             }
 
@@ -119,7 +120,7 @@ impl Application {
                 let mut vn = self.visual_nodes.borrow_mut();
     //            web_sys::console::log_1(&vn.len().to_string().into());
                 for i in (0..vn.len()).rev() {
-                    web_sys::console::log_1(&i.to_string().into());
+//                    web_sys::console::log_1(&i.to_string().into());
                     let mut vn = vn.get_mut(i).unwrap();
 
                     if vn.get_uuid() == node.parent {
@@ -135,7 +136,7 @@ impl Application {
 
 pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
   
-    let mut toggle_button = ToggleButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
+    let mut toggle_button = ButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
     let v_n = Rc::clone(&visual_nodes);
     let handler = move |mut cx : &mut Context| {
 
@@ -161,7 +162,7 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 let x = event.x;
                 let y = event.y;
 
-              web_sys::console::log_1(&visual_node.get_uuid().to_string().into());
+//              web_sys::console::log_1(&visual_node.get_uuid().to_string().into());
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
 //                    web_sys::console::log_1(&"sending event".into());
                     handled = visual_node.event_handler(cx, &events.borrow().event);

@@ -5,13 +5,24 @@ use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::animation::animation::*;
 use crate::application::context::*;
+use crate::animation::ease::*;
 use uuid::Uuid;
+
+
+#[derive(PartialEq, Clone, Copy)]
+enum ButtonState {
+    NotPressed,
+    Pressed,
+    ToPressed,
+    ToNotPressed,
+}
 
 pub struct ButtonPrivate {
     this: Uuid,
-    node_uuid: Uuid,
     pressed: bool,
-    animation: Option<Animation>,
+    state: ButtonState,
+    on_animation_uuid: Uuid,
+    off_animation_uuid: Uuid,
     pub closure: Option<Box<dyn FnMut(&mut Context) >>
 }
 
@@ -19,12 +30,34 @@ impl ButtonPrivate {
     pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
         let this = Uuid::new_v4();
         let pressed = false;
-        let animation = Option::None; 
         let node = ButtonPrivate::create(this, cx, x, y, opacity);
         let node_uuid = node.uuid;
         cx.nodes.push(node);
         let closure = None;
-        ButtonPrivate { this, node_uuid, pressed, animation, closure } 
+        let state = ButtonState::NotPressed; 
+        
+        let node_pressed = ButtonPrivate::create_pressed(this, cx, x, y, opacity);
+        cx.nodes.push(node_pressed);
+
+        let mut on_animation = Animation::new(node_uuid, Attribute::OPACITY);
+        on_animation.duration = 250.0;
+        on_animation.start_value = 0.0;
+        on_animation.end_value = 1.0;
+        on_animation.easing = Ease::Lin;
+
+        let mut off_animation = Animation::new(node_pressed.uuid, Attribute::OPACITY);
+        off_animation.duration = 250.0;
+        off_animation.start_value = 1.0;
+        off_animation.end_value = 0.0;
+        off_animation.easing = Ease::Lin;
+
+        let on_animation_uuid = on_animation.uuid;
+        let off_animation_uuid = off_animation.uuid;
+
+        cx.animations.push(on_animation);
+        cx.animations.push(off_animation);
+
+        ButtonPrivate { this, pressed, state, on_animation_uuid, off_animation_uuid, closure } 
     }
 
     pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
@@ -40,9 +73,89 @@ impl ButtonPrivate {
         let height = 34.0;
         let texture = TextureUnit::Button;
         let mut node = Node::new(this, cx, x, y, width, height);
+        node.opacity = 1.0;
         node.texture = texture;
         node
     }
+
+    pub fn create_pressed(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
+        let width =  145.0;
+        let height = 34.0;
+        let texture = TextureUnit::ButtonPressed;
+        let mut node = Node::new(this, cx, x, y, width, height);
+        node.opacity = 0.0;
+        node.texture = texture;
+        node
+    }
+
+    pub fn on_button_pressed(&mut self, cx: &mut Context) {
+        web_sys::console::log_1(&"set on".into());
+        match self.state {
+            ButtonState::NotPressed => self.play_on_animation(cx),
+            ButtonState::Pressed => self.play_off_animation(cx),
+            ButtonState::ToNotPressed => (),
+            ButtonState::ToPressed => (),
+        }
+    }
+
+    pub fn on_animation_ended(&mut self, cx: &mut Context) {
+        web_sys::console::log_1(&"on_animation_ended".into());
+        match self.state {
+            ButtonState::NotPressed => (),
+            ButtonState::Pressed => (),
+            ButtonState::ToNotPressed  => self.set_off(cx),
+            ButtonState::ToPressed  => self.set_on(cx),
+             _ => ()
+        }
+    }
+
+    pub fn set_on(&mut self, cx: &mut Context) {
+        web_sys::console::log_1(&"set Pressed".into());
+        self.state = ButtonState::Pressed;
+        let on_animation = cx.get_animation(self.on_animation_uuid);
+        on_animation.unwrap().start_value = 1.0;
+        let on_animation = cx.get_animation(self.on_animation_uuid);
+        on_animation.unwrap().end_value = 0.0;
+
+        let off_animation = cx.get_animation(self.off_animation_uuid);
+        off_animation.unwrap().start_value = 0.0;
+        let off_animation = cx.get_animation(self.off_animation_uuid);
+        off_animation.unwrap().end_value = 1.0;
+
+    }
+
+    fn set_off(&mut self, cx: &mut Context) {
+        web_sys::console::log_1(&"set NotPressed".into());
+        self.state = ButtonState::NotPressed;
+        let on_animation = cx.get_animation(self.on_animation_uuid);
+        on_animation.unwrap().start_value = 0.0;
+        let on_animation = cx.get_animation(self.on_animation_uuid);
+        on_animation.unwrap().end_value = 1.0;
+
+        let off_animation = cx.get_animation(self.off_animation_uuid);
+        off_animation.unwrap().start_value = 1.0;
+        let off_animation = cx.get_animation(self.off_animation_uuid);
+        off_animation.unwrap().end_value = 0.0;
+    }
+
+    fn play_off_animation(&mut self, context: &mut Context) {
+        web_sys::console::log_1(&"play ToNotPressed".into());
+        self.state = ButtonState::ToNotPressed;
+        let on_animation = context.get_animation(self.off_animation_uuid);
+        on_animation.unwrap().play();
+        let on_animation = context.get_animation(self.on_animation_uuid);
+        on_animation.unwrap().play();
+    }
+
+    fn play_on_animation(&mut self, context: &mut Context) {
+        web_sys::console::log_1(&"play ToPressed".into());
+        self.state = ButtonState::ToPressed;
+        let on_animation = context.get_animation(self.on_animation_uuid);
+        on_animation.unwrap().play();
+        let on_animation = context.get_animation(self.off_animation_uuid);
+        on_animation.unwrap().play();
+    }
+    
 
 }
 
@@ -59,7 +172,7 @@ impl VisualNode for ButtonPrivate {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.pressed = false;
-//                    self.on_button_pressed(cx);
+                    self.on_button_pressed(cx);
                     if self.closure.is_some() {
                         let callback : &mut Box<dyn FnMut(&mut Context)> = self.closure.as_mut().unwrap();
                         web_sys::console::log_1(&"Calling callback".into());
@@ -72,7 +185,8 @@ impl VisualNode for ButtonPrivate {
             },
             Event::Message(message) => {
                 match message {
-//                    Message::AnimationEnded(Uuid) => self.on_animation_ended(cx),
+                    Message::AnimationEnded(Uuid) => self.on_animation_ended(cx),
+                    //TODO Two animations are ending. Handle that
                     _ => ()
                 }
             }
