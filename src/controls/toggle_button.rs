@@ -170,7 +170,11 @@ impl VisualNode for ToggleButtonPrivate {
             },
             Event::Message(message) => {
                 match message {
-                    Message::AnimationEnded(Uuid) => self.on_animation_ended(cx),
+                    Message::AnimationEnded(uuid) => {
+                        if *uuid == self.on_animation_uuid || *uuid == self.off_animation_uuid {
+                            self.on_animation_ended(cx)
+                        } 
+                    },
                     _ => ()
                 }
             }

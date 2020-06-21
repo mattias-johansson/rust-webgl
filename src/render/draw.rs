@@ -71,6 +71,8 @@ pub fn update_target_attributes(dt: f32, cx: &mut Context) {
         let animation : Animation = *cx.animations.get(i).unwrap();
       if animation.state == AnimationState::Playing {
             update_target_attribute(dt, cx, &animation)
+        } else if animation.state == AnimationState::Ending {
+            update_target_attribute(dt, cx, &animation)
         }
     }
 }

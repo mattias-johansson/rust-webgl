@@ -40,14 +40,14 @@ impl ButtonPrivate {
         cx.nodes.push(node_pressed);
 
         let mut on_animation = Animation::new(node_uuid, Attribute::OPACITY);
-        on_animation.duration = 250.0;
+        on_animation.duration = 25.0;
         on_animation.start_value = 0.0;
         on_animation.end_value = 1.0;
         on_animation.easing = Ease::Lin;
 
         let mut off_animation = Animation::new(node_pressed.uuid, Attribute::OPACITY);
-        off_animation.duration = 250.0;
-        off_animation.start_value = 1.0;
+        off_animation.duration = 25.0;
+        off_animation.start_value = 0.0;
         off_animation.end_value = 0.0;
         off_animation.easing = Ease::Lin;
 
@@ -83,7 +83,7 @@ impl ButtonPrivate {
         let height = 34.0;
         let texture = TextureUnit::ButtonPressed;
         let mut node = Node::new(this, cx, x, y, width, height);
-        node.opacity = 0.0;
+        node.opacity = 1.0;
         node.texture = texture;
         node
     }
@@ -141,8 +141,8 @@ impl ButtonPrivate {
     fn play_off_animation(&mut self, context: &mut Context) {
         web_sys::console::log_1(&"play ToNotPressed".into());
         self.state = ButtonState::ToNotPressed;
-        let on_animation = context.get_animation(self.off_animation_uuid);
-        on_animation.unwrap().play();
+        let off_animation = context.get_animation(self.off_animation_uuid);
+        off_animation.unwrap().play();
         let on_animation = context.get_animation(self.on_animation_uuid);
         on_animation.unwrap().play();
     }
@@ -152,8 +152,8 @@ impl ButtonPrivate {
         self.state = ButtonState::ToPressed;
         let on_animation = context.get_animation(self.on_animation_uuid);
         on_animation.unwrap().play();
-        let on_animation = context.get_animation(self.off_animation_uuid);
-        on_animation.unwrap().play();
+        let off_animation = context.get_animation(self.off_animation_uuid);
+        off_animation.unwrap().play();
     }
     
 
@@ -180,6 +180,7 @@ impl VisualNode for ButtonPrivate {
                     }
                 }else if event.event == MouseEvent::Down {
                     self.pressed = true; 
+                    self.on_button_pressed(cx);
                 }      
                 return true;
             },

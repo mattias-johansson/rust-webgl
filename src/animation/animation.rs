@@ -73,7 +73,6 @@ impl Animation {
         } else {
             let start = self.start_value;
             let end = self.end_value;
-            web_sys::console::log_1(&start.into());
             x = start + (ease * (end - start));
         }
 
