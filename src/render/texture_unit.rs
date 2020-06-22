@@ -1,6 +1,6 @@
 use web_sys::WebGlRenderingContext as GL;
 
-#[derive(Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub enum TextureUnit {
     None = -1,
     Button = 0,

@@ -10,6 +10,7 @@ use crate::controls::visual_node::VisualNode;
 use crate::events::mouse::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
+use crate::controls::container::*;
 use crate::controls::toggle_button::*;
 use crate::controls::button::*;
 use crate::events::handler::*;
@@ -30,6 +31,7 @@ pub struct Application {
     page: Page,
     gl: Rc<WebGlRenderingContext>,
     program: WebGlProgram,
+    program_color: WebGlProgram,
     events: Rc<RefCell<Handler>>,
     context: Context,
     visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>,
@@ -45,6 +47,8 @@ impl Application {
         web_sys::console::log_1(&"Application".into());
         let webgl_context = get_webgl_context();
         let program = create_webgl_program(&webgl_context);
+        let program_color = create_webgl_program_color(&webgl_context);
+        
         setup_redering_context(&webgl_context, &program);
         let gl = Rc::new(webgl_context);
 
@@ -60,6 +64,7 @@ impl Application {
             page,
             gl,
             program,
+            program_color,
             events,
             context,
             visual_nodes,
@@ -92,7 +97,7 @@ impl Application {
         self.send_events();
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
-        draw_scene(&self.gl, &self.program, self.context.nodes.as_slice());
+        draw_scene(&self.gl, &self.program, &self.program_color, self.context.nodes.as_slice());
         while self.visual_nodes2.borrow_mut().len() > 0 {
             self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
          }
@@ -135,7 +140,7 @@ impl Application {
 
 
 pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
-  
+    let container = Container::new(&mut context);
     let mut toggle_button = ButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
     let v_n = Rc::clone(&visual_nodes);
     let handler = move |mut cx : &mut Context| {
@@ -149,6 +154,7 @@ pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<
     let handler : Box<dyn FnMut(&mut Context)> = Box::new(handler) as Box<dyn FnMut(&mut Context)>;
     let mut v_n = v_n.borrow_mut();
     toggle_button.closure = Some(handler);
+    v_n.push(Box::new(container) as Box<dyn VisualNode>);
     v_n.push(Box::new(toggle_button) as Box<dyn VisualNode>);
 }
 

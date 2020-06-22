@@ -75,3 +75,47 @@ pub fn create_webgl_program(gl: &WebGlRenderingContext) -> WebGlProgram {
     program
 }
 
+pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
+    let vert_shader = compile_shader(
+        &gl,
+        WebGlRenderingContext::VERTEX_SHADER,
+        r#"
+        precision mediump float;
+        attribute vec4 vertexData;
+        varying vec2 texCoords;
+        
+        uniform float transparency;
+        uniform mat4 model;
+        uniform mat4 view;
+        uniform mat4 perspective;
+    
+        void main() {
+            gl_Position = perspective * view * model * vec4(vertexData.xy, 1.0, 1.0);
+            texCoords = vertexData.zw;
+        }
+    "#,
+    )
+    .unwrap();
+    
+    let frag_shader = compile_shader(
+        &gl,
+        WebGlRenderingContext::FRAGMENT_SHADER,
+        r#"
+        precision mediump float;
+        uniform float transparency;
+        uniform vec3 color;
+    
+        void main() {
+            gl_FragColor = vec4(color, 1.0);
+            gl_FragColor.rgb *= gl_FragColor.a;
+            gl_FragColor.w = transparency * gl_FragColor.a;
+        }
+        "#,
+    )
+    .unwrap();
+    
+    let program = link_program(&gl, &vert_shader, &frag_shader).unwrap();
+
+    program
+}
+

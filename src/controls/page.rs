@@ -43,10 +43,11 @@ impl Page {
         let width = 107.0;
         let height = 36.0;
         let texture = TextureUnit::None;
+        let color = (0.0,0.0,0.0);
         let dirty = true;
         let uuid = Uuid::new_v4();
         let parent = Uuid::new_v4();
-        let node = Node { parent, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, dirty };
+        let node = Node { parent, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
         Page { this: parent, node: node }
     }
 }

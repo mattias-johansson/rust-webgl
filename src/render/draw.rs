@@ -90,17 +90,26 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
     }
 }
 
-pub fn draw_scene(context : &WebGlRenderingContext, program: &WebGlProgram, nodes: &[Node]) {
+pub fn draw_scene(context : &WebGlRenderingContext, program: &WebGlProgram, program_color: &WebGlProgram, nodes: &[Node]) {
+
+    //TODO, select program based on node type
     for node in nodes {
         //TODO I think GL can handle this
         let x = node.x + node.translate_x;
         let y = node.y + node.translate_y;
-        render(context, program, node.width, node.height, x, y, node.opacity, node.texture);
+        if node.texture == TextureUnit::None {
+            render_bg(context, program_color, node.width, node.height, x, y, node.opacity, node.color);
+        } else {
+            render(context, program, node.width, node.height, x, y, node.opacity, node.texture);
+
+        }
     }
 }
 
 fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, opacity: f32, texture: TextureUnit) {
    
+    context.use_program(Some(&program));
+
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
 
@@ -151,6 +160,70 @@ fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: 
 
     let mesh_texture_uni = context.get_uniform_location(&program, "texture");
     context.uniform1i(mesh_texture_uni.as_ref(), texture.texture_unit() as i32);
+
+    context.draw_arrays(
+        WebGlRenderingContext::TRIANGLES,
+        0,
+        6,
+    );
+
+}
+
+fn render_bg(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, opacity: f32, color: (f32,f32,f32)) {
+   
+    context.use_program(Some(&program));
+    
+    let canvas_width = 1280.0;
+    let canvas_height = 703.0;
+
+    let rect_height = rect_height / 2.0;
+    let rect_width = rect_width / 2.0;
+    // All of the positions of our quad in local space
+    let vertices: [f32; 24] = [ -rect_width, rect_height, 0.0, 1.0,
+                                rect_width,  -rect_height, 1.0, 0.0,
+                                -rect_width, -rect_height, 0.0, 0.0,
+                                -rect_width, rect_height, 0.0, 1.0,
+                                rect_width, rect_height, 1.0, 1.0,
+                                rect_width,  -rect_height, 1.0, 0.0,];
+
+
+    let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
+    context.enable_vertex_attrib_array(vertex_data_attrib as u32);
+    context.disable(WebGlRenderingContext::DEPTH_TEST);
+    context.blend_func(WebGlRenderingContext::SRC_ALPHA, WebGlRenderingContext::ONE_MINUS_SRC_ALPHA);
+
+
+    let transparency_data_attrib = context.get_uniform_location(&program, "transparency");
+    context.uniform1f(transparency_data_attrib.as_ref(), opacity);
+
+    let model_uni = context.get_uniform_location(&program, "model");
+    let model = Isometry3::new(Vector3::new(x+(rect_width), y+(rect_height), 1.0), nalgebra::zero()); //move to 1,1,1
+    let mut model_array = [0.; 16];
+    model_array.copy_from_slice(model.to_homogeneous().as_slice());
+    context.uniform_matrix4fv_with_f32_array(model_uni.as_ref(), false, &mut model_array);
+
+
+    let perspective_uni = context.get_uniform_location(&program, "perspective");
+
+    // builds the view "box" Note that the z-axis is turned 180 degrees compared to the vertex shader. Don't know why just yet. 
+    let ortho_matrix = glm::ortho(0.0, canvas_width, canvas_height, 0.0, -2.0, 2.0); 
+
+    context.uniform_matrix4fv_with_f32_array(perspective_uni.as_ref(), false, &mut ortho_matrix.as_slice());
+
+    let view_uni = context.get_uniform_location(&program, "view");
+    let view = Isometry3::new(Vector3::new(1.0, 1.0, 1.0), nalgebra::zero());
+    let mut view_array = [0.; 16];
+    view_array.copy_from_slice(view.to_homogeneous().as_slice());
+    context.uniform_matrix4fv_with_f32_array(view_uni.as_ref(), false, &mut identity().as_slice());
+
+    buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
+    context.enable(WebGlRenderingContext::BLEND);
+
+    context.blend_func(WebGlRenderingContext::SRC_ALPHA, WebGlRenderingContext::ONE_MINUS_SRC_ALPHA);
+
+
+    let color_data_attrib = context.get_uniform_location(&program, "color");
+    context.uniform3f(color_data_attrib.as_ref(), color.0, color.1, color.2);
 
     context.draw_arrays(
         WebGlRenderingContext::TRIANGLES,

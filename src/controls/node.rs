@@ -15,6 +15,7 @@ pub struct Node {
     pub translate_y: f32,
     pub opacity: f32,
     pub texture: TextureUnit,
+    pub color: (f32,f32,f32),
     pub dirty: bool,
 }
 
@@ -31,6 +32,7 @@ impl Node {
             translate_y: 0.0, 
             opacity: 1.0, 
             texture: TextureUnit::None,
+            color: (0.0, 0.0, 0.0),
             dirty: true
          }
     }
