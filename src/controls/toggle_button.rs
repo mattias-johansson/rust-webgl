@@ -83,6 +83,7 @@ impl ToggleButtonPrivate {
         let y = y + 3.0;
         let texture = TextureUnit::Toggle;
         let mut node = Node::new(this, cx, x, y, width, height);
+        node.opacity = opacity;
         node.texture = texture;
         node
     }
@@ -177,7 +178,8 @@ impl VisualNode for ToggleButtonPrivate {
                     },
                     _ => ()
                 }
-            }
+            },
+            _ => ()
         }
 
         web_sys::console::log_1(&"false".into());

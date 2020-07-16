@@ -1,8 +1,9 @@
 
 use uuid::Uuid;
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Event {
+    None,
     Mouse(Mouse),
     Message(Message),
 }
@@ -14,7 +15,7 @@ pub enum MouseEvent {
     Down
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Mouse {
     pub x: u16,
     pub y: u16,
@@ -25,7 +26,7 @@ impl Mouse {
     pub fn new(x: u16, y: u16, event: MouseEvent ) -> Mouse { Mouse {x, y, event} }
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Message {
     AnimationStarted(Uuid),
     AnimationEnded(Uuid),

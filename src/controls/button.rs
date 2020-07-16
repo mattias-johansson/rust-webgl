@@ -190,7 +190,8 @@ impl VisualNode for ButtonPrivate {
                     //TODO Two animations are ending. Handle that
                     _ => ()
                 }
-            }
+            },
+            _ => ()
         }
         web_sys::console::log_1(&"false".into());
         return false;

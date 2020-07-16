@@ -6,7 +6,7 @@ pub struct Handler {
 
 impl Handler {
     pub fn new() -> Handler { 
-        let event = Event::Mouse(Mouse::new(0,0, MouseEvent::None));
+        let event = Event::None;
         Handler { event }
     }
 

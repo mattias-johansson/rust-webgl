@@ -22,7 +22,8 @@ pub struct Node {
 impl Node {
 
     pub fn new(parent: Uuid, cx: &mut Context, x: f32, y: f32, width: f32, height: f32) -> Node {
-        Node { parent: parent,
+        Node { 
+            parent: parent,
             uuid: Uuid::new_v4(), 
             x: x, 
             y: y, 

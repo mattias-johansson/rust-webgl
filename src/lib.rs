@@ -120,15 +120,20 @@ impl Application {
 
     pub fn send_events(&mut self) {
         let nodes =  &self.context.nodes.clone();
+
+        let event = self.events.borrow().event;
+        if event == Event::None {
+            return
+        }
+
         let cx = &mut self.context; 
-            for node in nodes {
+            for node in nodes.iter().rev() {  //todo iteraton over both nodes and visual nodes.
                 let mut vn = self.visual_nodes.borrow_mut();
-    //            web_sys::console::log_1(&vn.len().to_string().into());
-                for i in (0..vn.len()).rev() {
-//                    web_sys::console::log_1(&i.to_string().into());
+                for i in 0..vn.len() {
                     let mut vn = vn.get_mut(i).unwrap();
 
                     if vn.get_uuid() == node.parent {
+                        web_sys::console::log_2(&"sending to node ".into(), &i.to_string().into());
                         send_event(Rc::clone(&self.events), cx, node.position(), &mut vn)
                     }
                 }
@@ -140,22 +145,24 @@ impl Application {
 
 
 pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
-    let container = Container::new(&mut context);
-    let mut toggle_button = ButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
+    let container = ContainerBuilder::builder().height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).build(&mut context);
+    let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
+    let mut button = ButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
     let v_n = Rc::clone(&visual_nodes);
     let handler = move |mut cx : &mut Context| {
 
         let mut visual_nodes = visual_nodes.borrow_mut();
         let y = 45 + visual_nodes.len() * 45; //TODO Cannot get other nodes here
-        let button = ToggleButtonPrivate::new(&mut cx, 5.0, y as f32, 0.5);
+        let button = ToggleButtonPrivate::new(&mut cx, 5.0, y as f32, 1.0);
         visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
     };
 
     let handler : Box<dyn FnMut(&mut Context)> = Box::new(handler) as Box<dyn FnMut(&mut Context)>;
     let mut v_n = v_n.borrow_mut();
-    toggle_button.closure = Some(handler);
+    button.closure = Some(handler);
+    v_n.push(Box::new(container2) as Box<dyn VisualNode>);
     v_n.push(Box::new(container) as Box<dyn VisualNode>);
-    v_n.push(Box::new(toggle_button) as Box<dyn VisualNode>);
+    v_n.push(Box::new(button) as Box<dyn VisualNode>);
 }
 
 pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32, f32, f32), visual_node: &mut Box<dyn VisualNode>) {
@@ -167,7 +174,6 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 if event.event != MouseEvent::None {
                 let x = event.x;
                 let y = event.y;
-
 //              web_sys::console::log_1(&visual_node.get_uuid().to_string().into());
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
 //                    web_sys::console::log_1(&"sending event".into());
@@ -181,7 +187,7 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
     }
     if handled {
         web_sys::console::log_1(&"handled".into());
-        let mouse_event = Event::Mouse(Mouse::new(0, 0, MouseEvent::None));
-        events.borrow_mut().set_event(mouse_event);
+        let event = Event::None;
+        events.borrow_mut().set_event(event);
     }
 }
