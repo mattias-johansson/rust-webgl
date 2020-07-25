@@ -20,31 +20,31 @@ pub fn init_textures(gl: Rc<WebGlRenderingContext>) {
     load_texture_image(
         Rc::clone(&gl),
         "/assets/button.png",
-        TextureUnit::Button,
+        TextureUnit::Button.TEXTURE_N(),
     );
 
     load_texture_image(
         Rc::clone(&gl),
         "/assets/button_pressed.png",
-        TextureUnit::ButtonPressed,
+        TextureUnit::ButtonPressed.TEXTURE_N(),
     );
 
     load_texture_image(
         Rc::clone(&gl),
         "/assets/grey.png",
-        TextureUnit::Toggle,
+        TextureUnit::Toggle.TEXTURE_N(),
     );
     
     load_texture_image(
         Rc::clone(&gl),
         "/assets/blue.png",
-        TextureUnit::ToggleActive,
+        TextureUnit::ToggleActive.TEXTURE_N(),
     );
 
     load_texture_image(
         Rc::clone(&gl),
         "/assets/bg.png",
-        TextureUnit::ToggelBackground,
+        TextureUnit::ToggelBackground.TEXTURE_N(),
     );
 }
 
@@ -90,23 +90,29 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
     }
 }
 
-pub fn draw_scene(context : &WebGlRenderingContext, program: &WebGlProgram, program_color: &WebGlProgram, nodes: &[Node]) {
+pub fn draw_scene(cx: &mut Context, webgl_context : Rc<WebGlRenderingContext>, program: &WebGlProgram, program_color: &WebGlProgram, nodes: &[Node]) {
 
     //TODO, select program based on node type
     for node in nodes {
         //TODO I think GL can handle this
         let x = node.x + node.translate_x;
         let y = node.y + node.translate_y;
-        if node.texture == TextureUnit::None {
-            render_bg(context, program_color, node.width, node.height, x, y, node.opacity, node.color);
+        if node.texture == None {
+            render_bg(&webgl_context, program_color, node.width, node.height, x, y, node.opacity, node.color);
         } else {
-            render(context, program, node.width, node.height, x, y, node.opacity, node.texture);
+            match &node.texture {
+                Some(texture) => {
+                    let texture_slot = cx.textures.load_texture(Rc::clone(&webgl_context), texture.as_str());
+                    render(&webgl_context, program, node.width, node.height, x, y, node.opacity, texture_slot);
+                }
+                None =>  render_bg(&webgl_context, program_color, node.width, node.height, x, y, node.opacity, node.color)
+            };
 
         }
     }
 }
 
-fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, opacity: f32, texture: TextureUnit) {
+fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: f32, rect_height: f32, x: f32, y: f32, opacity: f32, texture: i32) {
    
     context.use_program(Some(&program));
 
@@ -159,7 +165,7 @@ fn render(context : &WebGlRenderingContext, program: &WebGlProgram, rect_width: 
     context.blend_func(WebGlRenderingContext::SRC_ALPHA, WebGlRenderingContext::ONE_MINUS_SRC_ALPHA);
 
     let mesh_texture_uni = context.get_uniform_location(&program, "texture");
-    context.uniform1i(mesh_texture_uni.as_ref(), texture.texture_unit() as i32);
+    context.uniform1i(mesh_texture_uni.as_ref(), texture as i32);
 
     context.draw_arrays(
         WebGlRenderingContext::TRIANGLES,

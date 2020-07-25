@@ -1,3 +1,6 @@
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
 use std::any::Any;
 use crate::render::texture_unit::*;
 use crate::controls::visual_node::*;
@@ -74,7 +77,7 @@ impl ButtonPrivate {
         let texture = TextureUnit::Button;
         let mut node = Node::new(this, cx, x, y, width, height);
         node.opacity = 1.0;
-        node.texture = texture;
+        node.texture = Some(calculate_hash(&"/assets/button.png".to_string()));
         node
     }
 
@@ -84,7 +87,7 @@ impl ButtonPrivate {
         let texture = TextureUnit::ButtonPressed;
         let mut node = Node::new(this, cx, x, y, width, height);
         node.opacity = 1.0;
-        node.texture = texture;
+        node.texture = Some(calculate_hash(&"/assets/button_pressed.png".to_string()));
         node
     }
 
@@ -200,4 +203,10 @@ impl VisualNode for ButtonPrivate {
     fn get_uuid(&self) -> uuid::Uuid { 
         self.this
     }
+}
+
+fn calculate_hash<T: Hash>(t: &T) -> u64 {
+    let mut s = DefaultHasher::new();
+    t.hash(&mut s);
+    s.finish()
 }

@@ -72,7 +72,7 @@ impl ToggleButtonPrivate {
         let height = 36.0;
         let texture = TextureUnit::ToggelBackground;
         let mut node = Node::new(this, cx, x, y, width, height);
-        node.texture = texture;
+        node.texture = Some("/assets/bg.png".to_string());
         node
     }
 
@@ -84,7 +84,7 @@ impl ToggleButtonPrivate {
         let texture = TextureUnit::Toggle;
         let mut node = Node::new(this, cx, x, y, width, height);
         node.opacity = opacity;
-        node.texture = texture;
+        node.texture = Some("/assets/grey.png".to_string());
         node
     }
 
@@ -122,14 +122,14 @@ impl ToggleButtonPrivate {
         web_sys::console::log_1(&"set on".into());
         self.state = ToggleButtonState::On;
         let node = cx.get_node(self.toggle_uuid).unwrap();
-        node.texture = TextureUnit::ToggleActive;
+        node.texture = Some("/assets/blue.png".to_string());
     }
 
     fn set_off(&mut self, cx: &mut Context) {
         web_sys::console::log_1(&"set off".into());
         self.state = ToggleButtonState::Off;
         let node = cx.get_node(self.toggle_uuid).unwrap();
-        node.texture = TextureUnit::Toggle;
+        node.texture = Some("/assets/grey.png".to_string());
     }
 
     fn play_off_animation(&mut self, context: &mut Context) {

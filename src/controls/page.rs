@@ -42,7 +42,7 @@ impl Page {
         let opacity:f32 = 0.0;
         let width = 107.0;
         let height = 36.0;
-        let texture = TextureUnit::None;
+        let texture = None;
         let color = (0.0,0.0,0.0);
         let dirty = true;
         let uuid = Uuid::new_v4();

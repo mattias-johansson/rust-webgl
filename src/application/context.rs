@@ -2,13 +2,15 @@ use crate::animation::animation::Animation;
 use crate::controls::node::*;
 use crate::controls::visual_node::*;
 use crate::events::mouse::*;
+use crate::render::textures::*;
 use uuid::Uuid;
 
 pub struct Context {
     pub visual_nodes: Vec<Box<dyn VisualNode>>,
     pub nodes: Vec<Node>,
     pub animations: Vec<Animation>,
-    pub events: Vec<Event>
+    pub events: Vec<Event>,
+    pub textures: Textures,
 }
 
 impl Context {
@@ -17,7 +19,8 @@ impl Context {
         let nodes = vec![];
         let animations = vec![];
         let events = vec![];
-        Context { visual_nodes, nodes, animations, events }
+        let textures = Textures::new();
+        Context { visual_nodes, nodes, animations, events, textures }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {

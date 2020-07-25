@@ -4,3 +4,4 @@ pub mod node;
 pub mod button;
 pub mod container;
 pub mod page;
+pub mod image_view;

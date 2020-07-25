@@ -13,6 +13,7 @@ use web_sys::{WebGlProgram, WebGlRenderingContext};
 use crate::controls::container::*;
 use crate::controls::toggle_button::*;
 use crate::controls::button::*;
+use crate::controls::image_view::*;
 use crate::events::handler::*;
 use crate::render::draw::*;
 use crate::render::gl_context::*;
@@ -97,7 +98,7 @@ impl Application {
         self.send_events();
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
-        draw_scene(&self.gl, &self.program, &self.program_color, self.context.nodes.as_slice());
+        draw_scene(&mut self.context, self.gl, &self.program, &self.program_color, self.context.nodes.as_slice());
         while self.visual_nodes2.borrow_mut().len() > 0 {
             self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
          }
@@ -147,6 +148,7 @@ impl Application {
 pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
     let container = ContainerBuilder::builder().height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).build(&mut context);
     let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
+    let image_view = ImageViewBuilder::builder().x(50.0).y(50.0).width(400.0).height(400.0).image("IMG_20160408_164451.jpg").build(&mut context);
     let mut button = ButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
     let v_n = Rc::clone(&visual_nodes);
     let handler = move |mut cx : &mut Context| {
@@ -160,6 +162,7 @@ pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<
     let handler : Box<dyn FnMut(&mut Context)> = Box::new(handler) as Box<dyn FnMut(&mut Context)>;
     let mut v_n = v_n.borrow_mut();
     button.closure = Some(handler);
+    v_n.push(Box::new(image_view) as Box<dyn VisualNode>);
     v_n.push(Box::new(container2) as Box<dyn VisualNode>);
     v_n.push(Box::new(container) as Box<dyn VisualNode>);
     v_n.push(Box::new(button) as Box<dyn VisualNode>);
