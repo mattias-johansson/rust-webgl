@@ -1,6 +1,7 @@
 use crate::controls::visual_node::VisualNode;
 use crate::controls::node::*;
 use std::any::Any;
+use std::rc::Rc;
 use crate::events::mouse::*;
 use uuid::Uuid;
 use crate::render::texture_unit::*;
@@ -9,7 +10,7 @@ use crate::application::context::*;
 #[derive(Clone)]
 pub struct Page {
     this: Uuid,
-    node: Node
+    node: Rc<Node>
 }
 
 impl VisualNode for Page {
@@ -48,6 +49,7 @@ impl Page {
         let uuid = Uuid::new_v4();
         let parent = Uuid::new_v4();
         let node = Node { parent, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
+        let node = Rc::new(node);
         Page { this: parent, node: node }
     }
 }

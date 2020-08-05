@@ -8,6 +8,7 @@ use crate::animation::ease::*;
 extern crate erased_serde;
 use uuid::Uuid;
 use crate::application::context::*;
+use std::rc::Rc;
 
 #[derive(PartialEq, Clone, Copy)]
 enum ToggleButtonState {
@@ -72,7 +73,7 @@ impl ToggleButtonPrivate {
         let height = 36.0;
         let texture = TextureUnit::ToggelBackground;
         let mut node = Node::new(this, cx, x, y, width, height);
-        node.texture = Some("/assets/bg.png".to_string());
+        node.texture = Some(Node::create_texture(cx, "/assets/bg.png"));
         node
     }
 
@@ -84,7 +85,7 @@ impl ToggleButtonPrivate {
         let texture = TextureUnit::Toggle;
         let mut node = Node::new(this, cx, x, y, width, height);
         node.opacity = opacity;
-        node.texture = Some("/assets/grey.png".to_string());
+        node.texture = Some(Node::create_texture(cx, "/assets/grey.png"));
         node
     }
 
@@ -121,15 +122,17 @@ impl ToggleButtonPrivate {
     pub fn set_on(&mut self, cx: &mut Context) {
         web_sys::console::log_1(&"set on".into());
         self.state = ToggleButtonState::On;
+        let texture = Some(Node::create_texture(cx, "/assets/blue.png"));
         let node = cx.get_node(self.toggle_uuid).unwrap();
-        node.texture = Some("/assets/blue.png".to_string());
+        node.texture = texture;
     }
 
     fn set_off(&mut self, cx: &mut Context) {
         web_sys::console::log_1(&"set off".into());
         self.state = ToggleButtonState::Off;
+        let texture = Some(Node::create_texture(cx, "/assets/grey.png"));
         let node = cx.get_node(self.toggle_uuid).unwrap();
-        node.texture = Some("/assets/grey.png".to_string());
+        node.texture = texture;
     }
 
     fn play_off_animation(&mut self, context: &mut Context) {

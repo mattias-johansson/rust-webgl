@@ -11,8 +11,7 @@ use crate::application::context::*;
 
 #[derive(Clone)]
 pub struct Container {
-    this: Uuid,
-    pub node: Node
+    this: Uuid
 }
 
 impl VisualNode for Container {
@@ -51,7 +50,7 @@ impl Container {
         let parent = Uuid::new_v4();
         let node = Node { parent, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
         cx.nodes.push(node);
-        Container { this: parent, node: node }
+        Container { this: parent }
     }
 }
 

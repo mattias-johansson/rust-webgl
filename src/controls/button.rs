@@ -1,6 +1,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+use std::rc::Rc;
 use std::any::Any;
 use crate::render::texture_unit::*;
 use crate::controls::visual_node::*;
@@ -77,7 +78,7 @@ impl ButtonPrivate {
         let texture = TextureUnit::Button;
         let mut node = Node::new(this, cx, x, y, width, height);
         node.opacity = 1.0;
-        node.texture = Some(calculate_hash(&"/assets/button.png".to_string()));
+        node.texture = Some(Node::create_texture(cx, "/assets/button.png"));
         node
     }
 
@@ -87,7 +88,7 @@ impl ButtonPrivate {
         let texture = TextureUnit::ButtonPressed;
         let mut node = Node::new(this, cx, x, y, width, height);
         node.opacity = 1.0;
-        node.texture = Some(calculate_hash(&"/assets/button_pressed.png".to_string()));
+        node.texture = Some(Node::create_texture(cx, "/assets/button_pressed.png"));
         node
     }
 

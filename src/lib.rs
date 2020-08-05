@@ -98,7 +98,7 @@ impl Application {
         self.send_events();
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
-        draw_scene(&mut self.context, self.gl, &self.program, &self.program_color, self.context.nodes.as_slice());
+        draw_scene(&mut self.context, Rc::clone(&self.gl), &self.program, &self.program_color);
         while self.visual_nodes2.borrow_mut().len() > 0 {
             self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
          }

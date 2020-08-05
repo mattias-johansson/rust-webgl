@@ -2,6 +2,7 @@
 use crate::render::texture_unit::*;
 use uuid::Uuid;
 use crate::application::context::*;
+use crate::render::textures::*;
 
 #[derive(Clone, Copy)]
 pub struct Node {
@@ -14,7 +15,7 @@ pub struct Node {
     pub translate_x: f32,
     pub translate_y: f32,
     pub opacity: f32,
-    pub texture: Option<u64>,
+    pub texture: Option<Uuid>,
     pub color: (f32,f32,f32),
     pub dirty: bool,
 }
@@ -36,6 +37,13 @@ impl Node {
             color: (0.0, 0.0, 0.0),
             dirty: true
          }
+    }
+
+    pub fn create_texture(cx: &mut Context, image: &str) -> Uuid {
+        let texture = Texture::new(image.to_string());
+        let uuid = texture.id;
+        cx.textures.textures.insert(uuid, texture);
+        uuid
     }
     
     pub fn position(&self) -> (f32, f32, f32, f32) {

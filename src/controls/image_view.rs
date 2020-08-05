@@ -1,6 +1,4 @@
 
-use std::rc::Rc;
-use std::rc::Weak;
 use std::any::Any;
 use uuid::Uuid;
 use crate::application::context::*;
@@ -12,7 +10,6 @@ use crate::render::texture_unit::*;
 #[derive(Clone)]
 pub struct ImageView {
     this: Uuid,
-    pub node: Node,
 }
 
 impl VisualNode for ImageView {
@@ -36,7 +33,7 @@ impl ImageView {
         self
     }
 
-    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), texture: String) ->  ImageView {
+    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), texture: &str) ->  ImageView {
         let x:f32 = x;
         let y:f32 = y;
         let translate_x = translate_x;
@@ -44,14 +41,14 @@ impl ImageView {
         let opacity:f32 = opacity;
         let width = width;
         let height = height;
-        let texture = Some(texture);
+        let texture = Some(Node::create_texture(cx, texture));
         let color = color;
         let dirty = true;
         let uuid = Uuid::new_v4();
         let parent = Uuid::new_v4();
         let node = Node { parent, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
         cx.nodes.push(node);
-        ImageView { this: parent, node: node }
+        ImageView { this: parent }
     }
 }
 
@@ -113,9 +110,9 @@ impl ImageViewBuilder {
             Some(height) => height,
             None => 0.0
         };
-        let texture:String = match &self.texture {
-            Some(texture) => texture,
-            None => "None".to_string() //TODO mandatory!
+        let texture:&str = match &self.texture {
+            Some(texture) => texture.as_str(),
+            None => "None" //TODO mandatory!
         };
         let color:(f32,f32,f32) = match self.color {
             Some(color) => color,
