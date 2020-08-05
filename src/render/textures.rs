@@ -32,7 +32,7 @@ impl Texture {
 impl Textures {
 
     pub fn new() -> Textures {
-        Textures { textures: HashMap::default(), last_used_pos_u: 33988u64 as u32, last_used_pos_i: 4 as i32}
+        Textures { textures: HashMap::default(), last_used_pos_u: 33984u64 as u32, last_used_pos_i: 0 as i32}
     }
 
     pub fn load_texture(&mut self, gl: Rc<WebGlRenderingContext>, texture_id: &Uuid) -> i32 {

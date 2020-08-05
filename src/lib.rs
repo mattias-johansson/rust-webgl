@@ -79,7 +79,6 @@ impl Application {
         web_sys::console::log_1(&"start".into());
         create(&mut self.context, Rc::clone(&self.visual_nodes2));
         let gl = &self.gl;
-        init_textures(Rc::clone(gl));
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
         let canvas: web_sys::HtmlCanvasElement =
@@ -148,7 +147,7 @@ impl Application {
 pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
     let container = ContainerBuilder::builder().height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).build(&mut context);
     let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
-    let image_view = ImageViewBuilder::builder().x(50.0).y(50.0).width(400.0).height(400.0).image("IMG_20160408_164451.jpg").build(&mut context);
+    let image_view = ImageViewBuilder::builder().x(50.0).y(50.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
     let mut button = ButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
     let v_n = Rc::clone(&visual_nodes);
     let handler = move |mut cx : &mut Context| {

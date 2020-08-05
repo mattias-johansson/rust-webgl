@@ -15,36 +15,6 @@ use crate::render::texture_unit::*;
 
 use crate::controls::node::*;
 
-pub fn init_textures(gl: Rc<WebGlRenderingContext>) {
-    load_texture_image(
-        Rc::clone(&gl),
-        "/assets/button.png",
-        TextureUnit::Button.TEXTURE_N(),
-    );
-
-    load_texture_image(
-        Rc::clone(&gl),
-        "/assets/button_pressed.png",
-        TextureUnit::ButtonPressed.TEXTURE_N(),
-    );
-
-    load_texture_image(
-        Rc::clone(&gl),
-        "/assets/grey.png",
-        TextureUnit::Toggle.TEXTURE_N(),
-    );
-    load_texture_image(
-        Rc::clone(&gl),
-        "/assets/blue.png",
-        TextureUnit::ToggleActive.TEXTURE_N(),
-    );
-
-    load_texture_image(
-        Rc::clone(&gl),
-        "/assets/bg.png",
-        TextureUnit::ToggelBackground.TEXTURE_N(),
-    );
-}
 
 pub fn update_animations(dt: f32, cx: &mut Context) {
     for i in 0..cx.animations.len() {
