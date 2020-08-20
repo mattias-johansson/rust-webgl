@@ -154,6 +154,10 @@ impl ToggleButtonPrivate {
 
 impl VisualNode for ToggleButtonPrivate {
 
+    fn get_node_uuid(&self) -> Uuid {
+        self.background_uuid
+    }
+
     fn as_any(&mut self) -> &mut dyn Any {
         self
     }

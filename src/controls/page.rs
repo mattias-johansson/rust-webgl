@@ -10,11 +10,14 @@ use crate::application::context::*;
 #[derive(Clone)]
 pub struct Page {
     this: Uuid,
-    node: Rc<Node>
+    node: Uuid
 }
 
 impl VisualNode for Page {
 
+    fn get_node_uuid(&self) -> Uuid {
+        self.node
+    }
 
     fn as_any(&mut self) -> &mut dyn Any {
         self
@@ -47,9 +50,10 @@ impl Page {
         let color = (0.0,0.0,0.0);
         let dirty = true;
         let uuid = Uuid::new_v4();
-        let parent = Uuid::new_v4();
-        let node = Node { parent, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
-        let node = Rc::new(node);
-        Page { this: parent, node: node }
+        let owner = Uuid::new_v4();
+        let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
+        let node_uuid = node.uuid;
+        cx.nodes.push(node);
+        Page { this: owner, node: node_uuid }
     }
 }

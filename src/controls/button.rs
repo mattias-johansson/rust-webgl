@@ -21,8 +21,10 @@ enum ButtonState {
     ToNotPressed,
 }
 
+//TODO Nedd to rewrite as composite control. Need to have a container node as "node"
 pub struct ButtonPrivate {
     this: Uuid,
+    node: Uuid,
     pressed: bool,
     state: ButtonState,
     on_animation_uuid: Uuid,
@@ -61,7 +63,7 @@ impl ButtonPrivate {
         cx.animations.push(on_animation);
         cx.animations.push(off_animation);
 
-        ButtonPrivate { this, pressed, state, on_animation_uuid, off_animation_uuid, closure } 
+        ButtonPrivate { this, node: node_uuid, pressed, state, on_animation_uuid, off_animation_uuid, closure } 
     }
 
     pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
@@ -165,6 +167,10 @@ impl ButtonPrivate {
 
 
 impl VisualNode for ButtonPrivate {
+
+    fn get_node_uuid(&self) -> Uuid {
+        self.node
+    }
 
     fn as_any(&mut self) -> &mut dyn Any {
         self

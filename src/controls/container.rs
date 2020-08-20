@@ -11,10 +11,15 @@ use crate::application::context::*;
 
 #[derive(Clone)]
 pub struct Container {
-    this: Uuid
+    this: Uuid,
+    node: Uuid
 }
 
 impl VisualNode for Container {
+
+    fn get_node_uuid(&self) -> Uuid {
+        self.node
+    }
 
     fn as_any(&mut self) -> &mut dyn Any {
         self
@@ -35,6 +40,10 @@ impl Container {
         self
     }
 
+    pub fn add_child(&self, cx: &mut Context, child:Uuid) {
+        cx.add_child_to(self.node, child);
+    }
+
     pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), texture:TextureUnit) ->  Container {
         let x:f32 = x;
         let y:f32 = y;
@@ -47,10 +56,11 @@ impl Container {
         let color = color;
         let dirty = true;
         let uuid = Uuid::new_v4();
-        let parent = Uuid::new_v4();
-        let node = Node { parent, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
+        let owner = Uuid::new_v4();
+        let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
+        let node_uuid = node.uuid;
         cx.nodes.push(node);
-        Container { this: parent }
+        Container { this: owner, node: node_uuid }
     }
 }
 

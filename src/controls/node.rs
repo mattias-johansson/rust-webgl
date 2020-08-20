@@ -6,7 +6,7 @@ use crate::render::textures::*;
 
 #[derive(Clone, Copy)]
 pub struct Node {
-    pub parent: Uuid,
+    pub owner: Uuid,
     pub uuid: Uuid,
     pub x: f32,
     pub y: f32,
@@ -17,14 +17,14 @@ pub struct Node {
     pub opacity: f32,
     pub texture: Option<Uuid>,
     pub color: (f32,f32,f32),
-    pub dirty: bool,
+    pub dirty: bool
 }
 
 impl Node {
 
-    pub fn new(parent: Uuid, cx: &mut Context, x: f32, y: f32, width: f32, height: f32) -> Node {
+    pub fn new(owner: Uuid, cx: &mut Context, x: f32, y: f32, width: f32, height: f32) -> Node {
         Node { 
-            parent: parent,
+            owner: owner,
             uuid: Uuid::new_v4(), 
             x: x, 
             y: y, 
@@ -45,7 +45,15 @@ impl Node {
         cx.textures.textures.insert(uuid, texture);
         uuid
     }
-    
+
+    pub fn add_child(&self, cx: &mut Context, child: Uuid) {
+        cx.add_child_to(self.uuid, child);
+    }
+
+    pub fn remove_child(&self, cx: &mut Context, child: Uuid) {
+        cx.remove_child_from(self.uuid, child);
+    }
+
     pub fn position(&self) -> (f32, f32, f32, f32) {
         (self.x, self.y, self.x + self.width, self.y + self.height)
     }
