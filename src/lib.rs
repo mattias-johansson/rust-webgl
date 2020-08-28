@@ -57,6 +57,7 @@ impl Application {
         let events = Rc::new(RefCell::new(events));
         let mut context = Context::new();
         let page = Page::new(&mut context);
+        context.root = Some(page.node);
         
         let visual_nodes = Rc::new(RefCell::new(vec![]));
         let visual_nodes2 = Rc::new(RefCell::new(vec![]));
@@ -145,15 +146,19 @@ impl Application {
 
 
 pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
+    
+    let image_view = ImageViewBuilder::builder().x(50.0).y(50.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
+
     let container = ContainerBuilder::builder().height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).build(&mut context);
     let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
-
     container.add_child(&mut context, container2.get_node_uuid());
-    let image_view = ImageViewBuilder::builder().x(50.0).y(50.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
-    let mut button = ButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
-    let v_n = Rc::clone(&visual_nodes);
-    let handler = move |mut cx : &mut Context| {
+    container.add_child(&mut context, image_view.get_node_uuid());
 
+    let mut button = ButtonPrivate::new(&mut context, 5.0, 5.0, 0.5);
+    container.add_child(&mut context, button.get_node_uuid());
+    let v_n = Rc::clone(&visual_nodes);
+
+    let handler = move |mut cx : &mut Context| {
         let mut visual_nodes = visual_nodes.borrow_mut();
         let y = 45 + visual_nodes.len() * 45; //TODO Cannot get other nodes here
         let button = ToggleButtonPrivate::new(&mut cx, 5.0, y as f32, 1.0);

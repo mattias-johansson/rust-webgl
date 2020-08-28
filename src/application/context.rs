@@ -13,6 +13,7 @@ pub struct Context {
     pub animations: Vec<Animation>,
     pub events: Vec<Event>,
     pub textures: Textures,
+    pub root: Option<Uuid>,
 }
 
 impl Context {
@@ -23,7 +24,8 @@ impl Context {
         let animations = vec![];
         let events = vec![];
         let textures = Textures::new();
-        Context { visual_nodes, nodes, node_relations, animations, events, textures }
+        let root: Option<Uuid> = None;
+        Context { visual_nodes, nodes, node_relations, animations, events, textures, root }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {
@@ -31,6 +33,15 @@ impl Context {
         for node in nodes {
             if uuid == node.uuid {
                 return Some(node);
+            }
+        }
+        None
+    }
+
+    pub fn get_node_unmut(&self, uuid: Uuid) -> Option<&Node> {
+        for node in self.nodes.as_slice() {
+            if uuid == node.uuid {
+                return Some(&node);
             }
         }
         None

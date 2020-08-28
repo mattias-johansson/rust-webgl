@@ -10,7 +10,7 @@ use crate::application::context::*;
 #[derive(Clone)]
 pub struct Page {
     this: Uuid,
-    node: Uuid
+    pub node: Uuid
 }
 
 impl VisualNode for Page {

@@ -53,6 +53,8 @@ impl ToggleButtonPrivate {
         let background_uuid = background.uuid;
         let toggle_uuid = toggle.uuid;
 
+        cx.add_child_to(background_uuid, toggle_uuid);
+
         let on_animation_uuid = on_animation.uuid;
         let off_animation_uuid = off_animation.uuid;
 
@@ -71,7 +73,6 @@ impl ToggleButtonPrivate {
     fn create_background(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
         let width = 107.0;
         let height = 36.0;
-        let texture = TextureUnit::ToggelBackground;
         let mut node = Node::new(this, cx, x, y, width, height);
         node.texture = Some(Node::create_texture(cx, "/assets/bg.png"));
         node
@@ -82,7 +83,6 @@ impl ToggleButtonPrivate {
         let height = 30.0;
         let x = x + 3.0;
         let y = y + 3.0;
-        let texture = TextureUnit::Toggle;
         let mut node = Node::new(this, cx, x, y, width, height);
         node.opacity = opacity;
         node.texture = Some(Node::create_texture(cx, "/assets/grey.png"));

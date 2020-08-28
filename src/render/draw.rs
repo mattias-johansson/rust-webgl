@@ -1,3 +1,4 @@
+use uuid::Uuid;
 use crate::animation::animation::*;
 use crate::application::context::*;
 use crate::events::mouse::Event;
@@ -62,12 +63,26 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
     }
 }
 
+pub fn travers_tree(cx: &Context, parent: Node) {
+    match cx.node_relations.get(&parent.uuid) {
+        Some(children) => {
+            for child in children.as_slice() {
+                let node = cx.get_node_unmut(*child);
+                travers_tree(&cx, *node.unwrap());
+            }
+        }, None => ()
+    }
+}
+
 pub fn draw_scene(
     cx: &mut Context,
     webgl_context: Rc<WebGlRenderingContext>,
     program: &WebGlProgram,
     program_color: &WebGlProgram,
 ) {
+    let uuid = cx.root.unwrap();
+    let node = cx.get_node_unmut(uuid);
+    travers_tree(cx, *node.unwrap());
     //TODO, select program based on node type
     for node in cx.nodes.as_slice() {
         //TODO I think GL can handle this
