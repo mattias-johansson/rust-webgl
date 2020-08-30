@@ -63,12 +63,23 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
     }
 }
 
-pub fn travers_tree(cx: &Context, parent: Node) {
+pub fn travers_tree(cx: &Context, parent: Node, mut collection: &mut Vec<Node>) {
+    web_sys::console::log_1(&parent.uuid.to_string().into());
     match cx.node_relations.get(&parent.uuid) {
         Some(children) => {
             for child in children.as_slice() {
+
                 let node = cx.get_node_unmut(*child);
-                travers_tree(&cx, *node.unwrap());
+                let mut node = *node.unwrap();
+                {
+                    node.x = node.x + parent.x;
+                    node.y = node.y + parent.y;
+                    node.translate_x = node.translate_x + parent.translate_x;
+                    node.translate_y = node.translate_y + parent.translate_y;
+                }
+                collection.push(node);
+
+                travers_tree(&cx, node, collection);
             }
         }, None => ()
     }
@@ -82,9 +93,11 @@ pub fn draw_scene(
 ) {
     let uuid = cx.root.unwrap();
     let node = cx.get_node_unmut(uuid);
-    travers_tree(cx, *node.unwrap());
+    let mut collection: Vec<Node> = Vec::new();
+
+    travers_tree(cx, *node.unwrap(), &mut collection);
     //TODO, select program based on node type
-    for node in cx.nodes.as_slice() {
+    for node in collection.as_slice() {
         //TODO I think GL can handle this
         let x = node.x + node.translate_x;
         let y = node.y + node.translate_y;

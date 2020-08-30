@@ -149,8 +149,9 @@ pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<
     
     let image_view = ImageViewBuilder::builder().x(50.0).y(50.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
 
-    let container = ContainerBuilder::builder().height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).build(&mut context);
+    let container = ContainerBuilder::builder().x(100.0).height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).build(&mut context);
     let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
+    context.add_child_to(context.root.unwrap(), container.get_node_uuid());
     container.add_child(&mut context, container2.get_node_uuid());
     container.add_child(&mut context, image_view.get_node_uuid());
 
