@@ -11,9 +11,6 @@ use web_sys::{WebGlProgram, WebGlRenderingContext};
 
 use std::rc::Rc;
 
-use crate::render::lti::*;
-use crate::render::texture_unit::*;
-
 use crate::controls::node::*;
 
 
@@ -63,7 +60,7 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
     }
 }
 
-pub fn travers_tree(cx: &Context, parent: Node, mut collection: &mut Vec<Node>) {
+pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
 //    web_sys::console::log_1(&parent.uuid.to_string().into());
     match cx.node_relations.get(&parent.uuid) {
         Some(children) => {
@@ -109,41 +106,30 @@ pub fn draw_scene(
         let y = node.y + node.translate_y;
         //Load texture for node
         if node.texture == None {
-            
             if node.end_clip {
-                web_sys::console::log_1(&"end_stencil".to_string().into());
-                web_sys::console::log_1(&node.uuid.to_string().into());
-                end_stencil(
-                    &webgl_context,
-                    program_color,
-                    node.width,
-                    node.height,
-                    x,
-                    y,);
-            }
-            if node.clip {
-                web_sys::console::log_1(&"render_stencil".to_string().into());
-                web_sys::console::log_1(&node.uuid.to_string().into());
-                render_stencil(
+                end_stencil(&webgl_context);
+            } else { 
+                if node.clip {
+                    render_stencil(
+                        &webgl_context,
+                        program_color,
+                        node.width,
+                        node.height,
+                        x,
+                        y,
+                    );   
+                }
+                render_bg(
                     &webgl_context,
                     program_color,
                     node.width,
                     node.height,
                     x,
                     y,
+                    node.opacity,
+                    node.color,
                 );
             }
-            
-            render_bg(
-                &webgl_context,
-                program_color,
-                node.width,
-                node.height,
-                x,
-                y,
-                node.opacity,
-                node.color,
-            );
         } else {
             match &node.texture {
                 Some(texture) => {
@@ -424,21 +410,26 @@ fn render_stencil(
         0.0,
     ];
 
-    context.enable(WebGlRenderingContext::DEPTH_TEST);
-    context.enable(WebGlRenderingContext::STENCIL_TEST);
+//    context.enable(WebGlRenderingContext::DEPTH_TEST);
+
+    context.clear_stencil(0);
+    context.clear(WebGlRenderingContext::STENCIL_BUFFER_BIT);
 
     context.stencil_op(WebGlRenderingContext::KEEP, WebGlRenderingContext::KEEP, WebGlRenderingContext::REPLACE);
     context.stencil_func(WebGlRenderingContext::ALWAYS, 1, 0xff);
     context.stencil_mask(0xff);
-    context.depth_mask(false);
-    context.color_mask(false, false, false, false);
+    context.color_mask(false, true, false, false);
+
+    context.enable(WebGlRenderingContext::STENCIL_TEST);
+
+    let transparency_data_attrib = context.get_uniform_location(&program, "transparency");
+    context.uniform1f(transparency_data_attrib.as_ref(), 0.0);
 
     let model_uni = context.get_uniform_location(&program, "model");
     let model = Isometry3::new(
         Vector3::new(x + (rect_width), y + (rect_height), 1.0),
         nalgebra::zero(),
     ); //move to 1,1,1
-
     let mut model_array = [0.; 16];
     model_array.copy_from_slice(model.to_homogeneous().as_slice());
     context.uniform_matrix4fv_with_f32_array(model_uni.as_ref(), false, &mut model_array);
@@ -461,26 +452,30 @@ fn render_stencil(
     context.uniform_matrix4fv_with_f32_array(view_uni.as_ref(), false, &mut identity().as_slice());
 
     buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
+    context.enable(WebGlRenderingContext::BLEND);
+
+    context.blend_func(
+        WebGlRenderingContext::ZERO,
+        WebGlRenderingContext::ONE,
+    );
+
+    let color_data_attrib = context.get_uniform_location(&program, "color");
+    context.uniform3f(color_data_attrib.as_ref(), 0.0, 0.0, 0.0);
 
     context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
-
 	context.stencil_func(WebGlRenderingContext::EQUAL, 1, 0xff);
 	context.stencil_mask(0x00);
-	context.depth_mask(true);
 	context.color_mask(true, true, true, true);
 }
 
 fn end_stencil(
     context: &WebGlRenderingContext,
-    program: &WebGlProgram,
-    rect_width: f32,
-    rect_height: f32,
-    x: f32,
-    y: f32,
 ) {
 
     context.disable(WebGlRenderingContext::STENCIL_TEST);   
-    context.disable(WebGlRenderingContext::DEPTH_TEST);
+//    context.disable(WebGlRenderingContext::DEPTH_TEST);
+    context.clear_stencil(0);
+    context.clear(WebGlRenderingContext::STENCIL_BUFFER_BIT);
 
 }
 

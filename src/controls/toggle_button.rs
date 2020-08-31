@@ -81,8 +81,8 @@ impl ToggleButtonPrivate {
     fn create_toggle(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
         let width = 30.0;
         let height = 30.0;
-        let x = x + 3.0;
-        let y = y + 3.0;
+        let x = 3.0;
+        let y = 3.0;
         let mut node = Node::new(this, x, y, width, height);
         node.opacity = opacity;
         node.texture = Some(Node::create_texture(cx, "/assets/grey.png"));

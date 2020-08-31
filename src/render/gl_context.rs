@@ -11,8 +11,11 @@ pub fn get_webgl_context() -> WebGlRenderingContext {
     let canvas: web_sys::HtmlCanvasElement =
         canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
 
+    let ctx_options = js_sys::Object::new();
+    js_sys::Reflect::set(&ctx_options, &"stencil".into(), &true.into()).unwrap();
+            
     let gl = canvas
-        .get_context("webgl")
+        .get_context_with_context_options("webgl", &ctx_options)
         .unwrap()
         .unwrap()
         .dyn_into::<WebGlRenderingContext>()
