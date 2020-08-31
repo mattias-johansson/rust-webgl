@@ -44,7 +44,7 @@ impl Container {
         cx.add_child_to(self.node, child);
     }
 
-    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), texture:TextureUnit) ->  Container {
+    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), texture:TextureUnit, clip: bool) ->  Container {
         let x:f32 = x;
         let y:f32 = y;
         let translate_x = translate_x;
@@ -55,9 +55,10 @@ impl Container {
         let texture = None;
         let color = color;
         let dirty = true;
+        let end_clip = false;
         let uuid = Uuid::new_v4();
         let owner = Uuid::new_v4();
-        let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
+        let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty, clip, end_clip};
         let node_uuid = node.uuid;
         cx.nodes.push(node);
         Container { this: owner, node: node_uuid }
@@ -74,6 +75,7 @@ pub struct ContainerBuilder {
      opacity: Option<f32>,
      texture: Option<TextureUnit>,
      color: Option<(f32,f32,f32)>,
+     clip: bool,
 }
 
 
@@ -90,7 +92,8 @@ impl ContainerBuilder {
         let height = None;
         let color = None;
         let texture = None;
-        ContainerBuilder { x, y, translate_x, translate_y, opacity, width, height, color, texture }
+        let clip = false;
+        ContainerBuilder { x, y, translate_x, translate_y, opacity, width, height, color, texture, clip}
     }
 
     pub fn build(&self, cx: &mut Context) -> Container {
@@ -130,7 +133,8 @@ impl ContainerBuilder {
             Some(color) => color,
             None => (0.0,0.0,0.0)
         };
-        Container::new(cx, x, y, translate_x, translate_y, opacity, width, height, color, texture)
+        let clip = self.clip;
+        Container::new(cx, x, y, translate_x, translate_y, opacity, width, height, color, texture, clip)
     }
 
     pub fn x(&mut self, x: f32) -> &mut ContainerBuilder {
@@ -170,6 +174,11 @@ impl ContainerBuilder {
 
     pub fn color(&mut self, color: (f32,f32,f32)) -> &mut ContainerBuilder {
         self.color = Some(color);
+        self
+    }
+
+    pub fn clip(&mut self, clip: bool) -> &mut ContainerBuilder {
+        self.clip = clip;
         self
     }
 }

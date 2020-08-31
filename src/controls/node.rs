@@ -17,12 +17,14 @@ pub struct Node {
     pub opacity: f32,
     pub texture: Option<Uuid>,
     pub color: (f32,f32,f32),
-    pub dirty: bool
+    pub dirty: bool,
+    pub clip: bool,
+    pub end_clip: bool,
 }
 
 impl Node {
 
-    pub fn new(owner: Uuid, cx: &mut Context, x: f32, y: f32, width: f32, height: f32) -> Node {
+    pub fn new(owner: Uuid, x: f32, y: f32, width: f32, height: f32) -> Node {
         Node { 
             owner: owner,
             uuid: Uuid::new_v4(), 
@@ -35,7 +37,9 @@ impl Node {
             opacity: 1.0, 
             texture: None,
             color: (0.0, 0.0, 0.0),
-            dirty: true
+            dirty: true,
+            clip: false,
+            end_clip: false,
          }
     }
 

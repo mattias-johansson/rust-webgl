@@ -49,9 +49,11 @@ impl Page {
         let texture = None;
         let color = (0.0,0.0,0.0);
         let dirty = true;
+        let clip = false;
+        let end_clip = false;
         let uuid = Uuid::new_v4();
         let owner = Uuid::new_v4();
-        let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty };
+        let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty, clip, end_clip};
         let node_uuid = node.uuid;
         cx.nodes.push(node);
         Page { this: owner, node: node_uuid }

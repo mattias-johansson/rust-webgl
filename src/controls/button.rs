@@ -78,7 +78,7 @@ impl ButtonPrivate {
         let width =  145.0;
         let height = 34.0;
         let texture = TextureUnit::Button;
-        let mut node = Node::new(this, cx, x, y, width, height);
+        let mut node = Node::new(this, x, y, width, height);
         node.opacity = 1.0;
         node.texture = Some(Node::create_texture(cx, "/assets/button.png"));
         node
@@ -88,7 +88,7 @@ impl ButtonPrivate {
         let width =  145.0;
         let height = 34.0;
         let texture = TextureUnit::ButtonPressed;
-        let mut node = Node::new(this, cx, x, y, width, height);
+        let mut node = Node::new(this, x, y, width, height);
         node.opacity = 1.0;
         node.texture = Some(Node::create_texture(cx, "/assets/button_pressed.png"));
         node
