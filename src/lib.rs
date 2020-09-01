@@ -79,7 +79,6 @@ impl Application {
     pub fn start(&mut self) -> Result<(), JsValue> {
         web_sys::console::log_1(&"start".into());
         create(&mut self.context, Rc::clone(&self.visual_nodes2));
-        let gl = &self.gl;
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
         let canvas: web_sys::HtmlCanvasElement =
@@ -102,7 +101,6 @@ impl Application {
         while self.visual_nodes2.borrow_mut().len() > 0 {
             self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
          }
- 
     }
 
     pub fn send_events_from_context(&mut self) {
@@ -128,44 +126,43 @@ impl Application {
         }
 
         let cx = &mut self.context; 
-            for node in nodes.iter().rev() {  //todo iteraton over both nodes and visual nodes.
-                let mut vn = self.visual_nodes.borrow_mut();
-                for i in 0..vn.len() {
-                    let mut vn = vn.get_mut(i).unwrap();
+        for node in nodes.iter().rev() {  //todo iteraton over both nodes and visual nodes.
+            let mut vn = self.visual_nodes.borrow_mut();
+            for i in 0..vn.len() {
+                let mut vn = vn.get_mut(i).unwrap();
 
-                    if vn.get_uuid() == node.owner {
-                        web_sys::console::log_2(&"sending to node ".into(), &i.to_string().into());
-                        send_event(Rc::clone(&self.events), cx, node.position(), &mut vn)
-                    }
+                if vn.get_uuid() == node.owner {
+                    web_sys::console::log_2(&"sending to node ".into(), &i.to_string().into());
+                    send_event(Rc::clone(&self.events), cx, node.position(), &mut vn)
                 }
             }
-            
+        }   
     }
-
 }
 
 
-pub fn create(mut context: &mut application::context::Context, visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
+pub fn create(mut context: &mut application::context::Context, visual_nodes2: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
     
     let image_view = ImageViewBuilder::builder().x(0.0).y(500.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
 
-    let container = ContainerBuilder::builder().x(100.0).height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(1.0).clip(true).build(&mut context);
-    let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(1.0).build(&mut context);
+    let container = ContainerBuilder::builder().x(100.0).height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut context);
+    let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
     context.add_child_to(context.root.unwrap(), container.get_node_uuid());
     container.add_child(&mut context, container2.get_node_uuid());
     context.add_child_to(context.root.unwrap(), image_view.get_node_uuid());
 
     let mut button = ButtonPrivate::new(&mut context, 150.0, 5.0, 0.5);
     container.add_child(&mut context, button.get_node_uuid());
-    let v_n = Rc::clone(&visual_nodes);
+    let v_n = Rc::clone(&visual_nodes2);
 
     let handler = move |mut cx : &mut Context| {
-        let mut visual_nodes = visual_nodes.borrow_mut();
-        let y = 45 + visual_nodes.len() * 45; //TODO Cannot get other nodes here
+        let mut visual_nodes2 = visual_nodes2.borrow_mut();
+        let y = 45 + cx.visual_nodes.len() * 45; //TODO Cannot get other nodes here
+        web_sys::console::log_1(&cx.visual_nodes.len().to_string().into());
         let button = ToggleButtonPrivate::new(&mut cx, 50.0, y as f32, 1.0);
         cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
-        visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
-
+        cx.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+        visual_nodes2.push(Box::new(ToggleButtonPrivate::new(&mut cx, 50.0, y as f32, 1.0)) as Box<dyn VisualNode>);
     };
 
     let handler : Box<dyn FnMut(&mut Context)> = Box::new(handler) as Box<dyn FnMut(&mut Context)>;

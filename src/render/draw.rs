@@ -81,7 +81,6 @@ pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
         }, None => ()   
     }
     if parent.clip {
-        web_sys::console::log_1(&"Added end clip node".to_string().into());
         let mut node = Node::new(Uuid::new_v4(), 0.0, 0.0, 0.0, 0.0); //TODO FIX
         node.end_clip = true;
         collection.push(node);
