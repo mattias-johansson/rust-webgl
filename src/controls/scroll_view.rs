@@ -1,5 +1,6 @@
 
-#[derive(Clone)]
+
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct ScrollView {
     this: Uuid,
     node: node_uuid

@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::application::context::*;
 use crate::render::textures::*;
 
-#[derive(Clone, Copy)]
+#[derive(PartialEq, Clone, Copy)]
 pub struct Node {
     pub owner: Uuid,
     pub uuid: Uuid,

@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::render::texture_unit::*;
 use crate::application::context::*;
 
-#[derive(Clone)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Page {
     this: Uuid,
     pub node: Uuid

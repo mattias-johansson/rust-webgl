@@ -14,6 +14,7 @@ pub struct Context {
     pub events: Vec<Event>,
     pub textures: Textures,
     pub root: Option<Uuid>,
+    pub callbacks: HashMap<Uuid, Box<dyn FnMut(&mut Context) >>,
 }
 
 impl Context {
@@ -25,7 +26,8 @@ impl Context {
         let events = vec![];
         let textures = Textures::new();
         let root: Option<Uuid> = None;
-        Context { visual_nodes, nodes, node_relations, animations, events, textures, root }
+        let callbacks = HashMap::default();
+        Context { visual_nodes, nodes, node_relations, animations, events, textures, root, callbacks }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {
@@ -33,6 +35,16 @@ impl Context {
         for node in nodes {
             if uuid == node.uuid {
                 return Some(node);
+            }
+        }
+        None
+    }
+
+    pub fn get_visual_node(&mut self, uuid: Uuid) -> Option<&mut Box<dyn VisualNode>> {
+        let visual_nodes: &mut Vec<Box<dyn VisualNode>> = self.visual_nodes.as_mut(); 
+        for visual_node in visual_nodes {
+            if uuid == visual_node.get_uuid() {
+                return Some(visual_node);
             }
         }
         None

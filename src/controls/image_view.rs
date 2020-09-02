@@ -7,7 +7,7 @@ use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::render::texture_unit::*;
 
-#[derive(Clone)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct ImageView {
     this: Uuid,
     node: Uuid
