@@ -13,7 +13,7 @@ use crate::animation::ease::*;
 use uuid::Uuid;
 
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 enum ButtonState {
     NotPressed,
     Pressed,
@@ -22,6 +22,8 @@ enum ButtonState {
 }
 
 //TODO Nedd to rewrite as composite control. Need to have a container node as "node"
+
+#[derive(Clone, Copy)]
 pub struct ButtonPrivate {
     this: Uuid,
     node: Uuid,
@@ -29,7 +31,7 @@ pub struct ButtonPrivate {
     state: ButtonState,
     on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
-    pub closure: Option<Box<dyn FnMut(&mut Context) >>
+    pub callback: Option<fn(&mut Context)>,
 }
 
 impl ButtonPrivate {
@@ -39,7 +41,7 @@ impl ButtonPrivate {
         let node = ButtonPrivate::create(this, cx, x, y, opacity);
         let node_uuid = node.uuid;
         cx.nodes.push(node);
-        let closure = None;
+        let callback = None;
         let state = ButtonState::NotPressed; 
         
         let node_pressed = ButtonPrivate::create_pressed(this, cx, x, y, opacity);
@@ -63,7 +65,7 @@ impl ButtonPrivate {
         cx.animations.push(on_animation);
         cx.animations.push(off_animation);
 
-        ButtonPrivate { this, node: node_uuid, pressed, state, on_animation_uuid, off_animation_uuid, closure } 
+        ButtonPrivate { this, node: node_uuid, pressed, state, on_animation_uuid, off_animation_uuid, callback } 
     }
 
     pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
@@ -183,10 +185,10 @@ impl VisualNode for ButtonPrivate {
                 if event.event == MouseEvent::Up {
                     self.pressed = false;
                     self.on_button_pressed(cx);
-                    if self.closure.is_some() {
-                        let callback : &mut Box<dyn FnMut(&mut Context)> = self.closure.as_mut().unwrap();
+                    if self.callback.is_some() {
+                        let callback = self.callback.unwrap();
                         web_sys::console::log_1(&"Calling callback".into());
-                        callback(&mut cx);
+                        (callback)(&mut cx);
                     }
                 }else if event.event == MouseEvent::Down {
                     self.pressed = true; 

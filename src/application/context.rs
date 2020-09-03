@@ -15,6 +15,7 @@ pub struct Context {
     pub textures: Textures,
     pub root: Option<Uuid>,
     pub callbacks: HashMap<Uuid, Box<dyn FnMut(&mut Context) >>,
+
 }
 
 impl Context {

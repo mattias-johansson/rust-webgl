@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::application::context::*;
 use std::rc::Rc;
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 enum ToggleButtonState {
     On,
     Off,
@@ -18,7 +18,7 @@ enum ToggleButtonState {
     ToOff,
 }
 
-
+#[derive(Clone, Copy)]
 pub struct ToggleButtonPrivate {
     this: Uuid,
     background_uuid: Uuid,
@@ -27,7 +27,7 @@ pub struct ToggleButtonPrivate {
     on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
     state: ToggleButtonState, 
-    pub closure: Option<Box<dyn FnMut(&mut Context) >>,
+    pub callback: Option<fn(&mut Context)>,
 }
 
 impl ToggleButtonPrivate {
@@ -58,9 +58,9 @@ impl ToggleButtonPrivate {
         let on_animation_uuid = on_animation.uuid;
         let off_animation_uuid = off_animation.uuid;
 
-        let closure = Option::None;
+        let callback = Option::None;
 
-        let toggle_button_private = ToggleButtonPrivate { this, background_uuid, toggle_uuid, value, on_animation_uuid, off_animation_uuid, state, closure }; 
+        let toggle_button_private = ToggleButtonPrivate { this, background_uuid, toggle_uuid, value, on_animation_uuid, off_animation_uuid, state, callback }; 
 
         cx.nodes.push(background);
         cx.nodes.push(toggle);
@@ -168,8 +168,8 @@ impl VisualNode for ToggleButtonPrivate {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.on_button_pressed(cx);
-                    if self.closure.is_some() {
-                        let callback : &mut Box<dyn FnMut(&mut Context)> = self.closure.as_mut().unwrap();
+                    if self.callback.is_some() {
+                        let callback = self.callback.unwrap();
                         web_sys::console::log_1(&"Calling callback".into());
                         callback(&mut cx);
                     }

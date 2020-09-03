@@ -139,6 +139,12 @@ impl Application {
     }
 }
 
+pub fn callback(mut cx: &mut Context) {
+        web_sys::console::log_1(&cx.visual_nodes.len().to_string().into());
+        let button = ToggleButtonPrivate::new(&mut cx, 50.0, 50.0, 1.0);
+        cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
+        cx.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+}
 
 pub fn create(mut context: &mut application::context::Context, visual_nodes2: Rc<RefCell<Vec<Box<dyn VisualNode>>>>) {
     
@@ -153,28 +159,11 @@ pub fn create(mut context: &mut application::context::Context, visual_nodes2: Rc
     let mut button = ButtonPrivate::new(&mut context, 150.0, 5.0, 0.5);
     container.add_child(&mut context, button.get_node_uuid());
     let v_n = Rc::clone(&visual_nodes2);
-/*
-    let handler = move |mut cx : &mut Context| {
-        let mut visual_nodes2 = visual_nodes2.borrow_mut();
-        let y = 45 + cx.visual_nodes.len() * 45; //TODO Cannot get other nodes here
-        web_sys::console::log_1(&cx.visual_nodes.len().to_string().into());
-        let button = ToggleButtonPrivate::new(&mut cx, 50.0, y as f32, 1.0);
-        cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
-        cx.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
-        visual_nodes2.push(Box::new(ToggleButtonPrivate::new(&mut cx, 50.0, y as f32, 1.0)) as Box<dyn VisualNode>);
-    };
-*/
-    let handler = move |mut cx : &mut Context| {
-//        let visual_node = cx.get_visual_node(button.get_uuid()).unwrap();
-//        let almost_button = ButtonPrivate::to_button_private(visual_node.as_any());
-//        almost_button.unwrap().
-        let &mut mut node = cx.get_node(button.get_node_uuid()).unwrap();
-        node.x = node.x + 5.0;
-    };
 
-    let handler : Box<dyn FnMut(&mut Context)> = Box::new(handler) as Box<dyn FnMut(&mut Context)>;
     let mut v_n = v_n.borrow_mut();
-    context.callbacks.insert(button.get_uuid(), handler);
+
+    button.callback = Some(callback);
+
     v_n.push(Box::new(image_view) as Box<dyn VisualNode>);
     //v_n.push(Box::new(container2) as Box<dyn VisualNode>);
     //v_n.push(Box::new(container) as Box<dyn VisualNode>);
