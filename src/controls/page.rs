@@ -4,7 +4,6 @@ use std::any::Any;
 use std::rc::Rc;
 use crate::events::mouse::*;
 use uuid::Uuid;
-use crate::render::texture_unit::*;
 use crate::application::context::*;
 
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -23,7 +22,7 @@ impl VisualNode for Page {
         self
     }
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool{
+    fn event_handler(&mut self, cx: &mut Context, message: &Event, visual_nodes: Vec<Box<dyn VisualNode>>) -> bool{
         return false;
     }
 

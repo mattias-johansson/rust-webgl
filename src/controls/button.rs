@@ -3,7 +3,7 @@ use std::hash::{Hash, Hasher};
 
 use std::rc::Rc;
 use std::any::Any;
-use crate::render::texture_unit::*;
+
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
 use crate::events::mouse::*;
@@ -31,7 +31,7 @@ pub struct ButtonPrivate {
     state: ButtonState,
     on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
-    pub callback: Option<fn(&mut Context)>,
+    pub callback: Option<fn(&mut Context, visual_nodes: Vec<Box<dyn VisualNode>>)>,
 }
 
 impl ButtonPrivate {
@@ -79,7 +79,6 @@ impl ButtonPrivate {
     pub fn create(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
         let width =  145.0;
         let height = 34.0;
-        let texture = TextureUnit::Button;
         let mut node = Node::new(this, x, y, width, height);
         node.opacity = 1.0;
         node.texture = Some(Node::create_texture(cx, "/assets/button.png"));
@@ -89,7 +88,6 @@ impl ButtonPrivate {
     pub fn create_pressed(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
         let width =  145.0;
         let height = 34.0;
-        let texture = TextureUnit::ButtonPressed;
         let mut node = Node::new(this, x, y, width, height);
         node.opacity = 1.0;
         node.texture = Some(Node::create_texture(cx, "/assets/button_pressed.png"));
@@ -178,7 +176,7 @@ impl VisualNode for ButtonPrivate {
         self
     }
 
-    fn event_handler(&mut self, mut cx: &mut Context, message: &Event) -> bool {
+    fn event_handler(&mut self, mut cx: &mut Context, message: &Event, visual_nodes: Vec<Box<dyn VisualNode>>) -> bool {
         web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
@@ -188,7 +186,7 @@ impl VisualNode for ButtonPrivate {
                     if self.callback.is_some() {
                         let callback = self.callback.unwrap();
                         web_sys::console::log_1(&"Calling callback".into());
-                        (callback)(&mut cx);
+                        (callback)(&mut cx, visual_nodes);
                     }
                 }else if event.event == MouseEvent::Down {
                     self.pressed = true; 

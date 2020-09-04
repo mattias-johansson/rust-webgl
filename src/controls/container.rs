@@ -6,7 +6,7 @@ use crate::controls::node::*;
 use std::any::Any;
 use crate::events::mouse::*;
 use uuid::Uuid;
-use crate::render::texture_unit::*;
+
 use crate::application::context::*;
 
 
@@ -26,7 +26,7 @@ impl VisualNode for Container {
         self
     }
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool{
+    fn event_handler(&mut self, cx: &mut Context, message: &Event, visual_nodes: Vec<Box<dyn VisualNode>>) -> bool{
         return false;
     }
 
@@ -45,7 +45,7 @@ impl Container {
         cx.add_child_to(self.node, child);
     }
 
-    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), texture:TextureUnit, clip: bool) ->  Container {
+    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  Container {
         let x:f32 = x;
         let y:f32 = y;
         let translate_x = translate_x;
@@ -74,12 +74,9 @@ pub struct ContainerBuilder {
      translate_x: Option<f32>,
      translate_y: Option<f32>,
      opacity: Option<f32>,
-     texture: Option<TextureUnit>,
      color: Option<(f32,f32,f32)>,
      clip: bool,
 }
-
-
 
 impl ContainerBuilder {
     
@@ -92,9 +89,8 @@ impl ContainerBuilder {
         let width = None;
         let height = None;
         let color = None;
-        let texture = None;
         let clip = false;
-        ContainerBuilder { x, y, translate_x, translate_y, opacity, width, height, color, texture, clip}
+        ContainerBuilder { x, y, translate_x, translate_y, opacity, width, height, color, clip}
     }
 
     pub fn build(&self, cx: &mut Context) -> Container {
@@ -126,16 +122,12 @@ impl ContainerBuilder {
             Some(height) => height,
             None => 0.0
         };
-        let texture:TextureUnit = match self.texture {
-            Some(texture) => texture,
-            None => TextureUnit::None
-        };
         let color:(f32,f32,f32) = match self.color {
             Some(color) => color,
             None => (0.0,0.0,0.0)
         };
         let clip = self.clip;
-        Container::new(cx, x, y, translate_x, translate_y, opacity, width, height, color, texture, clip)
+        Container::new(cx, x, y, translate_x, translate_y, opacity, width, height, color, clip)
     }
 
     pub fn x(&mut self, x: f32) -> &mut ContainerBuilder {

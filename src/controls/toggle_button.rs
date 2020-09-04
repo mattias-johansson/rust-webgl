@@ -1,5 +1,4 @@
 use std::any::Any;
-use crate::render::texture_unit::*;
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
 use crate::events::mouse::*;
@@ -162,8 +161,10 @@ impl VisualNode for ToggleButtonPrivate {
         self
     }
 
-    fn event_handler(&mut self, mut cx: &mut Context, message: &Event) -> bool{
+    fn event_handler(&mut self, mut cx: &mut Context, message: &Event, visual_nodes: Vec<Box<dyn VisualNode>>) -> bool{
+
         web_sys::console::log_1(&"got event".into());
+        
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {

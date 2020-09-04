@@ -5,7 +5,7 @@ use crate::application::context::*;
 use crate::controls::visual_node::VisualNode;
 use crate::controls::node::*;
 use crate::events::mouse::*;
-use crate::render::texture_unit::*;
+
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct ImageView {
@@ -23,7 +23,7 @@ impl VisualNode for ImageView {
         self
     }
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool{
+    fn event_handler(&mut self, cx: &mut Context, message: &Event, visual_nodes: Vec<Box<dyn VisualNode>>) -> bool{
         return false;
     }
 

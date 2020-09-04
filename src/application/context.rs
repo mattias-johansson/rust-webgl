@@ -7,7 +7,6 @@ use uuid::Uuid;
 use std::collections::HashMap;
 
 pub struct Context {
-    pub visual_nodes: Vec<Box<dyn VisualNode>>,
     pub nodes: Vec<Node>,
     pub node_relations: HashMap<Uuid, Vec<Uuid>>,
     pub animations: Vec<Animation>,
@@ -20,7 +19,7 @@ pub struct Context {
 
 impl Context {
     pub fn new() -> Context {
-        let visual_nodes = vec![];
+//        let visual_nodes = vec![];
         let nodes = vec![];
         let node_relations = HashMap::default();
         let animations = vec![];
@@ -28,7 +27,7 @@ impl Context {
         let textures = Textures::new();
         let root: Option<Uuid> = None;
         let callbacks = HashMap::default();
-        Context { visual_nodes, nodes, node_relations, animations, events, textures, root, callbacks }
+        Context { nodes, node_relations, animations, events, textures, root, callbacks }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {
@@ -40,7 +39,7 @@ impl Context {
         }
         None
     }
-
+/*
     pub fn get_visual_node(&mut self, uuid: Uuid) -> Option<&mut Box<dyn VisualNode>> {
         let visual_nodes: &mut Vec<Box<dyn VisualNode>> = self.visual_nodes.as_mut(); 
         for visual_node in visual_nodes {
@@ -50,7 +49,7 @@ impl Context {
         }
         None
     }
-
+*/
     pub fn get_node_unmut(&self, uuid: Uuid) -> Option<&Node> {
         for node in self.nodes.as_slice() {
             if uuid == node.uuid {
