@@ -31,7 +31,7 @@ pub struct ButtonPrivate {
     state: ButtonState,
     on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
-    pub callback: Option<fn(&mut Context, visual_nodes: Vec<Box<dyn VisualNode>>)>,
+    pub callback: Option<fn(&mut Context)>,
 }
 
 impl ButtonPrivate {
@@ -176,7 +176,7 @@ impl VisualNode for ButtonPrivate {
         self
     }
 
-    fn event_handler(&mut self, mut cx: &mut Context, message: &Event, visual_nodes: Vec<Box<dyn VisualNode>>) -> bool {
+    fn event_handler(&mut self, mut cx: &mut Context, message: &Event) -> bool {
         web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
@@ -186,7 +186,7 @@ impl VisualNode for ButtonPrivate {
                     if self.callback.is_some() {
                         let callback = self.callback.unwrap();
                         web_sys::console::log_1(&"Calling callback".into());
-                        (callback)(&mut cx, visual_nodes);
+                        (callback)(&mut cx);
                     }
                 }else if event.event == MouseEvent::Down {
                     self.pressed = true; 

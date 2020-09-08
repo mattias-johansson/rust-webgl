@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::application::context::*;
 use crate::render::textures::*;
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Node {
     pub owner: Uuid,
     pub uuid: Uuid,
@@ -20,6 +20,7 @@ pub struct Node {
     pub dirty: bool,
     pub clip: bool,
     pub end_clip: bool,
+//    pub callback: Option<fn(&mut Context) -> bool >,
 }
 
 impl Node {
@@ -40,6 +41,7 @@ impl Node {
             dirty: true,
             clip: false,
             end_clip: false,
+//            callback: None,
          }
     }
 
@@ -61,4 +63,17 @@ impl Node {
     pub fn position(&self) -> (f32, f32, f32, f32) {
         (self.x, self.y, self.x + self.width, self.y + self.height)
     }
+
+    /*
+    pub fn event_handler(&self, mut cx: &mut Context) -> bool {
+        match self.callback {
+            Some(callback) => {
+                (callback)(&mut cx)
+            },
+            None => {
+                false
+            }
+        }
+    }
+    */
 }

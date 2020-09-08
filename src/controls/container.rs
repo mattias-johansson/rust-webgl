@@ -26,7 +26,7 @@ impl VisualNode for Container {
         self
     }
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event, visual_nodes: Vec<Box<dyn VisualNode>>) -> bool{
+    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool{
         return false;
     }
 

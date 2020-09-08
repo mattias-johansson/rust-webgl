@@ -161,7 +161,7 @@ impl VisualNode for ToggleButtonPrivate {
         self
     }
 
-    fn event_handler(&mut self, mut cx: &mut Context, message: &Event, visual_nodes: Vec<Box<dyn VisualNode>>) -> bool{
+    fn event_handler(&mut self, mut cx: &mut Context, message: &Event) -> bool{
 
         web_sys::console::log_1(&"got event".into());
         

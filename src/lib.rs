@@ -1,4 +1,7 @@
 extern crate wasm_bindgen;
+use crate::controls::node::Node;
+use uuid::Uuid;
+use std::collections::HashMap;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -35,6 +38,7 @@ pub struct Application {
     program_color: WebGlProgram,
     events: Rc<RefCell<Handler>>,
     context: Context,
+    animation_event_listerner: HashMap<Uuid, fn(&mut Context)>,
     visual_nodes: Vec<Box<dyn VisualNode>>
 //    visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>
 }
@@ -58,6 +62,8 @@ impl Application {
         let mut context = Context::new();
         let page = Page::new(&mut context);
         context.root = Some(page.node);
+
+        let animation_event_listerner = HashMap::default();
         
    //     let visual_nodes = Rc::new(RefCell::new(vec![]));
         let visual_nodes = vec![];
@@ -69,6 +75,7 @@ impl Application {
             program_color,
             events,
             context,
+            animation_event_listerner,
             visual_nodes
         }
     }
@@ -77,7 +84,7 @@ impl Application {
     /// to begin rendering.
     pub fn start(&mut self) -> Result<(), JsValue> {
         web_sys::console::log_1(&"start".into());
-        self.create();
+        create(&mut self.context);
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
         let canvas: web_sys::HtmlCanvasElement =
@@ -87,33 +94,26 @@ impl Application {
 
         Ok(())
     }
-    pub fn create(&mut self) {
-    
-        let image_view = ImageViewBuilder::builder().x(0.0).y(500.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut self.context);
-    
-        let container = ContainerBuilder::builder().x(100.0).height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut self.context);
-        let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut self.context);
-        self.context.add_child_to(self.context.root.unwrap(), container.get_node_uuid());
-        container.add_child(&mut self.context, container2.get_node_uuid());
-        self.context.add_child_to(self.context.root.unwrap(), image_view.get_node_uuid());
-    
-        let mut button = ButtonPrivate::new(&mut self.context, 150.0, 5.0, 0.5);
-        container.add_child(&mut self.context, button.get_node_uuid());
-    
-        button.callback = Some(callback);
-    
-        self.visual_nodes.push(Box::new(image_view) as Box<dyn VisualNode>);
-        //v_n.push(Box::new(container2) as Box<dyn VisualNode>);
-        //v_n.push(Box::new(container) as Box<dyn VisualNode>);
-        self.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
-    }
+
 
     /**
      * The event loop called from JavaScript
      */
     pub fn event_loop(&mut self, dt: f32) {
-        self.send_events_from_context();
-        self.send_events();
+//        let this_frame = self.visual_nodes.as_slice().to_vec();
+
+
+        //Handle animation events & clear events when done
+        let events =  &self.context.events.clone();
+        let cx = &mut self.context;      
+        send_events_from_context(&mut self.context, events, &mut self.visual_nodes); //Animation events
+        self.context.events = vec![];
+
+
+        //Handle Mouse and Touch events (Currently only one at per frame)
+        send_events(&mut self.context, Rc::clone(&self.events), &mut self.visual_nodes);              // Touch events
+        
+
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
         draw_scene(&mut self.context, Rc::clone(&self.gl), &self.program, &self.program_color);
@@ -122,51 +122,69 @@ impl Application {
          }
 */
     }
-
+/*
     pub fn send_events_from_context(&mut self) {
         let events =  &self.context.events.clone();
         let cx = &mut self.context; 
-        let vn = &mut self.visual_nodes;
         for event in events {
-            for i in 0..vn.len() {
-//                web_sys::console::log_1(&"ev2:".into());
-                    vn.get_mut(i).unwrap().event_hgandler(cx, &event, self.visual_nodes);
+            match event {
+                Event::Message(message) => {
+                    match message {
+                        Message::AnimationEnded(uuid) => {
+                            let callback = self.animation_event_listerner.get(uuid);
+                            match callback {
+                                Some(callback) => {
+                                    (callback)(cx);
+                                },
+                                _ => ()
+                            }
+                        }
+                    }
+                },
+                _ => ()
+            }          
+            for vn in this_frame {
+                web_sys::console::log_1(&"ev2:".into());
+                vn.event_handler(cx, &event);
             }
+
         }
-        self.context.events = vec![];
+    self.context.events = vec![];
     }
+    */
+}
 
-    pub fn send_events(&mut self) {
-        let nodes =  &self.context.nodes.clone();
 
-        let event = self.events.borrow().event;
-        if event == Event::None {
-            return
+pub fn send_events_from_context(mut context: &mut Context, events: &Vec<Event>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
+    for event in events {
+        for vn in 0..this_frame.len() {
+            web_sys::console::log_1(&"sending animation event:".into());
+            this_frame.get_mut(vn).unwrap().event_handler(context, &event);
         }
-
-        let cx = &mut self.context; 
-        for node in nodes.iter().rev() {  //todo iteraton over both nodes and visual nodes.
-            let vn = self.visual_nodes.as_mut_slice();
-            for i in 0..vn.len() {
-                let mut vn = vn.get_mut(i).unwrap();
-
-                if vn.get_uuid() == node.owner {
-                    web_sys::console::log_2(&"sending to node ".into(), &i.to_string().into());
-                    send_event(Rc::clone(&self.events), cx, node.position(), &mut vn, self.visual_nodes)
-                }
-            }
-        }   
     }
 }
 
-pub fn callback(mut cx: &mut Context, mut visual_nodes: Vec<Box<dyn VisualNode>>) {
-        web_sys::console::log_1(&visual_nodes.len().to_string().into());
-        let button = ToggleButtonPrivate::new(&mut cx, 50.0, 50.0, 1.0);
-        cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
-        visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+pub fn send_events(mut context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
+    let nodes =  context.nodes.clone();
+
+    let event = events.borrow().event;
+    if event == Event::None {
+        return
+    }
+
+    let cx = context; 
+    for node in nodes.iter().rev() {  //todo iteraton over both nodes and visual nodes.
+        for vn in 0..this_frame.len() {
+            let mut visual_node = this_frame.get_mut(vn).unwrap();
+            if visual_node.get_uuid() == node.owner {
+                web_sys::console::log_2(&"sending to node ".into(), &node.owner.to_string().into());
+                send_event(Rc::clone(&events), cx, node.position(), &mut visual_node)
+            }
+        }
+    }   
 }
 
-pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32, f32, f32), visual_node: &mut Box<dyn VisualNode>, visual_nodes: Vec<Box<dyn VisualNode>>) {
+pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32, f32, f32), visual_node: &mut Box<dyn VisualNode>) {
     let mut handled = false;
     {
         let event = &events.borrow().event;
@@ -178,7 +196,8 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
 //              web_sys::console::log_1(&visual_node.get_uuid().to_string().into());
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
 //                    web_sys::console::log_1(&"sending event".into());
-                    handled = visual_node.event_handler(cx, &events.borrow().event, visual_nodes);
+
+                    handled = visual_node.event_handler(cx, &events.borrow().event);
                       web_sys::console::log_1(&"sent event".into());
                 }
             }
@@ -191,4 +210,34 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
         let event = Event::None;
         events.borrow_mut().set_event(event);
     }
+}
+
+
+
+pub fn create(mut context: &mut Context) {
+    
+    let image_view = ImageViewBuilder::builder().x(0.0).y(500.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
+
+    let container = ContainerBuilder::builder().x(100.0).height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut context);
+    let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
+    context.add_child_to(context.root.unwrap(), container.get_node_uuid());
+    container.add_child(&mut context, container2.get_node_uuid());
+    context.add_child_to(context.root.unwrap(), image_view.get_node_uuid());
+
+    let mut button = ButtonPrivate::new(&mut context, 150.0, 5.0, 0.5);
+    container.add_child(&mut context, button.get_node_uuid());
+
+    button.callback = Some(callback);
+
+//        self.visual_nodes.push(Box::new(image_view) as Box<dyn VisualNode>);
+    //v_n.push(Box::new(container2) as Box<dyn VisualNode>);
+    //v_n.push(Box::new(container) as Box<dyn VisualNode>);
+//        self.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+}
+
+
+pub fn callback(mut cx: &mut Context) {
+    web_sys::console::log_1(&cx.nodes.len().to_string().into());
+    let button = ToggleButtonPrivate::new(&mut cx, 50.0, 50.0, 1.0);
+    cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
 }
