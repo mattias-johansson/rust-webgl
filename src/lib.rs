@@ -1,4 +1,5 @@
 extern crate wasm_bindgen;
+use crate::application::core_app::CoreApp;
 use crate::controls::node::Node;
 use uuid::Uuid;
 use std::collections::HashMap;
@@ -39,6 +40,7 @@ pub struct Application {
     events: Rc<RefCell<Handler>>,
     context: Context,
     animation_event_listerner: HashMap<Uuid, fn(&mut Context)>,
+    core_app: CoreApp,
     visual_nodes: Vec<Box<dyn VisualNode>>
 //    visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>
 }
@@ -67,6 +69,7 @@ impl Application {
         
    //     let visual_nodes = Rc::new(RefCell::new(vec![]));
         let visual_nodes = vec![];
+        let core_app = CoreApp { visual_nodes : vec![] };
 
         Application {
             page,
@@ -76,6 +79,7 @@ impl Application {
             events,
             context,
             animation_event_listerner,
+            core_app,
             visual_nodes
         }
     }
@@ -100,12 +104,8 @@ impl Application {
      * The event loop called from JavaScript
      */
     pub fn event_loop(&mut self, dt: f32) {
-//        let this_frame = self.visual_nodes.as_slice().to_vec();
-
-
         //Handle animation events & clear events when done
         let events =  &self.context.events.clone();
-        let cx = &mut self.context;      
         send_events_from_context(&mut self.context, events, &mut self.visual_nodes); //Animation events
         self.context.events = vec![];
 
@@ -113,49 +113,18 @@ impl Application {
         //Handle Mouse and Touch events (Currently only one at per frame)
         send_events(&mut self.context, Rc::clone(&self.events), &mut self.visual_nodes);              // Touch events
         
+        let callbacks = self.context.cb.clone();
+        callbacks.trigger_callbacks(&mut self.context);
+        self.context.cb.clear_triggered();
 
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
         draw_scene(&mut self.context, Rc::clone(&self.gl), &self.program, &self.program_color);
-/*        while self.visual_nodes2.borrow_mut().len() > 0 {
-            self.visual_nodes.borrow_mut().push(self.visual_nodes2.borrow_mut().pop().unwrap());
-         }
-*/
     }
-/*
-    pub fn send_events_from_context(&mut self) {
-        let events =  &self.context.events.clone();
-        let cx = &mut self.context; 
-        for event in events {
-            match event {
-                Event::Message(message) => {
-                    match message {
-                        Message::AnimationEnded(uuid) => {
-                            let callback = self.animation_event_listerner.get(uuid);
-                            match callback {
-                                Some(callback) => {
-                                    (callback)(cx);
-                                },
-                                _ => ()
-                            }
-                        }
-                    }
-                },
-                _ => ()
-            }          
-            for vn in this_frame {
-                web_sys::console::log_1(&"ev2:".into());
-                vn.event_handler(cx, &event);
-            }
-
-        }
-    self.context.events = vec![];
-    }
-    */
 }
 
 
-pub fn send_events_from_context(mut context: &mut Context, events: &Vec<Event>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
+pub fn send_events_from_context(context: &mut Context, events: &Vec<Event>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
     for event in events {
         for vn in 0..this_frame.len() {
             web_sys::console::log_1(&"sending animation event:".into());
@@ -164,7 +133,7 @@ pub fn send_events_from_context(mut context: &mut Context, events: &Vec<Event>, 
     }
 }
 
-pub fn send_events(mut context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
+pub fn send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
     let nodes =  context.nodes.clone();
 
     let event = events.borrow().event;
@@ -228,13 +197,15 @@ pub fn create(mut context: &mut Context) {
     container.add_child(&mut context, button.get_node_uuid());
 
     button.callback = Some(callback);
+    context.cb.add_subscriber(button.this, callback);
+
 
 //        self.visual_nodes.push(Box::new(image_view) as Box<dyn VisualNode>);
     //v_n.push(Box::new(container2) as Box<dyn VisualNode>);
     //v_n.push(Box::new(container) as Box<dyn VisualNode>);
 //        self.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
-}
 
+}
 
 pub fn callback(mut cx: &mut Context) {
     web_sys::console::log_1(&cx.nodes.len().to_string().into());

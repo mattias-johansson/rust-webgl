@@ -25,7 +25,7 @@ enum ButtonState {
 
 #[derive(Clone, Copy)]
 pub struct ButtonPrivate {
-    this: Uuid,
+    pub this: Uuid,
     node: Uuid,
     pressed: bool,
     state: ButtonState,
@@ -187,6 +187,7 @@ impl VisualNode for ButtonPrivate {
                         let callback = self.callback.unwrap();
                         web_sys::console::log_1(&"Calling callback".into());
                         (callback)(&mut cx);
+                        cx.cb.add_trigged(self.this);
                     }
                 }else if event.event == MouseEvent::Down {
                     self.pressed = true; 
@@ -196,7 +197,7 @@ impl VisualNode for ButtonPrivate {
             },
             Event::Message(message) => {
                 match message {
-                    Message::AnimationEnded(Uuid) => self.on_animation_ended(cx),
+                    Message::AnimationEnded(_uuid) => self.on_animation_ended(cx),
                     //TODO Two animations are ending. Handle that
                     _ => ()
                 }

@@ -14,6 +14,7 @@ pub struct Context {
     pub textures: Textures,
     pub root: Option<Uuid>,
     pub callbacks: HashMap<Uuid, Box<dyn FnMut(&mut Context) >>,
+    pub cb: Callbacks,
 
 }
 
@@ -27,7 +28,8 @@ impl Context {
         let textures = Textures::new();
         let root: Option<Uuid> = None;
         let callbacks = HashMap::default();
-        Context { nodes, node_relations, animations, events, textures, root, callbacks }
+        let cb = Callbacks::new();
+        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {
@@ -99,6 +101,55 @@ impl Context {
                 children.retain(|&x| x != to_remove);
             },
             None => ()
+        }
+    }
+}
+
+
+#[derive(Clone)]
+pub struct Callbacks {
+    triggered_callbacks : Vec<Uuid>,
+    subscribers: HashMap<Uuid, Vec<fn(&mut Context)>>
+}
+
+impl Callbacks {
+    pub fn new() -> Callbacks {
+        Callbacks { triggered_callbacks: vec![], subscribers: HashMap::default() }
+    }
+
+    pub fn add_trigged(&mut self, source: Uuid) {
+        web_sys::console::log_1(&"added".into());
+        self.triggered_callbacks.push(source);
+    }
+
+    pub fn clear_triggered(&mut self) {
+        self.triggered_callbacks.clear();
+    }
+
+    pub fn add_subscriber(&mut self, source: Uuid, target: fn(&mut Context)) {
+        web_sys::console::log_1(&"add_subscriber".into());
+        let mut callbacks = self.subscribers.get_mut(&source);
+        match &mut callbacks {
+            Some(cb) => {
+                cb.push(target);
+            },
+            None => ()
+        }
+    }
+
+    pub fn trigger_callbacks(&self, cx: &mut Context) {
+        for triggerd in &self.triggered_callbacks {
+            let targets = self.subscribers.get(&triggerd);
+            match targets {
+                Some(targets) => {
+                    for target in targets {
+                        (target)(cx);
+                        web_sys::console::log_1(&"triggered".into());
+
+                    }
+                },
+                None => ()
+            }
         }
     }
 }
