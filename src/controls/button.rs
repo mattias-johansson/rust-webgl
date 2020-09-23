@@ -183,12 +183,7 @@ impl VisualNode for ButtonPrivate {
                 if event.event == MouseEvent::Up {
                     self.pressed = false;
                     self.on_button_pressed(cx);
-                    if self.callback.is_some() {
-                        let callback = self.callback.unwrap();
-                        web_sys::console::log_1(&"Calling callback".into());
-                        (callback)(&mut cx);
-                        cx.cb.add_trigged(self.this);
-                    }
+                    cx.cb.add_trigged(self.this);
                 }else if event.event == MouseEvent::Down {
                     self.pressed = true; 
                     self.on_button_pressed(cx);

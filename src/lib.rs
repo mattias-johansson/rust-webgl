@@ -183,32 +183,33 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
 
 
 
-pub fn create(mut context: &mut Context, mut core_app: &mut CoreApp) {
+pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
     
     let image_view = ImageViewBuilder::builder().x(0.0).y(500.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
 
-    let container = ContainerBuilder::builder().x(100.0).height(200.0).width(200.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut context);
-    let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(200.0).height(200.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
-    context.add_child_to(context.root.unwrap(), container.get_node_uuid());
-    container.add_child(&mut context, container2.get_node_uuid());
+ //   let container = ContainerBuilder::builder().x(100.0).height(400.0).width(400.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut context);
+ //   let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(400.0).height(400.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
+ //   context.add_child_to(context.root.unwrap(), container.get_node_uuid());
+//    container.add_child(&mut context, container2.get_node_uuid());
     context.add_child_to(context.root.unwrap(), image_view.get_node_uuid());
 
-    let mut button = ButtonPrivate::new(&mut context, 150.0, 5.0, 0.5);
-    container.add_child(&mut context, button.get_node_uuid());
+    let button = ButtonPrivate::new(&mut context, 150.0, 5.0, 0.5);
 
-//    button.callback = Some(callback);
+    context.add_child_to(context.root.unwrap(), button.get_node_uuid());
+//    container.add_child(&mut context, button.get_node_uuid());
+
     context.cb.add_subscriber(button.this, callback);
 
-
     core_app.visual_nodes.push(Box::new(image_view) as Box<dyn VisualNode>);
-    //v_n.push(Box::new(container2) as Box<dyn VisualNode>);
-    //v_n.push(Box::new(container) as Box<dyn VisualNode>);
     core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
 
 }
 
-pub fn callback(mut cx: &mut Context, mut core_app: &mut CoreApp) {
+pub fn callback(mut cx: &mut Context, core_app: &mut CoreApp) {
+    web_sys::console::log_1(&"Adding new node!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!".into());
     web_sys::console::log_1(&cx.nodes.len().to_string().into());
-    let button = ToggleButtonPrivate::new(&mut cx, 50.0, 50.0, 1.0);
+    let y = cx.nodes.len() as f32 * 20.0;
+    let button = ToggleButtonPrivate::new(&mut cx, 5.0, y, 0.5);
     cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
+    core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
 }

@@ -120,7 +120,7 @@ impl Callbacks {
     }
 
     pub fn add_trigged(&mut self, source: Uuid) {
-        web_sys::console::log_1(&"added".into());
+        web_sys::console::log_1(&"added !!!!!!!!!!!!!!!!!!!!".into());
         self.triggered_callbacks.push(source);
     }
 
@@ -135,22 +135,32 @@ impl Callbacks {
             Some(cb) => {
                 cb.push(target);
             },
-            None => ()
+            None => {
+                let mut callbacks = vec![];
+                callbacks.push(target);
+                self.subscribers.insert(source, callbacks);
+
+            }
         }
     }
 
     pub fn trigger_callbacks(&self, cx: &mut Context, core_app: &mut CoreApp) {
         for triggerd in &self.triggered_callbacks {
+            web_sys::console::log_1(&"trigger_callbacks!!!!!!!!!!!!!!!!!!!!!!!!!!!!!".into());
             let targets = self.subscribers.get(&triggerd);
             match targets {
                 Some(targets) => {
+
+                    web_sys::console::log_1(&"Has targets !!!!!!!!!!!!!!!!!!!!!!!!!!!!!".into());
                     for target in targets {
                         (target)(cx, core_app);
                         web_sys::console::log_1(&"triggered".into());
 
                     }
                 },
-                None => ()
+                None => {
+                    web_sys::console::log_1(&"!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NO targets ------------".into());
+                }
             }
         }
     }
