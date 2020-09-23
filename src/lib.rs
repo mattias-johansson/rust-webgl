@@ -41,7 +41,7 @@ pub struct Application {
     context: Context,
     animation_event_listerner: HashMap<Uuid, fn(&mut Context)>,
     core_app: CoreApp,
-    visual_nodes: Vec<Box<dyn VisualNode>>
+//    visual_nodes: Vec<Box<dyn VisualNode>>
 //    visual_nodes: Rc<RefCell<Vec<Box<dyn VisualNode>>>>
 }
 
@@ -68,7 +68,7 @@ impl Application {
         let animation_event_listerner = HashMap::default();
         
    //     let visual_nodes = Rc::new(RefCell::new(vec![]));
-        let visual_nodes = vec![];
+//        let visual_nodes = vec![];
         let core_app = CoreApp { visual_nodes : vec![] };
 
         Application {
@@ -80,7 +80,7 @@ impl Application {
             context,
             animation_event_listerner,
             core_app,
-            visual_nodes
+//            visual_nodes
         }
     }
 
@@ -88,7 +88,7 @@ impl Application {
     /// to begin rendering.
     pub fn start(&mut self) -> Result<(), JsValue> {
         web_sys::console::log_1(&"start".into());
-        create(&mut self.context);
+        create(&mut self.context, &mut self.core_app);
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
         let canvas: web_sys::HtmlCanvasElement =
@@ -106,15 +106,15 @@ impl Application {
     pub fn event_loop(&mut self, dt: f32) {
         //Handle animation events & clear events when done
         let events =  &self.context.events.clone();
-        send_events_from_context(&mut self.context, events, &mut self.visual_nodes); //Animation events
+        send_events_from_context(&mut self.context, events, &mut self.core_app.visual_nodes); //Animation events
         self.context.events = vec![];
 
 
         //Handle Mouse and Touch events (Currently only one at per frame)
-        send_events(&mut self.context, Rc::clone(&self.events), &mut self.visual_nodes);              // Touch events
+        send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes);              // Touch events
         
         let callbacks = self.context.cb.clone();
-        callbacks.trigger_callbacks(&mut self.context);
+        callbacks.trigger_callbacks(&mut self.context, &mut self.core_app);
         self.context.cb.clear_triggered();
 
         update_animations(dt, &mut self.context);
@@ -183,7 +183,7 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
 
 
 
-pub fn create(mut context: &mut Context) {
+pub fn create(mut context: &mut Context, mut core_app: &mut CoreApp) {
     
     let image_view = ImageViewBuilder::builder().x(0.0).y(500.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
 
@@ -196,18 +196,18 @@ pub fn create(mut context: &mut Context) {
     let mut button = ButtonPrivate::new(&mut context, 150.0, 5.0, 0.5);
     container.add_child(&mut context, button.get_node_uuid());
 
-    button.callback = Some(callback);
+//    button.callback = Some(callback);
     context.cb.add_subscriber(button.this, callback);
 
 
-//        self.visual_nodes.push(Box::new(image_view) as Box<dyn VisualNode>);
+    core_app.visual_nodes.push(Box::new(image_view) as Box<dyn VisualNode>);
     //v_n.push(Box::new(container2) as Box<dyn VisualNode>);
     //v_n.push(Box::new(container) as Box<dyn VisualNode>);
-//        self.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+    core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
 
 }
 
-pub fn callback(mut cx: &mut Context) {
+pub fn callback(mut cx: &mut Context, mut core_app: &mut CoreApp) {
     web_sys::console::log_1(&cx.nodes.len().to_string().into());
     let button = ToggleButtonPrivate::new(&mut cx, 50.0, 50.0, 1.0);
     cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());

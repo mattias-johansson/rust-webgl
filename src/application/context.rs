@@ -1,3 +1,4 @@
+use crate::application::core_app::CoreApp;
 use crate::animation::animation::Animation;
 use crate::controls::node::*;
 use crate::controls::visual_node::*;
@@ -15,12 +16,12 @@ pub struct Context {
     pub root: Option<Uuid>,
     pub callbacks: HashMap<Uuid, Box<dyn FnMut(&mut Context) >>,
     pub cb: Callbacks,
+//    pub visual_nodes: Vec<Box<dyn VisualNode>>
 
 }
 
 impl Context {
     pub fn new() -> Context {
-//        let visual_nodes = vec![];
         let nodes = vec![];
         let node_relations = HashMap::default();
         let animations = vec![];
@@ -29,6 +30,7 @@ impl Context {
         let root: Option<Uuid> = None;
         let callbacks = HashMap::default();
         let cb = Callbacks::new();
+//        let visual_nodes = vec![];
         Context { nodes, node_relations, animations, events, textures, root, callbacks, cb }
     }
 
@@ -109,7 +111,7 @@ impl Context {
 #[derive(Clone)]
 pub struct Callbacks {
     triggered_callbacks : Vec<Uuid>,
-    subscribers: HashMap<Uuid, Vec<fn(&mut Context)>>
+    subscribers: HashMap<Uuid, Vec<fn(&mut Context, &mut CoreApp)>>
 }
 
 impl Callbacks {
@@ -126,7 +128,7 @@ impl Callbacks {
         self.triggered_callbacks.clear();
     }
 
-    pub fn add_subscriber(&mut self, source: Uuid, target: fn(&mut Context)) {
+    pub fn add_subscriber(&mut self, source: Uuid, target: fn(&mut Context, &mut CoreApp)) {
         web_sys::console::log_1(&"add_subscriber".into());
         let mut callbacks = self.subscribers.get_mut(&source);
         match &mut callbacks {
@@ -137,13 +139,13 @@ impl Callbacks {
         }
     }
 
-    pub fn trigger_callbacks(&self, cx: &mut Context) {
+    pub fn trigger_callbacks(&self, cx: &mut Context, core_app: &mut CoreApp) {
         for triggerd in &self.triggered_callbacks {
             let targets = self.subscribers.get(&triggerd);
             match targets {
                 Some(targets) => {
                     for target in targets {
-                        (target)(cx);
+                        (target)(cx, core_app);
                         web_sys::console::log_1(&"triggered".into());
 
                     }
