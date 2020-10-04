@@ -1,7 +1,6 @@
 use crate::application::core_app::CoreApp;
 use crate::animation::animation::Animation;
 use crate::controls::node::*;
-use crate::controls::visual_node::*;
 use crate::events::mouse::*;
 use crate::render::textures::*;
 use uuid::Uuid;
@@ -16,7 +15,6 @@ pub struct Context {
     pub root: Option<Uuid>,
     pub callbacks: HashMap<Uuid, Box<dyn FnMut(&mut Context) >>,
     pub cb: Callbacks,
-//    pub visual_nodes: Vec<Box<dyn VisualNode>>
 
 }
 
@@ -30,7 +28,6 @@ impl Context {
         let root: Option<Uuid> = None;
         let callbacks = HashMap::default();
         let cb = Callbacks::new();
-//        let visual_nodes = vec![];
         Context { nodes, node_relations, animations, events, textures, root, callbacks, cb }
     }
 
@@ -43,17 +40,7 @@ impl Context {
         }
         None
     }
-/*
-    pub fn get_visual_node(&mut self, uuid: Uuid) -> Option<&mut Box<dyn VisualNode>> {
-        let visual_nodes: &mut Vec<Box<dyn VisualNode>> = self.visual_nodes.as_mut(); 
-        for visual_node in visual_nodes {
-            if uuid == visual_node.get_uuid() {
-                return Some(visual_node);
-            }
-        }
-        None
-    }
-*/
+
     pub fn get_node_unmut(&self, uuid: Uuid) -> Option<&Node> {
         for node in self.nodes.as_slice() {
             if uuid == node.uuid {
@@ -146,12 +133,9 @@ impl Callbacks {
 
     pub fn trigger_callbacks(&self, cx: &mut Context, core_app: &mut CoreApp) {
         for triggerd in &self.triggered_callbacks {
-            web_sys::console::log_1(&"trigger_callbacks!!!!!!!!!!!!!!!!!!!!!!!!!!!!!".into());
             let targets = self.subscribers.get(&triggerd);
             match targets {
                 Some(targets) => {
-
-                    web_sys::console::log_1(&"Has targets !!!!!!!!!!!!!!!!!!!!!!!!!!!!!".into());
                     for target in targets {
                         (target)(cx, core_app);
                         web_sys::console::log_1(&"triggered".into());
@@ -159,7 +143,6 @@ impl Callbacks {
                     }
                 },
                 None => {
-                    web_sys::console::log_1(&"!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NO targets ------------".into());
                 }
             }
         }

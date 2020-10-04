@@ -4,6 +4,9 @@ use wasm_bindgen::JsCast;
 use crate::render::shaders::compile_shader;
 use crate::render::shaders::link_program;
 
+use makepad_ttf_parser::*;
+use makepad_font::*;
+
 pub fn get_webgl_context() -> WebGlRenderingContext {
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
@@ -122,3 +125,11 @@ pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
     program
 }
 
+
+pub fn parse_font() {
+
+    static FONT: &'static [u8] = include_bytes!("../../assets/ubuntu_r.tff");
+
+    let font : Result<Font> = parse_ttf(FONT);
+
+}

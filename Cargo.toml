@@ -17,6 +17,8 @@ serde_json = "1.0"
 erased-serde = "0.3"
 rand = "0.7.3"
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen", "v1"] }
+makepad-ttf-parser = "0.1.0"
+makepad-font = "0.1.0"
 
 [dependencies.web-sys]
 version = "0.3.39"

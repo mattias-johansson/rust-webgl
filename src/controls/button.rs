@@ -31,7 +31,6 @@ pub struct ButtonPrivate {
     state: ButtonState,
     on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
-    pub callback: Option<fn(&mut Context)>,
 }
 
 impl ButtonPrivate {
@@ -41,7 +40,6 @@ impl ButtonPrivate {
         let node = ButtonPrivate::create(this, cx, x, y, opacity);
         let node_uuid = node.uuid;
         cx.nodes.push(node);
-        let callback = None;
         let state = ButtonState::NotPressed; 
         
         let node_pressed = ButtonPrivate::create_pressed(this, cx, x, y, opacity);
@@ -65,7 +63,7 @@ impl ButtonPrivate {
         cx.animations.push(on_animation);
         cx.animations.push(off_animation);
 
-        ButtonPrivate { this, node: node_uuid, pressed, state, on_animation_uuid, off_animation_uuid, callback } 
+        ButtonPrivate { this, node: node_uuid, pressed, state, on_animation_uuid, off_animation_uuid } 
     }
 
     pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
@@ -176,7 +174,7 @@ impl VisualNode for ButtonPrivate {
         self
     }
 
-    fn event_handler(&mut self, mut cx: &mut Context, message: &Event) -> bool {
+    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool {
         web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
