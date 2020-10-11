@@ -128,8 +128,26 @@ pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
 
 pub fn parse_font() {
 
-    static FONT: &'static [u8] = include_bytes!("../../assets/ubuntu_r.tff");
+    static FONT: &'static [u8] = include_bytes!("../../assets/ubuntu_r.ttf");
 
     let font : Result<Font> = parse_ttf(FONT);
+    let font = font.unwrap();
+    let unicode = 'A' as usize;
+    let glyph_id = font.char_code_to_glyph_index_map[unicode];
+
+    let glyph = &font.glyphs[glyph_id];
+    let outline = &glyph.outline;
+    let outline_points = outline.points();
+    let outline_point = outline_points[0];
+    if outline_point.is_on_curve {
+        let point = outline_point.point;
+        let x = point.x;
+        let y = point.y;
+    }
+
+
+    
+
+    
 
 }

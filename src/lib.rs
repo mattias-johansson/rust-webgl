@@ -53,6 +53,7 @@ impl Application {
         let webgl_context = get_webgl_context();
         let program = create_webgl_program(&webgl_context);
         let program_color = create_webgl_program_color(&webgl_context);
+        parse_font();
         
         setup_redering_context(&webgl_context, &program);
         let gl = Rc::new(webgl_context);
