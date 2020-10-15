@@ -19,6 +19,10 @@ rand = "0.7.3"
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen", "v1"] }
 makepad-ttf-parser = "0.1.0"
 makepad-font = "0.1.0"
+makepad-trapezoidator = "0.1.0"
+makepad-geometry = "0.1.0"
+makepad-internal-iter = "0.1.0"
+makepad-path = "0.1.0"
 
 [dependencies.web-sys]
 version = "0.3.39"

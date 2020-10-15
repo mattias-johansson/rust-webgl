@@ -6,6 +6,10 @@ use crate::render::shaders::link_program;
 
 use makepad_ttf_parser::*;
 use makepad_font::*;
+use makepad_trapezoidator::*;
+use makepad_geometry::*;
+use makepad_internal_iter::*;
+use makepad_path::*;
 
 pub fn get_webgl_context() -> WebGlRenderingContext {
     let document = web_sys::window().unwrap().document().unwrap();
@@ -88,8 +92,7 @@ pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
         r#"
         precision mediump float;
         attribute vec4 vertexData;
-        varying vec2 texCoords;
-        
+
         uniform float transparency;
         uniform mat4 model;
         uniform mat4 view;
@@ -97,7 +100,6 @@ pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
     
         void main() {
             gl_Position = perspective * view * model * vec4(vertexData.xy, 1.0, 1.0);
-            texCoords = vertexData.zw;
         }
     "#,
     )
@@ -126,28 +128,99 @@ pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
 }
 
 
-pub fn parse_font() {
+pub fn parse_font() -> Vec<f32> {
 
+    let mut points : Vec<f32> = vec![];
     static FONT: &'static [u8] = include_bytes!("../../assets/ubuntu_r.ttf");
 
     let font : Result<Font> = parse_ttf(FONT);
     let font = font.unwrap();
-    let unicode = 'A' as usize;
+    let unicode = 'V' as usize;
     let glyph_id = font.char_code_to_glyph_index_map[unicode];
 
     let glyph = &font.glyphs[glyph_id];
     let outline = &glyph.outline;
     let outline_points = outline.points();
-    let outline_point = outline_points[0];
-    if outline_point.is_on_curve {
-        let point = outline_point.point;
-        let x = point.x;
-        let y = point.y;
+
+    for outline_point in outline_points {
+        if outline_point.is_on_curve {
+            let point = outline_point.point;
+            points.push(point.x);
+            points.push(point.y);
+        }    
     }
 
+    //web_sys::console::log_1(&"GLYPH POINTS:".into());
 
-    
+//    for value in points {
+  //      web_sys::console::log_1(&value.into());
+//    }
 
-    
 
+//    web_sys::console::log_1(&"GLYPH BOUNDS:".into());
+    let rect = &glyph.bounds;
+//    web_sys::console::log_1(&rect.p_max.x.into());
+//    web_sys::console::log_1(&rect.p_max.y.into());
+//    web_sys::console::log_1(&rect.p_min.x.into());
+//    web_sys::console::log_1(&rect.p_min.y.into());
+
+
+    let mut trapezoidator = Trapezoidator::new();
+
+
+    let mut points : Vec<f32> = vec![];
+
+    let trapezoids = {
+//        let font_scale_pixels = 0.0078125;
+        let font_scale_pixels = 0.5;
+        let mut trapezoids = Vec::new();
+        let trapezoidate = trapezoidator.trapezoidate(
+            glyph
+                .outline
+                .commands()
+                .map({
+                move | command | {
+                    command.transform(
+                        &AffineTransformation::identity()
+                            .translate(Vector::new(-glyph.bounds.p_min.x, -glyph.bounds.p_min.y))
+                            .uniform_scale(font_scale_pixels)
+                            .translate(Vector::new(0.0, 0.0))
+                    )
+                }
+            }).linearize(0.5),
+        );
+        trapezoids.extend_from_internal_iter(
+                trapezoidate
+        );
+        trapezoids
+    };
+    for trapezoid in trapezoids {
+        let data = [
+            trapezoid.xs[0],
+            trapezoid.xs[1],
+            trapezoid.ys[0],
+            trapezoid.ys[1],
+            trapezoid.ys[2],
+            trapezoid.ys[3],
+            3.0
+        ];
+        points.push(trapezoid.xs[0]);
+        points.push(trapezoid.ys[2]);
+        points.push(trapezoid.xs[0]);
+        points.push(trapezoid.ys[3]);
+        points.push(trapezoid.xs[1]);
+        points.push(trapezoid.ys[1]);
+        points.push(trapezoid.xs[1]);
+        points.push(trapezoid.ys[2]);
+//        inst.push_slice(cx, &data);
+    }    
+
+//    web_sys::console::log_1(&"GLYPH POINTS:".into());
+    /*
+    for value in &points {
+        web_sys::console::log_1(&value.into());
+    }
+    */
+    points
 }
+ 

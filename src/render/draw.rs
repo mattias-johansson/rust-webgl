@@ -14,6 +14,13 @@ use std::rc::Rc;
 use crate::controls::node::*;
 
 
+
+use crate::render::gl_context::*;
+
+
+
+
+
 pub fn update_animations(dt: f32, cx: &mut Context) {
     for i in 0..cx.animations.len() {
         let animation: &mut Animation = cx.animations.get_mut(i).unwrap();
@@ -159,6 +166,12 @@ pub fn draw_scene(
             };
         }
     }
+    let points = parse_font();
+    render_text( &webgl_context,
+        program_color,
+        points,
+        0.5,
+        (1.0,0.0,1.0),);
 }
 
 fn render(
@@ -210,10 +223,6 @@ fn render(
 
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
-    
-//    context.enable(WebGlRenderingContext::DEPTH_TEST);
-//    context.disable(WebGlRenderingContext::DEPTH_TEST);
-//    context.enable(WebGlRenderingContext::STENCIL_TEST);
 
     context.blend_func(
         WebGlRenderingContext::SRC_ALPHA,
@@ -310,9 +319,6 @@ fn render_bg(
 
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
-    //   context.enable(WebGlRenderingContext::DEPTH_TEST);
-//    context.disable(WebGlRenderingContext::DEPTH_TEST);
-//    context.enable(WebGlRenderingContext::STENCIL_TEST);
 
     context.blend_func(
         WebGlRenderingContext::SRC_ALPHA,
@@ -349,7 +355,7 @@ fn render_bg(
     context.uniform_matrix4fv_with_f32_array(view_uni.as_ref(), false, &mut identity().as_slice());
 
     buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
-    context.enable(WebGlRenderingContext::BLEND);
+    context.enable(WebGlRenderingContext::BLEND); 
 
     context.blend_func(
         WebGlRenderingContext::SRC_ALPHA,
@@ -363,6 +369,101 @@ fn render_bg(
 }
 
 
+fn render_text(
+    context: &WebGlRenderingContext,
+    program: &WebGlProgram,
+    vertices: Vec<f32>,
+    opacity: f32,
+    color: (f32, f32, f32),
+) {
+    let rect_width = 100.0;
+    let rect_height = 100.0;
+/*    let vertices: [f32; 24] = [
+        -rect_width,
+        rect_height,
+        0.0,
+        1.0,
+        rect_width,
+        -rect_height,
+        1.0,
+        0.0,
+        -rect_width,
+        -rect_height,
+        0.0,
+        0.0,
+        -rect_width,
+        rect_height,
+        0.0,
+        1.0,
+        rect_width,
+        rect_height,
+        1.0,
+        1.0,
+        rect_width,
+        -rect_height,
+        1.0,
+        0.0,
+    ];
+*/    context.use_program(Some(&program));
+    let canvas_width = 1280.0;
+    let canvas_height = 703.0;
+
+    let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
+    context.enable_vertex_attrib_array(vertex_data_attrib as u32);
+
+    context.blend_func(
+        WebGlRenderingContext::SRC_ALPHA,
+        WebGlRenderingContext::ONE_MINUS_SRC_ALPHA,
+    );
+
+    let transparency_data_attrib = context.get_uniform_location(&program, "transparency");
+    context.uniform1f(transparency_data_attrib.as_ref(), opacity);
+
+    let model_uni = context.get_uniform_location(&program, "model");
+    let model = Isometry3::new(
+        Vector3::new(0.0 + (rect_width), 0.0 + (rect_height), 1.0), //THIS IS CHANGED
+        nalgebra::zero(),
+    ); //move to 1,1,1
+    let mut model_array = [0.; 16];
+    model_array.copy_from_slice(model.to_homogeneous().as_slice());
+    context.uniform_matrix4fv_with_f32_array(model_uni.as_ref(), false, &mut model_array);
+
+    let perspective_uni = context.get_uniform_location(&program, "perspective");
+
+    // builds the view "box" 
+    //Note for fonts  the z-axis is NOT turned 180 degrees compared to the vertex shader. Don't know why just yet.
+    let ortho_matrix = glm::ortho(0.0, canvas_width, 0.0, canvas_height, -2.0, 2.0);
+
+    context.uniform_matrix4fv_with_f32_array(
+        perspective_uni.as_ref(),
+        false,
+        &mut ortho_matrix.as_slice(),
+    );
+
+    let view_uni = context.get_uniform_location(&program, "view");
+    let view = Isometry3::new(Vector3::new(1.0, 1.0, 1.0), nalgebra::zero());
+    let mut view_array = [0.; 16];
+    view_array.copy_from_slice(view.to_homogeneous().as_slice());
+    context.uniform_matrix4fv_with_f32_array(view_uni.as_ref(), false, &mut identity().as_slice());
+
+    buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
+    context.enable(WebGlRenderingContext::BLEND); 
+
+    context.blend_func(
+        WebGlRenderingContext::SRC_ALPHA,
+        WebGlRenderingContext::ONE_MINUS_SRC_ALPHA,
+    );
+
+    let color_data_attrib = context.get_uniform_location(&program, "color");
+    context.uniform3f(color_data_attrib.as_ref(), color.0, color.1, color.2);
+    let num_triangles = vertices.len() / 4;
+    context.draw_arrays(WebGlRenderingContext::TRIANGLE_STRIP, 0, num_triangles as i32);
+}
+
+
+/**
+ * Used to make "clipping"
+ */
 fn render_stencil(
     context: &WebGlRenderingContext,
     program: &WebGlProgram,
