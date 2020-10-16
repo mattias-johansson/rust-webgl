@@ -170,8 +170,8 @@ pub fn draw_scene(
     render_text( &webgl_context,
         program_color,
         points,
-        0.5,
-        (1.0,0.0,1.0),);
+        1.0,
+        (0.0,0.0,0.0),);
 }
 
 fn render(
@@ -290,31 +290,19 @@ fn render_bg(
     let rect_height = rect_height / 2.0;
     let rect_width = rect_width / 2.0;
     // All of the positions of our quad in local space
-    let vertices: [f32; 24] = [
+    let vertices: [f32; 12] = [
         -rect_width,
         rect_height,
-        0.0,
-        1.0,
         rect_width,
         -rect_height,
-        1.0,
-        0.0,
         -rect_width,
         -rect_height,
-        0.0,
-        0.0,
         -rect_width,
         rect_height,
-        0.0,
-        1.0,
         rect_width,
         rect_height,
-        1.0,
-        1.0,
         rect_width,
         -rect_height,
-        1.0,
-        0.0,
     ];
 
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
@@ -354,7 +342,7 @@ fn render_bg(
     view_array.copy_from_slice(view.to_homogeneous().as_slice());
     context.uniform_matrix4fv_with_f32_array(view_uni.as_ref(), false, &mut identity().as_slice());
 
-    buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
+    buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 2);
     context.enable(WebGlRenderingContext::BLEND); 
 
     context.blend_func(
@@ -378,33 +366,7 @@ fn render_text(
 ) {
     let rect_width = 100.0;
     let rect_height = 100.0;
-/*    let vertices: [f32; 24] = [
-        -rect_width,
-        rect_height,
-        0.0,
-        1.0,
-        rect_width,
-        -rect_height,
-        1.0,
-        0.0,
-        -rect_width,
-        -rect_height,
-        0.0,
-        0.0,
-        -rect_width,
-        rect_height,
-        0.0,
-        1.0,
-        rect_width,
-        rect_height,
-        1.0,
-        1.0,
-        rect_width,
-        -rect_height,
-        1.0,
-        0.0,
-    ];
-*/    context.use_program(Some(&program));
+    context.use_program(Some(&program));
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
 
@@ -446,7 +408,7 @@ fn render_text(
     view_array.copy_from_slice(view.to_homogeneous().as_slice());
     context.uniform_matrix4fv_with_f32_array(view_uni.as_ref(), false, &mut identity().as_slice());
 
-    buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
+    buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 2);
     context.enable(WebGlRenderingContext::BLEND); 
 
     context.blend_func(
@@ -456,8 +418,8 @@ fn render_text(
 
     let color_data_attrib = context.get_uniform_location(&program, "color");
     context.uniform3f(color_data_attrib.as_ref(), color.0, color.1, color.2);
-    let num_triangles = vertices.len() / 4;
-    context.draw_arrays(WebGlRenderingContext::TRIANGLE_STRIP, 0, num_triangles as i32);
+    let num_triangles = vertices.len() / 2;
+    context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, num_triangles as i32);
 }
 
 

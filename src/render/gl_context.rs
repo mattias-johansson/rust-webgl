@@ -91,7 +91,7 @@ pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
         WebGlRenderingContext::VERTEX_SHADER,
         r#"
         precision mediump float;
-        attribute vec4 vertexData;
+        attribute vec2 vertexData;
 
         uniform float transparency;
         uniform mat4 model;
@@ -135,7 +135,7 @@ pub fn parse_font() -> Vec<f32> {
 
     let font : Result<Font> = parse_ttf(FONT);
     let font = font.unwrap();
-    let unicode = 'V' as usize;
+    let unicode = 'S' as usize;
     let glyph_id = font.char_code_to_glyph_index_map[unicode];
 
     let glyph = &font.glyphs[glyph_id];
@@ -150,19 +150,7 @@ pub fn parse_font() -> Vec<f32> {
         }    
     }
 
-    //web_sys::console::log_1(&"GLYPH POINTS:".into());
-
-//    for value in points {
-  //      web_sys::console::log_1(&value.into());
-//    }
-
-
-//    web_sys::console::log_1(&"GLYPH BOUNDS:".into());
     let rect = &glyph.bounds;
-//    web_sys::console::log_1(&rect.p_max.x.into());
-//    web_sys::console::log_1(&rect.p_max.y.into());
-//    web_sys::console::log_1(&rect.p_min.x.into());
-//    web_sys::console::log_1(&rect.p_min.y.into());
 
 
     let mut trapezoidator = Trapezoidator::new();
@@ -171,7 +159,6 @@ pub fn parse_font() -> Vec<f32> {
     let mut points : Vec<f32> = vec![];
 
     let trapezoids = {
-//        let font_scale_pixels = 0.0078125;
         let font_scale_pixels = 0.5;
         let mut trapezoids = Vec::new();
         let trapezoidate = trapezoidator.trapezoidate(
@@ -195,32 +182,15 @@ pub fn parse_font() -> Vec<f32> {
         trapezoids
     };
     for trapezoid in trapezoids {
-        let data = [
-            trapezoid.xs[0],
-            trapezoid.xs[1],
-            trapezoid.ys[0],
-            trapezoid.ys[1],
-            trapezoid.ys[2],
-            trapezoid.ys[3],
-            3.0
-        ];
         points.push(trapezoid.xs[0]);
-        points.push(trapezoid.ys[2]);
+        points.push(trapezoid.ys[0]);
         points.push(trapezoid.xs[0]);
-        points.push(trapezoid.ys[3]);
-        points.push(trapezoid.xs[1]);
         points.push(trapezoid.ys[1]);
         points.push(trapezoid.xs[1]);
         points.push(trapezoid.ys[2]);
-//        inst.push_slice(cx, &data);
+        points.push(trapezoid.xs[1]);
+        points.push(trapezoid.ys[3]);
     }    
-
-//    web_sys::console::log_1(&"GLYPH POINTS:".into());
-    /*
-    for value in &points {
-        web_sys::console::log_1(&value.into());
-    }
-    */
     points
 }
  
