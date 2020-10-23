@@ -135,7 +135,7 @@ pub fn parse_font() -> Vec<f32> {
 
     let font : Result<Font> = parse_ttf(FONT);
     let font = font.unwrap();
-    let unicode = 'Å' as usize;
+    let unicode = 'W' as usize;
     let glyph_id = font.char_code_to_glyph_index_map[unicode];
 
     let glyph = &font.glyphs[glyph_id];
@@ -211,14 +211,15 @@ pub fn parse_font() -> Vec<f32> {
         points.push(trapezoid.xs[1]); //B
         points.push(trapezoid.ys[1]);
         points.push(trapezoid.xs[0]); //C
-        points.push(trapezoid.ys[3]);
+        points.push(trapezoid.ys[2]);
 
+        points.push(trapezoid.xs[0]); //D
+        points.push(trapezoid.ys[2]);
         points.push(trapezoid.xs[1]); //A
         points.push(trapezoid.ys[1]);
         points.push(trapezoid.xs[1]); //C
-        points.push(trapezoid.ys[2]);
-        points.push(trapezoid.xs[0]); //D
         points.push(trapezoid.ys[3]);
+
 
     }    
     points
