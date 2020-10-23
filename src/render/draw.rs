@@ -364,8 +364,8 @@ fn render_text(
     opacity: f32,
     color: (f32, f32, f32),
 ) {
-    let rect_width = 100.0;
-    let rect_height = 100.0;
+    let rect_width = 50.0;
+    let rect_height = 50.0;
     context.use_program(Some(&program));
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
@@ -383,7 +383,7 @@ fn render_text(
 
     let model_uni = context.get_uniform_location(&program, "model");
     let model = Isometry3::new(
-        Vector3::new(0.0 + (rect_width), 0.0 + (rect_height), 1.0), //THIS IS CHANGED
+        Vector3::new(400.0 + (rect_width), 0.0 + (rect_height), 1.0), //THIS IS CHANGED
         nalgebra::zero(),
     ); //move to 1,1,1
     let mut model_array = [0.; 16];
@@ -418,8 +418,8 @@ fn render_text(
 
     let color_data_attrib = context.get_uniform_location(&program, "color");
     context.uniform3f(color_data_attrib.as_ref(), color.0, color.1, color.2);
-    let num_triangles = vertices.len() / 2;
-    context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, num_triangles as i32);
+    let num_vertices = vertices.len() /    2;
+    context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, num_vertices as i32);
 }
 
 

@@ -3,6 +3,7 @@ use crate::animation::animation::Animation;
 use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::render::textures::*;
+use crate::render::fonts::*;
 use uuid::Uuid;
 use std::collections::HashMap;
 
@@ -15,6 +16,7 @@ pub struct Context {
     pub root: Option<Uuid>,
     pub callbacks: HashMap<Uuid, Box<dyn FnMut(&mut Context) >>,
     pub cb: Callbacks,
+    pub fonts: Fonts,
 
 }
 
@@ -28,7 +30,9 @@ impl Context {
         let root: Option<Uuid> = None;
         let callbacks = HashMap::default();
         let cb = Callbacks::new();
-        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb }
+        let fonts = Fonts::default();
+        
+        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb, fonts}
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {

@@ -131,11 +131,11 @@ pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
 pub fn parse_font() -> Vec<f32> {
 
     let mut points : Vec<f32> = vec![];
-    static FONT: &'static [u8] = include_bytes!("../../assets/ubuntu_r.ttf");
+    static FONT: &'static [u8] = include_bytes!("../../assets/LiberationMono-Regular.ttf");
 
     let font : Result<Font> = parse_ttf(FONT);
     let font = font.unwrap();
-    let unicode = 'S' as usize;
+    let unicode = 'Å' as usize;
     let glyph_id = font.char_code_to_glyph_index_map[unicode];
 
     let glyph = &font.glyphs[glyph_id];
@@ -152,14 +152,13 @@ pub fn parse_font() -> Vec<f32> {
 
     let rect = &glyph.bounds;
 
-
     let mut trapezoidator = Trapezoidator::new();
 
 
     let mut points : Vec<f32> = vec![];
 
     let trapezoids = {
-        let font_scale_pixels = 0.5;
+        let font_scale_pixels = 0.14;
         let mut trapezoids = Vec::new();
         let trapezoidate = trapezoidator.trapezoidate(
             glyph
@@ -181,15 +180,46 @@ pub fn parse_font() -> Vec<f32> {
         );
         trapezoids
     };
+//    Y     Y
+//    
+//    A     B
+// X  _______
+//    |\    |
+//    | \   |
+//    |  \  |
+//    |   \ |
+//    |    \|
+// X  -------
+//    D      C
+     
+//   X0
+//Y0 |\
+//   | \
+//   |  \ X1
+//   |   \
+//   |    | Y1
+//   |    | Y2
+//   |   /
+//   |  /
+//   | /
+//Y3 |/
+
     for trapezoid in trapezoids {
-        points.push(trapezoid.xs[0]);
+
+        points.push(trapezoid.xs[0]); //A
         points.push(trapezoid.ys[0]);
-        points.push(trapezoid.xs[0]);
+        points.push(trapezoid.xs[1]); //B
         points.push(trapezoid.ys[1]);
-        points.push(trapezoid.xs[1]);
-        points.push(trapezoid.ys[2]);
-        points.push(trapezoid.xs[1]);
+        points.push(trapezoid.xs[0]); //C
         points.push(trapezoid.ys[3]);
+
+        points.push(trapezoid.xs[1]); //A
+        points.push(trapezoid.ys[1]);
+        points.push(trapezoid.xs[1]); //C
+        points.push(trapezoid.ys[2]);
+        points.push(trapezoid.xs[0]); //D
+        points.push(trapezoid.ys[3]);
+
     }    
     points
 }
