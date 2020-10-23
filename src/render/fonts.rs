@@ -25,23 +25,7 @@ impl Fonts {
         let glyph_id = self.font.char_code_to_glyph_index_map[unicode];
 
         let glyph = &self.font.glyphs[glyph_id];
-        let outline = &glyph.outline;
-        let outline_points = outline.points();
-    
-        for outline_point in outline_points {
-            if outline_point.is_on_curve {
-                let point = outline_point.point;
-                points.push(point.x);
-                points.push(point.y);
-            }    
-        }
-    
-        let rect = &glyph.bounds;
-    
         let mut trapezoidator = Trapezoidator::new();
-    
-    
-        let mut points : Vec<f32> = vec![];
     
         let trapezoids = {
             let font_scale_pixels = 0.15;
@@ -66,34 +50,34 @@ impl Fonts {
             );
             trapezoids
         };
-    //    Y     Y
-    //    
-    //    A     B
-    // X  _______
-    //    |\    |
-    //    | \   |
-    //    |  \  |
-    //    |   \ |
-    //    |    \|
-    // X  -------
-    //    D      C
+
+//   X0
+//Y0 |\
+//   | \
+//   |  \ X1
+//   |   \
+//   |    | Y1
+//   |    | Y3
+//   |   /
+//   |  /
+//   | /
+//Y2 |/
     
         for trapezoid in trapezoids {
     
-            points.push(trapezoid.xs[1]); //A
+            points.push(trapezoid.xs[0]); 
             points.push(trapezoid.ys[0]);
-            points.push(trapezoid.xs[1]); //B
+            points.push(trapezoid.xs[1]); 
             points.push(trapezoid.ys[1]);
-            points.push(trapezoid.xs[0]); //C
+            points.push(trapezoid.xs[0]); 
             points.push(trapezoid.ys[2]);
     
-            points.push(trapezoid.xs[1]); //A
-            points.push(trapezoid.ys[0]);
-            points.push(trapezoid.xs[0]); //D
+            points.push(trapezoid.xs[0]); 
+            points.push(trapezoid.ys[2]);
+            points.push(trapezoid.xs[1]); 
+            points.push(trapezoid.ys[1]);
+            points.push(trapezoid.xs[1]); 
             points.push(trapezoid.ys[3]);
-            points.push(trapezoid.xs[0]); //C
-            points.push(trapezoid.ys[2]);
-    
         }    
         points
     }

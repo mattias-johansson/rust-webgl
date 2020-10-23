@@ -135,7 +135,7 @@ pub fn parse_font() -> Vec<f32> {
 
     let font : Result<Font> = parse_ttf(FONT);
     let font = font.unwrap();
-    let unicode = 'W' as usize;
+    let unicode = 'Ä' as usize;
     let glyph_id = font.char_code_to_glyph_index_map[unicode];
 
     let glyph = &font.glyphs[glyph_id];
@@ -180,17 +180,6 @@ pub fn parse_font() -> Vec<f32> {
         );
         trapezoids
     };
-//    Y     Y
-//    
-//    A     B
-// X  _______
-//    |\    |
-//    | \   |
-//    |  \  |
-//    |   \ |
-//    |    \|
-// X  -------
-//    D      C
      
 //   X0
 //Y0 |\
@@ -198,28 +187,27 @@ pub fn parse_font() -> Vec<f32> {
 //   |  \ X1
 //   |   \
 //   |    | Y1
-//   |    | Y2
+//   |    | Y3
 //   |   /
 //   |  /
 //   | /
-//Y3 |/
+//Y2 |/
 
     for trapezoid in trapezoids {
 
-        points.push(trapezoid.xs[0]); //A
+        points.push(trapezoid.xs[0]); 
         points.push(trapezoid.ys[0]);
-        points.push(trapezoid.xs[1]); //B
+        points.push(trapezoid.xs[1]); 
         points.push(trapezoid.ys[1]);
-        points.push(trapezoid.xs[0]); //C
+        points.push(trapezoid.xs[0]); 
         points.push(trapezoid.ys[2]);
 
-        points.push(trapezoid.xs[0]); //D
+        points.push(trapezoid.xs[0]); 
         points.push(trapezoid.ys[2]);
-        points.push(trapezoid.xs[1]); //A
+        points.push(trapezoid.xs[1]); 
         points.push(trapezoid.ys[1]);
-        points.push(trapezoid.xs[1]); //C
+        points.push(trapezoid.xs[1]); 
         points.push(trapezoid.ys[3]);
-
 
     }    
     points
