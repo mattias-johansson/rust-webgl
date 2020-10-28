@@ -48,10 +48,18 @@ impl Node {
     }
 
     pub fn create_texture(cx: &mut Context, image: &str) -> Uuid {
-        let texture = Texture::new(image.to_string());
-        let uuid = texture.id;
-        cx.textures.textures.insert(uuid, texture);
-        uuid
+        match cx.textures.textures_by_string.get(image) {
+            Some(uuid) => { 
+                *uuid 
+            },
+            None => {
+                let texture = Texture::new(image.to_string());
+                let uuid = texture.id;
+                cx.textures.textures.insert(uuid, texture);
+                cx.textures.textures_by_string.insert(image.to_owned(), uuid);
+                uuid
+            }
+        }
     }
 
     pub fn add_child(&self, cx: &mut Context, child: Uuid) {

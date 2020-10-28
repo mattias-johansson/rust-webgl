@@ -7,6 +7,8 @@ use std::rc::Rc;
 use crate::render::lti::*;
 
 pub struct Textures {
+
+    pub textures_by_string: HashMap<String, Uuid>,
     pub textures: HashMap<Uuid, Texture>,
     last_used_pos_u: u32,
     last_used_pos_i: i32,
@@ -32,7 +34,7 @@ impl Texture {
 impl Textures {
 
     pub fn new() -> Textures {
-        Textures { textures: HashMap::default(), last_used_pos_u: 33984u64 as u32, last_used_pos_i: 0 as i32}
+        Textures { textures_by_string: HashMap::default(), textures: HashMap::default(), last_used_pos_u: 33984u64 as u32, last_used_pos_i: 0 as i32}
     }
 
     pub fn load_texture(&mut self, gl: Rc<WebGlRenderingContext>, texture_id: &Uuid) -> i32 {
@@ -54,6 +56,8 @@ impl Textures {
                         } 
                     }
                 }  else {
+                    web_sys::console::log_1(&"texture.location".into());
+                    web_sys::console::log_1(&texture.location.to_string().into());
                     texture.location
                 }
             },
@@ -63,8 +67,8 @@ impl Textures {
         }
     }
 
-    pub fn get_texture_position(&self, texture: Uuid) -> Option<&Texture> {
-        self.textures.get(&texture)
+    pub fn get_texture_position(&self, texture: &Uuid) -> Option<&Texture> {
+        self.textures.get(texture)
     }
     
     fn get_free_pos(&self) -> Option<(i32, u32)> {
