@@ -189,7 +189,7 @@ pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
 
     let container = ContainerBuilder::builder().x(100.0).height(400.0).width(400.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut context);
     let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(400.0).height(400.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
-    let label = Label::new(context, 150.0, 5.0, "B");
+    let label = Label::new(context, 150.0, 5.0, "Inwindow");
     context.add_child_to(context.root.unwrap(), container.get_node_uuid());
     container.add_child(&mut context, container2.get_node_uuid());
     context.add_child_to(context.root.unwrap(), image_view.get_node_uuid());

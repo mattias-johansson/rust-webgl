@@ -37,8 +37,14 @@ impl Word {
         }
     }
 
-    pub fn get_char_points_for_char(&self, character: &usize) -> Option<&Vec<f32>> {
-        self.char_points.get(character)
+    pub fn get_char_points_for_char(&self, unicode: &usize) -> Option<&Vec<f32>> {
+        self.char_points.get(unicode)
+    }
+
+    pub fn get_advance_for_char(&self, unicode: usize) -> f32{
+        let glyph_id = self.font.char_code_to_glyph_index_map[unicode];
+        let glyph = &self.font.glyphs[glyph_id];
+        glyph.horizontal_metrics.advance_width
     }
 
     pub fn get_char_points(&self, unicode: usize) -> Vec<f32> {

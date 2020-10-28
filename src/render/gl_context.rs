@@ -4,13 +4,6 @@ use wasm_bindgen::JsCast;
 use crate::render::shaders::compile_shader;
 use crate::render::shaders::link_program;
 
-use makepad_ttf_parser::*;
-use makepad_font::*;
-use makepad_trapezoidator::*;
-use makepad_geometry::*;
-use makepad_internal_iter::*;
-use makepad_path::*;
-
 pub fn get_webgl_context() -> WebGlRenderingContext {
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
@@ -125,91 +118,4 @@ pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
     let program = link_program(&gl, &vert_shader, &frag_shader).unwrap();
 
     program
-}
-
-
-pub fn parse_font() -> Vec<f32> {
-
-    let mut points : Vec<f32> = vec![];
-    static FONT: &'static [u8] = include_bytes!("../../assets/LiberationMono-Regular.ttf");
-
-    let font : Result<Font> = parse_ttf(FONT);
-    let font = font.unwrap();
-    let unicode = 'Ä' as usize;
-    let glyph_id = font.char_code_to_glyph_index_map[unicode];
-
-    let glyph = &font.glyphs[glyph_id];
-    let outline = &glyph.outline;
-    let outline_points = outline.points();
-
-    for outline_point in outline_points {
-        if outline_point.is_on_curve {
-            let point = outline_point.point;
-            points.push(point.x);
-            points.push(point.y);
-        }    
-    }
-
-    let rect = &glyph.bounds;
-
-    let mut trapezoidator = Trapezoidator::new();
-
-
-    let mut points : Vec<f32> = vec![];
-
-    let trapezoids = {
-        let font_scale_pixels = 0.14;
-        let mut trapezoids = Vec::new();
-        let trapezoidate = trapezoidator.trapezoidate(
-            glyph
-                .outline
-                .commands()
-                .map({
-                move | command | {
-                    command.transform(
-                        &AffineTransformation::identity()
-                            .translate(Vector::new(-glyph.bounds.p_min.x, -glyph.bounds.p_min.y))
-                            .uniform_scale(font_scale_pixels)
-                            .translate(Vector::new(0.0, 0.0))
-                    )
-                }
-            }).linearize(0.5),
-        );
-        trapezoids.extend_from_internal_iter(
-                trapezoidate
-        );
-        trapezoids
-    };
-     
-//   X0
-//Y0 |\
-//   | \
-//   |  \ X1
-//   |   \
-//   |    | Y1
-//   |    | Y3
-//   |   /
-//   |  /
-//   | /
-//Y2 |/
-
-    for trapezoid in trapezoids {
-
-        points.push(trapezoid.xs[0]); 
-        points.push(trapezoid.ys[0]);
-        points.push(trapezoid.xs[1]); 
-        points.push(trapezoid.ys[1]);
-        points.push(trapezoid.xs[0]); 
-        points.push(trapezoid.ys[2]);
-
-        points.push(trapezoid.xs[0]); 
-        points.push(trapezoid.ys[2]);
-        points.push(trapezoid.xs[1]); 
-        points.push(trapezoid.ys[1]);
-        points.push(trapezoid.xs[1]); 
-        points.push(trapezoid.ys[3]);
-
-    }    
-    points
-}
- 
+} 
