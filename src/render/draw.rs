@@ -108,7 +108,7 @@ pub fn draw_scene(
         if node.texture == None {
             if node.text {
                 let points = cx.vertices.get(&node.uuid).unwrap().to_vec();
-                render_text(&webgl_context, program_color, points, 1.0, (0.0, 0.0, 0.0));
+                render_text(&webgl_context, program_color, points, x, y, 1.0, (0.0, 0.0, 0.0));
             } else {
                 if node.end_clip {
                     end_stencil(&webgl_context);
@@ -343,11 +343,13 @@ fn render_text(
     context: &WebGlRenderingContext,
     program: &WebGlProgram,
     vertices: Vec<f32>,
+    x: f32,
+    y: f32,
     opacity: f32,
     color: (f32, f32, f32),
 ) {
-    let rect_width = 50.0;
-    let rect_height = 50.0;
+    let rect_width = 0.0;
+    let rect_height = 0.0;
     context.use_program(Some(&program));
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
@@ -365,7 +367,7 @@ fn render_text(
 
     let model_uni = context.get_uniform_location(&program, "model");
     let model = Isometry3::new(
-        Vector3::new(400.0 + (rect_width), 0.0 + (rect_height), 1.0), //THIS IS CHANGED
+        Vector3::new(x + 0.0 + (rect_width), -y + canvas_height - 12.5 + (rect_height), 1.0), //THIS IS CHANGED: hardcoded values for hardcoded font size
         nalgebra::zero(),
     ); //move to 1,1,1
     let mut model_array = [0.; 16];

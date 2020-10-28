@@ -49,7 +49,7 @@ impl Word {
         let mut trapezoidator = Trapezoidator::new();
     
         let trapezoids = {
-            let font_scale_pixels = 0.15;
+            let font_scale_pixels = 0.009;
             let mut trapezoids = Vec::new();
             let trapezoidate = trapezoidator.trapezoidate(
                 glyph

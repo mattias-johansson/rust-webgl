@@ -15,14 +15,13 @@ pub struct Label {
     pub node: Uuid,
     pub word: Word,
     pub text: String,
-
 }
 
 impl Label {
 
-    pub fn new(cx: &mut Context, text: &str) -> Label {
+    pub fn new(cx: &mut Context, x: f32, y: f32, text: &str) -> Label {
         let this = Uuid::new_v4();
-        let mut node = Node::new(this, 0.0, 0.0, 100.0, 100.0);
+        let mut node = Node::new(this, x, y, 100.0, 100.0);
         node.text = true;
         let node_uuid = node.uuid;
         let text = String::from(text);
