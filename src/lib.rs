@@ -146,11 +146,14 @@ pub fn send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_fra
         for vn in 0..this_frame.len() {
             let mut visual_node = this_frame.get_mut(vn).unwrap();
             if visual_node.get_uuid() == node.owner {
-                web_sys::console::log_2(&"sending to node ".into(), &node.owner.to_string().into());
+                web_sys::console::log_2(&"sending to node ".into(), &node.uuid.to_string().into());
                 send_event(Rc::clone(&events), cx, node.position(), &mut visual_node)
             }
         }
-    }   
+    }
+
+    let event = Event::None;
+    events.borrow_mut().set_event(event);   
 }
 
 pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32, f32, f32), visual_node: &mut Box<dyn VisualNode>) {
@@ -162,12 +165,20 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 if event.event != MouseEvent::None {
                 let x = event.x;
                 let y = event.y;
-//              web_sys::console::log_1(&visual_node.get_uuid().to_string().into());
-                if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-//                    web_sys::console::log_1(&"sending event".into());
 
+/*                web_sys::console::log_1(&"event".into());
+                web_sys::console::log_1(&event.x.to_string().into());
+                web_sys::console::log_1(&event.y.to_string().into());
+                web_sys::console::log_1(&"node from".into());
+                web_sys::console::log_1(&xy.0.to_string().into());
+                web_sys::console::log_1(&xy.1.to_string().into());
+                web_sys::console::log_1(&"node to".into());
+                web_sys::console::log_1(&xy.2.to_string().into());
+                web_sys::console::log_1(&xy.3.to_string().into());
+*/
+                if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
                     handled = visual_node.event_handler(cx, &events.borrow().event);
-                      web_sys::console::log_1(&"sent event".into());
+                    web_sys::console::log_1(&"sent event".into());
                 }
             }
         },
@@ -180,7 +191,6 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
         events.borrow_mut().set_event(event);
     }
 }
-
 
 
 pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {

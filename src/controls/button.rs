@@ -37,13 +37,22 @@ impl ButtonPrivate {
     pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
         let this = Uuid::new_v4();
         let pressed = false;
-        let node = ButtonPrivate::create(this, cx, x, y, opacity);
+        let mut node = Node::new(this, x, y, 145.0, 34.0);
+        node.opacity = 0.0;
+        let node_uuid_parent = node.uuid;
+        cx.nodes.push(node);
+
+        let node = ButtonPrivate::create(this, cx, 0.0, 0.0, opacity);
         let node_uuid = node.uuid;
         cx.nodes.push(node);
+        cx.add_child_to(node_uuid_parent, node_uuid);
+
         let state = ButtonState::NotPressed; 
         
-        let node_pressed = ButtonPrivate::create_pressed(this, cx, x, y, opacity);
+        let node_pressed = ButtonPrivate::create_pressed(this, cx, 0.0, 0.0, opacity);
+        let node_pressed_uuid = node_pressed.uuid;
         cx.nodes.push(node_pressed);
+        cx.add_child_to(node_uuid_parent, node_pressed_uuid);
 
         let mut on_animation = Animation::new(node_uuid, Attribute::OPACITY);
         on_animation.duration = 25.0;
@@ -63,7 +72,7 @@ impl ButtonPrivate {
         cx.animations.push(on_animation);
         cx.animations.push(off_animation);
 
-        ButtonPrivate { this, node: node_uuid, pressed, state, on_animation_uuid, off_animation_uuid } 
+        ButtonPrivate { this, node: node_uuid_parent, pressed, state, on_animation_uuid, off_animation_uuid } 
     }
 
     pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
@@ -159,10 +168,7 @@ impl ButtonPrivate {
         let off_animation = context.get_animation(self.off_animation_uuid);
         off_animation.unwrap().play();
     }
-    
-
 }
-
 
 impl VisualNode for ButtonPrivate {
 
