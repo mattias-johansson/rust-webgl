@@ -3,4 +3,4 @@ pub mod lti;
 pub mod shaders;
 pub mod gl_context;
 pub mod textures;
-pub mod fonts;
+pub mod word;

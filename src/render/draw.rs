@@ -1,4 +1,3 @@
-use uuid::Uuid;
 use crate::animation::animation::*;
 use crate::application::context::*;
 use crate::events::mouse::Event;
@@ -6,6 +5,7 @@ use crate::events::mouse::Message::AnimationEnded;
 use js_sys::WebAssembly;
 use nalgebra::{Isometry3, Vector3};
 use nalgebra_glm as glm;
+use uuid::Uuid;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
@@ -13,13 +13,7 @@ use std::rc::Rc;
 
 use crate::controls::node::*;
 
-
-
 use crate::render::gl_context::*;
-
-
-
-
 
 pub fn update_animations(dt: f32, cx: &mut Context) {
     for i in 0..cx.animations.len() {
@@ -68,11 +62,10 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
 }
 
 pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
-//    web_sys::console::log_1(&parent.uuid.to_string().into());
+    //    web_sys::console::log_1(&parent.uuid.to_string().into());
     match cx.node_relations.get(&parent.uuid) {
         Some(children) => {
             for child in children.as_slice() {
-
                 let node = cx.get_node_unmut(*child);
                 let mut node = *node.unwrap();
                 {
@@ -85,7 +78,8 @@ pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
 
                 travers_tree(&cx, node, collection);
             }
-        }, None => ()   
+        }
+        None => (),
     }
     if parent.clip {
         let mut node = Node::new(Uuid::new_v4(), 0.0, 0.0, 0.0, 0.0); //TODO FIX
@@ -112,36 +106,32 @@ pub fn draw_scene(
         let y = node.y + node.translate_y;
         //Load texture for node
         if node.texture == None {
-            if node.end_clip {
-                end_stencil(&webgl_context);
-            } else { 
-                if node.clip {
-                    render_stencil(
+            if node.text {
+                let points = cx.vertices.get(&node.uuid).unwrap().to_vec();
+                render_text(&webgl_context, program_color, points, 1.0, (0.0, 0.0, 0.0));
+            } else {
+                if node.end_clip {
+                    end_stencil(&webgl_context);
+                } else { 
+                    if node.clip {
+                        render_stencil(&webgl_context, program_color, node.width, node.height, x, y);
+                    }
+                    render_bg(
                         &webgl_context,
                         program_color,
                         node.width,
                         node.height,
                         x,
                         y,
-                    );   
+                        node.opacity,
+                        node.color,
+                    );
                 }
-                render_bg(
-                    &webgl_context,
-                    program_color,
-                    node.width,
-                    node.height,
-                    x,
-                    y,
-                    node.opacity,
-                    node.color,
-                );
-            }
+            } 
         } else {
             match &node.texture {
                 Some(texture) => {
-                    let texture_slot = cx
-                        .textures
-                        .load_texture(Rc::clone(&webgl_context), texture);
+                    let texture_slot = cx.textures.load_texture(Rc::clone(&webgl_context), texture);
                     render(
                         &webgl_context,
                         program,
@@ -166,12 +156,6 @@ pub fn draw_scene(
             };
         }
     }
-    let points = parse_font();
-    render_text( &webgl_context,
-        program_color,
-        points,
-        1.0,
-        (0.0,0.0,0.0),);
 }
 
 fn render(
@@ -188,8 +172,8 @@ fn render(
 
     let canvas_width = 1280.0;
     let canvas_height = 703.0;
-//    let canvas_width = context.canvas().clientWidth();
-//    let canvas_height = context.canvas().clientHeight();
+    //    let canvas_width = context.canvas().clientWidth();
+    //    let canvas_height = context.canvas().clientHeight();
 
     let rect_height = rect_height / 2.0;
     let rect_width = rect_width / 2.0;
@@ -272,7 +256,6 @@ fn render(
     context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
 }
 
-
 fn render_bg(
     context: &WebGlRenderingContext,
     program: &WebGlProgram,
@@ -343,7 +326,7 @@ fn render_bg(
     context.uniform_matrix4fv_with_f32_array(view_uni.as_ref(), false, &mut identity().as_slice());
 
     buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 2);
-    context.enable(WebGlRenderingContext::BLEND); 
+    context.enable(WebGlRenderingContext::BLEND);
 
     context.blend_func(
         WebGlRenderingContext::SRC_ALPHA,
@@ -355,7 +338,6 @@ fn render_bg(
 
     context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
 }
-
 
 fn render_text(
     context: &WebGlRenderingContext,
@@ -392,7 +374,7 @@ fn render_text(
 
     let perspective_uni = context.get_uniform_location(&program, "perspective");
 
-    // builds the view "box" 
+    // builds the view "box"
     //Note for fonts  the z-axis is NOT turned 180 degrees compared to the vertex shader. Don't know why just yet.
     let ortho_matrix = glm::ortho(0.0, canvas_width, 0.0, canvas_height, -2.0, 2.0);
 
@@ -409,7 +391,7 @@ fn render_text(
     context.uniform_matrix4fv_with_f32_array(view_uni.as_ref(), false, &mut identity().as_slice());
 
     buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 2);
-    context.enable(WebGlRenderingContext::BLEND); 
+    context.enable(WebGlRenderingContext::BLEND);
 
     context.blend_func(
         WebGlRenderingContext::SRC_ALPHA,
@@ -418,10 +400,9 @@ fn render_text(
 
     let color_data_attrib = context.get_uniform_location(&program, "color");
     context.uniform3f(color_data_attrib.as_ref(), color.0, color.1, color.2);
-    let num_vertices = vertices.len() /    2;
+    let num_vertices = vertices.len() / 2;
     context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, num_vertices as i32);
 }
-
 
 /**
  * Used to make "clipping"
@@ -472,12 +453,16 @@ fn render_stencil(
         0.0,
     ];
 
-//    context.enable(WebGlRenderingContext::DEPTH_TEST);
+    //    context.enable(WebGlRenderingContext::DEPTH_TEST);
 
     context.clear_stencil(0);
     context.clear(WebGlRenderingContext::STENCIL_BUFFER_BIT);
 
-    context.stencil_op(WebGlRenderingContext::KEEP, WebGlRenderingContext::KEEP, WebGlRenderingContext::REPLACE);
+    context.stencil_op(
+        WebGlRenderingContext::KEEP,
+        WebGlRenderingContext::KEEP,
+        WebGlRenderingContext::REPLACE,
+    );
     context.stencil_func(WebGlRenderingContext::ALWAYS, 1, 0xff);
     context.stencil_mask(0xff);
     context.color_mask(false, true, false, false);
@@ -516,29 +501,22 @@ fn render_stencil(
     buffer_f32_data(&context, &vertices[..], vertex_data_attrib as u32, 4);
     context.enable(WebGlRenderingContext::BLEND);
 
-    context.blend_func(
-        WebGlRenderingContext::ZERO,
-        WebGlRenderingContext::ONE,
-    );
+    context.blend_func(WebGlRenderingContext::ZERO, WebGlRenderingContext::ONE);
 
     let color_data_attrib = context.get_uniform_location(&program, "color");
     context.uniform3f(color_data_attrib.as_ref(), 0.0, 0.0, 0.0);
 
     context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
-	context.stencil_func(WebGlRenderingContext::EQUAL, 1, 0xff);
-	context.stencil_mask(0x00);
-	context.color_mask(true, true, true, true);
+    context.stencil_func(WebGlRenderingContext::EQUAL, 1, 0xff);
+    context.stencil_mask(0x00);
+    context.color_mask(true, true, true, true);
 }
 
-fn end_stencil(
-    context: &WebGlRenderingContext,
-) {
-
-    context.disable(WebGlRenderingContext::STENCIL_TEST);   
-//    context.disable(WebGlRenderingContext::DEPTH_TEST);
+fn end_stencil(context: &WebGlRenderingContext) {
+    context.disable(WebGlRenderingContext::STENCIL_TEST);
+    //    context.disable(WebGlRenderingContext::DEPTH_TEST);
     context.clear_stencil(0);
     context.clear(WebGlRenderingContext::STENCIL_BUFFER_BIT);
-
 }
 
 fn identity() -> glm::TMat4<f32> {
@@ -567,7 +545,4 @@ fn buffer_f32_data(gl: &WebGlRenderingContext, data: &[f32], attrib: u32, size: 
         WebGlRenderingContext::STATIC_DRAW,
     );
     gl.vertex_attrib_pointer_with_i32(attrib, size, WebGlRenderingContext::FLOAT, false, 0, 0);
-
 }
-
-

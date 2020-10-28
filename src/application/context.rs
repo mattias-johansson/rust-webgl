@@ -1,9 +1,10 @@
+use crate::render::word::Word;
 use crate::application::core_app::CoreApp;
 use crate::animation::animation::Animation;
 use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::render::textures::*;
-use crate::render::fonts::*;
+use crate::render::word::*;
 use uuid::Uuid;
 use std::collections::HashMap;
 
@@ -16,7 +17,8 @@ pub struct Context {
     pub root: Option<Uuid>,
     pub callbacks: HashMap<Uuid, Box<dyn FnMut(&mut Context) >>,
     pub cb: Callbacks,
-    pub fonts: Fonts,
+    pub fonts: Word,
+    pub vertices: HashMap<Uuid, Vec<f32>>,
 
 }
 
@@ -30,9 +32,10 @@ impl Context {
         let root: Option<Uuid> = None;
         let callbacks = HashMap::default();
         let cb = Callbacks::new();
-        let fonts = Fonts::default();
+        let fonts = Word::default();
+        let vertices = HashMap::default();
         
-        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb, fonts}
+        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb, fonts, vertices }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {

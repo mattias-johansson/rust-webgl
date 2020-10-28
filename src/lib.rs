@@ -18,6 +18,7 @@ use crate::controls::container::*;
 use crate::controls::toggle_button::*;
 use crate::controls::button::*;
 use crate::controls::image_view::*;
+use crate::controls::label::*;
 use crate::events::handler::*;
 use crate::render::draw::*;
 use crate::render::gl_context::*;
@@ -188,9 +189,11 @@ pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
 
     let container = ContainerBuilder::builder().x(100.0).height(400.0).width(400.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut context);
     let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(400.0).height(400.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
+    let label = Label::new(context, "B");
     context.add_child_to(context.root.unwrap(), container.get_node_uuid());
     container.add_child(&mut context, container2.get_node_uuid());
     context.add_child_to(context.root.unwrap(), image_view.get_node_uuid());
+    context.add_child_to(context.root.unwrap(), label.get_node_uuid());
 
     let button = ButtonPrivate::new(&mut context, 150.0, 5.0, 0.5);
 
@@ -206,7 +209,7 @@ pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
 pub fn callback(mut cx: &mut Context, core_app: &mut CoreApp) {
     web_sys::console::log_1(&cx.nodes.len().to_string().into());
     let y = cx.nodes.len() as f32 * 20.0;
-    let button = ToggleButtonPrivate::new(&mut cx, 5.0, y, 0.5);
+    let button = ToggleButtonPrivate::new(&mut cx, 5.0, y, 1.0);
     cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
     core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
 }

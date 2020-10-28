@@ -59,7 +59,8 @@ impl Container {
         let end_clip = false;
         let uuid = Uuid::new_v4();
         let owner = Uuid::new_v4();
-        let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty, clip, end_clip};
+        let text = false;
+        let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty, clip, end_clip, text };
         let node_uuid = node.uuid;
         cx.nodes.push(node);
         Container { this: owner, node: node_uuid }

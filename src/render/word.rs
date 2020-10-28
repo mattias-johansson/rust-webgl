@@ -6,18 +6,39 @@ use makepad_geometry::*;
 use makepad_internal_iter::*;
 use makepad_path::*;
 
-pub struct Fonts {
+use std::collections::HashMap;
 
-    pub font: Font,
 
+#[derive(PartialEq, Clone)]
+pub struct Word {
+
+    pub font : Font,
+    pub chars: Vec<usize>,
+    pub char_points: HashMap<usize, Vec<f32>>
 }
 
-impl Fonts {
+impl Word {
 
-    pub fn default() -> Fonts {
+    pub fn default() -> Word {
         static FONT: &'static [u8] = include_bytes!("../../assets/LiberationMono-Regular.ttf");
         let f : Result<Font> = parse_ttf(FONT);
-        Fonts { font : f.unwrap() }
+        let chars = vec![];
+        let char_points = HashMap::default();
+        Word { font : f.unwrap(), chars, char_points }
+    }
+
+    pub fn create_char_points_for_text(&mut self, text: &str) {
+        let mut chars = vec![];
+        let mut char_iter = text.chars();
+        while let Some(c) = char_iter.next() {
+            chars.push(c as usize);
+            let points = self.get_char_points(c as usize);
+            self.char_points.insert(c as usize, points);
+        }
+    }
+
+    pub fn get_char_points_for_char(&self, character: &usize) -> Option<&Vec<f32>> {
+        self.char_points.get(character)
     }
 
     pub fn get_char_points(&self, unicode: usize) -> Vec<f32> {

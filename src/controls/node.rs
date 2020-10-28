@@ -20,6 +20,7 @@ pub struct Node {
     pub dirty: bool,
     pub clip: bool,
     pub end_clip: bool,
+    pub text: bool,
 //    pub callback: Option<fn(&mut Context) -> bool >,
 }
 
@@ -41,6 +42,7 @@ impl Node {
             dirty: true,
             clip: false,
             end_clip: false,
+            text: false,
 //            callback: None,
          }
     }
