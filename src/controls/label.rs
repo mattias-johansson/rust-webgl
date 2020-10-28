@@ -30,7 +30,7 @@ impl Label {
         let mut char_iter = text.chars();
         let mut advance: f32 = 0.0;
         while let Some(c) = char_iter.next() {
-            let mut node = Node::new(this, x + advance, y, 100.0, 100.0);
+            let mut node = Node::new(this, advance, y, 100.0, 100.0);
             node.text = true;
             let node_uuid = node.uuid;
             cx.vertices.insert(node.uuid, word.get_char_points_for_char(&(c as usize)).unwrap().to_vec());
