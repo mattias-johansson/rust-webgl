@@ -56,8 +56,6 @@ impl Textures {
                         } 
                     }
                 }  else {
-                    web_sys::console::log_1(&"texture.location".into());
-                    web_sys::console::log_1(&texture.location.to_string().into());
                     texture.location
                 }
             },

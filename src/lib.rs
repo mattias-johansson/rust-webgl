@@ -1,4 +1,8 @@
 extern crate wasm_bindgen;
+use crate::web::events::attach_touch_move_handler;
+use crate::web::events::attach_touch_end_handler;
+use crate::web::events::attach_touch_start_handler;
+use crate::web::events::attach_mouse_move_handler;
 use crate::application::core_app::CoreApp;
 use crate::controls::node::Node;
 use uuid::Uuid;
@@ -15,7 +19,9 @@ use crate::events::mouse::*;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
 use crate::controls::container::*;
+use crate::controls::container::*;
 use crate::controls::toggle_button::*;
+use crate::controls::scroll_view::*;
 use crate::controls::button::*;
 use crate::controls::image_view::*;
 use crate::controls::label::*;
@@ -95,6 +101,10 @@ impl Application {
             canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
         let _ = attach_mouse_down_handler(&canvas, Rc::clone(&self.events));
         let _ = attach_mouse_up_handler(&canvas, Rc::clone(&self.events));
+        let _ = attach_mouse_move_handler(&canvas, Rc::clone(&self.events));
+        let _ = attach_touch_start_handler(&canvas, Rc::clone(&self.events));
+        let _ = attach_touch_end_handler(&canvas, Rc::clone(&self.events));
+        let _ = attach_touch_move_handler(&canvas, Rc::clone(&self.events));
 
         Ok(())
     }
@@ -192,19 +202,22 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
     }
 }
 
-
 pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
     
-    let image_view = ImageViewBuilder::builder().x(0.0).y(500.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
+    let image_view = ImageViewBuilder::builder().x(0.0).y(0.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
 
-    let container = ContainerBuilder::builder().x(100.0).height(400.0).width(400.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut context);
+    let container = ContainerBuilder::builder().x(500.0).height(400.0).width(400.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut context);
     let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(400.0).height(400.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
-    let label = Label::new(context, 150.0, 5.0, "Inwindow");
+    let label = Label::new(context, 5.0, 5.0, "Test label");
     context.add_child_to(context.root.unwrap(), container.get_node_uuid());
     container.add_child(&mut context, container2.get_node_uuid());
-    context.add_child_to(context.root.unwrap(), image_view.get_node_uuid());
+    
+    
+    let scroll_view = ScrollView::new(&mut context, 0.0, 0.0, 0.0, 0.0, 0.5, 400.0, 400.0, (1.0,0.0,1.0), );
+    scroll_view.add_content(&mut context, image_view.get_node_uuid());
+    context.add_child_to(context.root.unwrap(), scroll_view.get_node_uuid());
 
-    let button = ButtonPrivate::new(&mut context, 150.0, 5.0, 0.5);
+    let button = ButtonPrivate::new(&mut context, "Button", 150.0, 5.0, 0.5);
 
     context.add_child_to(context.root.unwrap(), button.get_node_uuid());
     context.add_child_to(context.root.unwrap(), label.get_node_uuid());
@@ -213,6 +226,7 @@ pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
 
     core_app.visual_nodes.push(Box::new(image_view) as Box<dyn VisualNode>);
     core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+    core_app.visual_nodes.push(Box::new(scroll_view) as Box<dyn VisualNode>);
 
 }
 

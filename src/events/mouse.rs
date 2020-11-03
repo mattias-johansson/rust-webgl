@@ -12,7 +12,8 @@ pub enum Event {
 pub enum MouseEvent {
     None,
     Up,
-    Down
+    Down,
+    Move
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
