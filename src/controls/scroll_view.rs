@@ -6,11 +6,13 @@ use crate::application::context::*;
 use uuid::Uuid;
 use std::any::Any;
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy)]
 pub struct ScrollView {
     this: Uuid,
     node_uuid: Uuid,
-    scroll_uuid: Uuid
+    scroll_uuid: Uuid,
+    scroll_x: Option<f32>,
+    scroll_y: Option<f32>
 }
 
 impl ScrollView {
@@ -30,16 +32,32 @@ impl ScrollView {
         cx.nodes.push(scroll_node);
 
 
-        ScrollView { this: owner, node_uuid, scroll_uuid: scroll_node_uuid}
+        ScrollView { this: owner, node_uuid, scroll_uuid: scroll_node_uuid, scroll_x: None, scroll_y: None}
     }
 
     pub fn add_content(&self, cx: &mut Context, child:Uuid) {
         cx.add_child_to(self.scroll_uuid, child);
     }
+    
+    fn start_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
+        let node = cx.get_node(self.scroll_uuid).unwrap();
+        self.scroll_x = Some(message.x as f32); //need to add previous scrolling
+        self.scroll_y = Some(message.y as f32); 
+    }
 
-    fn on_scroll_event(&mut self, cx: &mut Context, message: &MouseEvent) {
+    fn on_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
         let mut node = cx.get_node(self.scroll_uuid).unwrap();
-        node.translate_x = node.translate_x + 5.0; 
+        if let Some(x) = self.scroll_x {
+            node.translate_x = message.x as f32 - x; 
+        }
+        if let Some(y) = self.scroll_y {
+            node.translate_y = message.y as f32 - y; 
+        }
+    }
+
+    fn end_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
+        self.scroll_x = None;
+        self.scroll_y = None;
     }
 
     fn new_node(owner: Uuid, cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  Node {
@@ -75,10 +93,13 @@ impl VisualNode for ScrollView {
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
+                    self.end_scroll_event(cx, &event);
+                    web_sys::console::log_1(&"Mouse up!".into());
                 } else if event.event == MouseEvent::Down {
+                    self.start_scroll_event(cx, &event);
                 } else if event.event == MouseEvent::Move {
-                    self.on_scroll_event(cx, &event.event);
-                }     
+                    self.on_scroll_event(cx, &event);
+                } 
                 return true;
             },
             Event::Message(message) => {
