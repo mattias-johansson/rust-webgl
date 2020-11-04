@@ -130,6 +130,7 @@ impl Application {
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
         draw_scene(&mut self.context, Rc::clone(&self.gl), &self.program, &self.program_color);
+        //panic!("one loop");
     }
 }
 

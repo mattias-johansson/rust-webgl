@@ -35,8 +35,7 @@ impl Label {
             let node_uuid = node.uuid;
             cx.vertices.insert(node.uuid, word.get_char_points_for_char(&(c as usize)).unwrap().to_vec());
             advance = advance + (word.get_advance_for_char(c as usize) * 0.009);   
-            
-            web_sys::console::log_1(&advance.to_string().into());         
+//            web_sys::console::log_1(&advance.to_string().into());         
             cx.nodes.push(node);
             cx.add_child_to(node_uuid_parent, node_uuid);
 

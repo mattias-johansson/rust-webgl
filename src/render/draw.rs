@@ -111,9 +111,11 @@ pub fn draw_scene(
                 render_text(&webgl_context, program_color, points, x, y, 1.0, (0.0, 0.0, 0.0));
             } else {
                 if node.end_clip {
+//                    web_sys::console::log_1(&"end stencil".into());
                     end_stencil(&webgl_context);
                 } else { 
                     if node.clip {
+//                        web_sys::console::log_1(&"start stencil".into());
                         render_stencil(&webgl_context, program_color, node.width, node.height, x, y);
                     }
                     render_bg(
@@ -510,14 +512,14 @@ fn render_stencil(
 
     context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
     context.stencil_func(WebGlRenderingContext::EQUAL, 1, 0xff);
-    context.stencil_mask(0x00);
+    context.stencil_mask(0x01);
     context.color_mask(true, true, true, true);
 }
 
 fn end_stencil(context: &WebGlRenderingContext) {
     context.disable(WebGlRenderingContext::STENCIL_TEST);
     //    context.disable(WebGlRenderingContext::DEPTH_TEST);
-    context.clear_stencil(0);
+    context.clear_stencil(1);
     context.clear(WebGlRenderingContext::STENCIL_BUFFER_BIT);
 }
 
