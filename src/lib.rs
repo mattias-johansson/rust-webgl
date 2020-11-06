@@ -214,7 +214,7 @@ pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
     container.add_child(&mut context, container2.get_node_uuid());
     
     
-    let scroll_view = ScrollView::new(&mut context, 0.0, 0.0, 0.0, 0.0, 0.5, 400.0, 400.0, (1.0,0.0,1.0), );
+    let scroll_view = ScrollView::new(&mut context, 0.0, 0.0, 0.0, 0.0, 0.5, 300.0, 300.0, (1.0,0.0,1.0), );
     scroll_view.add_content(&mut context, image_view.get_node_uuid());
     context.add_child_to(context.root.unwrap(), scroll_view.get_node_uuid());
 
