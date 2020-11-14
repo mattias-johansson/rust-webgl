@@ -60,14 +60,14 @@ impl ButtonPrivate {
         cx.add_child_to(node_uuid_parent, node_uuid);
 
         let mut on_animation = Animation::new(node_uuid, Attribute::OPACITY);
-        on_animation.duration = 25.0;
+        on_animation.duration = 100.0;
         on_animation.start_value = 0.0;
         on_animation.end_value = 1.0;
         on_animation.easing = Ease::Lin;
 
         let mut off_animation = Animation::new(node_pressed.uuid, Attribute::OPACITY);
-        off_animation.duration = 25.0;
-        off_animation.start_value = 0.0;
+        off_animation.duration = 100.0;
+        off_animation.start_value = 1.0;
         off_animation.end_value = 0.0;
         off_animation.easing = Ease::Lin;
 
@@ -218,7 +218,7 @@ impl VisualNode for ButtonPrivate {
                 if event.event == MouseEvent::Up {
                     self.pressed = false;
                     self.on_button_pressed(cx);
-                    cx.cb.add_trigged(self.this);
+                    cx.cb.add_trigged(self.this, Event::None);
                 }else if event.event == MouseEvent::Down {
                     self.pressed = true; 
                     self.on_button_pressed(cx);

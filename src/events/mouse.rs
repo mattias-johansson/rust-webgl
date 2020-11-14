@@ -1,11 +1,12 @@
 
 use uuid::Uuid;
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum Event {
     None,
     Mouse(Mouse),
     Message(Message),
+    Scroll(Scroll)
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
@@ -31,4 +32,10 @@ impl Mouse {
 pub enum Message {
     AnimationStarted(Uuid),
     AnimationEnded(Uuid),
+}
+
+#[derive(PartialEq, Clone, Copy)]
+pub enum Scroll {
+    ImmediateValue(f32),
+    Value(f32),
 }

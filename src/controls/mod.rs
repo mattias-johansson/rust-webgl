@@ -7,3 +7,4 @@ pub mod page;
 pub mod image_view;
 pub mod label;
 pub mod scroll_view;
+pub mod slider;

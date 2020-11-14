@@ -104,8 +104,8 @@ impl Context {
 
 #[derive(Clone)]
 pub struct Callbacks {
-    triggered_callbacks : Vec<Uuid>,
-    subscribers: HashMap<Uuid, Vec<fn(&mut Context, &mut CoreApp)>>
+    triggered_callbacks : Vec<(Uuid, Event)>,
+    subscribers: HashMap<Uuid, Vec<fn(&mut Context, &mut CoreApp, Event)>>
 }
 
 impl Callbacks {
@@ -113,16 +113,16 @@ impl Callbacks {
         Callbacks { triggered_callbacks: vec![], subscribers: HashMap::default() }
     }
 
-    pub fn add_trigged(&mut self, source: Uuid) {
+    pub fn add_trigged(&mut self, source: Uuid, event: Event) {
         web_sys::console::log_1(&"added !!!!!!!!!!!!!!!!!!!!".into());
-        self.triggered_callbacks.push(source);
+        self.triggered_callbacks.push((source, event));
     }
 
     pub fn clear_triggered(&mut self) {
         self.triggered_callbacks.clear();
     }
 
-    pub fn add_subscriber(&mut self, source: Uuid, target: fn(&mut Context, &mut CoreApp)) {
+    pub fn add_subscriber(&mut self, source: Uuid, target: fn(&mut Context, &mut CoreApp, Event)) {
         web_sys::console::log_1(&"add_subscriber".into());
         let mut callbacks = self.subscribers.get_mut(&source);
         match &mut callbacks {
@@ -140,11 +140,11 @@ impl Callbacks {
 
     pub fn trigger_callbacks(&self, cx: &mut Context, core_app: &mut CoreApp) {
         for triggerd in &self.triggered_callbacks {
-            let targets = self.subscribers.get(&triggerd);
+            let targets = self.subscribers.get(&triggerd.0);
             match targets {
                 Some(targets) => {
                     for target in targets {
-                        (target)(cx, core_app);
+                        (target)(cx, core_app, triggerd.1);
                         web_sys::console::log_1(&"triggered".into());
 
                     }

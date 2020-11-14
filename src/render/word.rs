@@ -1,4 +1,7 @@
 
+use crate::get_device_pixel_ratio;
+use web_sys::{Window};
+
 use makepad_ttf_parser::*;
 use makepad_font::*;
 use makepad_trapezoidator::*;
@@ -54,8 +57,12 @@ impl Word {
         let glyph = &self.font.glyphs[glyph_id];
         let mut trapezoidator = Trapezoidator::new();
     
+        let font_size = 6.0;
+        let font_scale_logical = font_size * 96.0 / (72.0 * self.font.units_per_em);
+        let font_scale_pixels = font_scale_logical * get_device_pixel_ratio() as f32;
+
         let trapezoids = {
-            let font_scale_pixels = 0.009;
+//            let font_scale_pixels = 0.009;
             let mut trapezoids = Vec::new();
             let trapezoidate = trapezoidator.trapezoidate(
                 glyph

@@ -35,25 +35,88 @@ impl ScrollView {
         ScrollView { this: owner, node_uuid, scroll_uuid: scroll_node_uuid, scroll_x: None, scroll_y: None}
     }
 
-    pub fn add_content(&self, cx: &mut Context, child:Uuid) {
+    pub fn add_content(&self, cx: &mut Context, child: Uuid) {
+        let content = cx.get_node_unmut(child);
+        let width = content.unwrap().width;
+        let height = content.unwrap().height;
+
+        let mut scrolling = cx.get_node(self.scroll_uuid).unwrap();
+        scrolling.width = width;
+        scrolling.height = height;
+
         cx.add_child_to(self.scroll_uuid, child);
+/*
+        web_sys::console::log_1(&"x:".into());
+        web_sys::console::log_1(&self.get_max_scroll_x(cx).to_string().into());
+        web_sys::console::log_1(&"y:".into());
+        web_sys::console::log_1(&self.get_max_scroll_y(cx).to_string().into());
+*/        
     }
     
     fn start_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
         let node = cx.get_node(self.scroll_uuid).unwrap();
-        self.scroll_x = Some(message.x as f32); //need to add previous scrolling
-        self.scroll_y = Some(message.y as f32); 
+/*
+        web_sys::console::log_1(&"x:".into());
+        web_sys::console::log_1(&node.translate_x.to_string().into());
+        web_sys::console::log_1(&"y:".into());
+        web_sys::console::log_1(&node.translate_y.to_string().into());
+
+        web_sys::console::log_1(&"x:".into());
+        web_sys::console::log_1(&message.x.to_string().into());
+        web_sys::console::log_1(&"y:".into());
+        web_sys::console::log_1(&message.y.to_string().into());
+*/
+        self.scroll_x = Some(message.x as f32 - node.translate_x); //need to add previous scrolling
+        self.scroll_y = Some(message.y as f32 - node.translate_y) ; 
     }
 
     fn on_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
+        let max_scroll_x = self.get_max_scroll_x(cx); 
+        let max_scroll_y = self.get_max_scroll_y(cx); 
+        let min_scroll_x = self.get_min_scroll_x(cx); 
+        let min_scroll_y = self.get_min_scroll_y(cx); 
         let mut node = cx.get_node(self.scroll_uuid).unwrap();
         if let Some(x) = self.scroll_x {
-            node.translate_x = message.x as f32 - x; 
+            let  wanted_scroll = message.x as f32 - x; 
+            if wanted_scroll < max_scroll_x && wanted_scroll > min_scroll_x {
+                node.translate_x = wanted_scroll;
+            } else if wanted_scroll < min_scroll_x {
+                node.translate_x = min_scroll_x;
+            } else {
+                node.translate_x = max_scroll_x;
+            }
         }
         if let Some(y) = self.scroll_y {
-            node.translate_y = message.y as f32 - y; 
+            let  wanted_scroll = message.y as f32 - y; 
+            if wanted_scroll < max_scroll_y && wanted_scroll > min_scroll_y { 
+                node.translate_y = wanted_scroll;
+            } else if wanted_scroll < min_scroll_y {
+                node.translate_y = min_scroll_y;
+            } else {
+                node.translate_y = max_scroll_y;
+            }
         }
     }
+
+    fn get_max_scroll_x(&self, cx: &Context) -> f32 {
+        0.0
+    } 
+
+    fn get_max_scroll_y(&self, cx: &Context) -> f32 {
+        0.0
+    } 
+
+    fn get_min_scroll_y(&self, cx: &Context) -> f32 {
+        let self_node = cx.get_node_unmut(self.node_uuid);
+        let scroll_node = cx.get_node_unmut(self.scroll_uuid);
+        self_node.unwrap().height - scroll_node.unwrap().height
+    } 
+
+    fn get_min_scroll_x(&self, cx: &Context) -> f32 {
+        let self_node = cx.get_node_unmut(self.node_uuid);
+        let scroll_node = cx.get_node_unmut(self.scroll_uuid);
+        self_node.unwrap().width - scroll_node.unwrap().width
+    } 
 
     fn end_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
         self.scroll_x = None;

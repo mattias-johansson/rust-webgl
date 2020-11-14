@@ -1,10 +1,13 @@
 extern crate wasm_bindgen;
+use crate::controls::slider::Slider;
 use crate::web::events::attach_touch_move_handler;
 use crate::web::events::attach_touch_end_handler;
 use crate::web::events::attach_touch_start_handler;
 use crate::web::events::attach_mouse_move_handler;
 use crate::application::core_app::CoreApp;
 use crate::controls::node::Node;
+
+use crate::events::mouse::*;
 use uuid::Uuid;
 use std::collections::HashMap;
 use std::cell::RefCell;
@@ -203,38 +206,70 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
     }
 }
 
+pub fn get_canvas_size() -> (u32, u32) { 
+    let document = web_sys::window().unwrap().document().unwrap();
+    let canvas = document.get_element_by_id("canvas").unwrap();
+    let canvas = canvas.dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
+
+   (canvas.width(), canvas.height())
+}
+
+pub fn get_device_pixel_ratio() -> f64 { 
+    let window = web_sys::window().unwrap();
+    let window = window.dyn_into::<web_sys::Window>().unwrap();
+    window.device_pixel_ratio()
+}
+
 pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
-    
-    let image_view = ImageViewBuilder::builder().x(0.0).y(0.0).width(400.0).height(400.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
+    let slider = Slider::new(&mut context, 500.0, 500.0, 1.0);
+    let image_view = ImageViewBuilder::builder().x(0.0).y(0.0).width(3264.0).height(2448.0).opacity(1.0).image("IMG_20160408_164451.jpg").build(&mut context);
 
     let container = ContainerBuilder::builder().x(500.0).height(400.0).width(400.0).color((1.0,1.0,0.0)).opacity(0.5).clip(true).build(&mut context);
     let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(400.0).height(400.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
     let label = Label::new(context, 5.0, 5.0, "Test label");
     context.add_child_to(context.root.unwrap(), container.get_node_uuid());
+    context.add_child_to(context.root.unwrap(), slider.get_node_uuid());
     container.add_child(&mut context, container2.get_node_uuid());
     
-    
+    /*
     let scroll_view = ScrollView::new(&mut context, 0.0, 0.0, 0.0, 0.0, 0.5, 300.0, 300.0, (1.0,0.0,1.0), );
     scroll_view.add_content(&mut context, image_view.get_node_uuid());
     context.add_child_to(context.root.unwrap(), scroll_view.get_node_uuid());
-
+*/
     let button = ButtonPrivate::new(&mut context, "Button", 150.0, 5.0, 0.5);
 
     context.add_child_to(context.root.unwrap(), button.get_node_uuid());
     context.add_child_to(context.root.unwrap(), label.get_node_uuid());
 
-    context.cb.add_subscriber(button.this, callback);
+    context.cb.add_subscriber(button.this, on_button_pressed);
+    context.cb.add_subscriber(slider.this, on_scroll);
 
     core_app.visual_nodes.push(Box::new(image_view) as Box<dyn VisualNode>);
     core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
-    core_app.visual_nodes.push(Box::new(scroll_view) as Box<dyn VisualNode>);
+    core_app.visual_nodes.push(Box::new(slider) as Box<dyn VisualNode>);
+//    core_app.visual_nodes.push(Box::new(scroll_view) as Box<dyn VisualNode>);
 
 }
 
-pub fn callback(mut cx: &mut Context, core_app: &mut CoreApp) {
-    web_sys::console::log_1(&cx.nodes.len().to_string().into());
+pub fn on_button_pressed(mut cx: &mut Context, core_app: &mut CoreApp, event: Event) {
     let y = cx.nodes.len() as f32 * 20.0;
     let button = ToggleButtonPrivate::new(&mut cx, 5.0, y, 1.0);
     cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
     core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+}
+
+pub fn on_scroll(mut cx: &mut Context, core_app: &mut CoreApp, event: Event) {
+
+    match event {
+        Event::Scroll(scroll) => {
+            match scroll {
+                Scroll::ImmediateValue(value) => {
+                    web_sys::console::log_1(&"scroll".into());
+                    web_sys::console::log_1(&value.to_string().into());
+                },
+                _ => ()
+            }
+        },
+        _ => ()
+    }
 }
