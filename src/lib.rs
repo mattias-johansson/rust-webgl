@@ -76,9 +76,7 @@ impl Application {
 
         let animation_event_listerner = HashMap::default();
         
-   //     let visual_nodes = Rc::new(RefCell::new(vec![]));
-//        let visual_nodes = vec![];
-        let core_app = CoreApp { visual_nodes : vec![] };
+        let core_app = CoreApp { visual_nodes : vec![] , names : HashMap::default()};
 
         Application {
             page,
@@ -89,7 +87,6 @@ impl Application {
             context,
             animation_event_listerner,
             core_app,
-//            visual_nodes
         }
     }
 
@@ -231,12 +228,13 @@ pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
     context.add_child_to(context.root.unwrap(), slider.get_node_uuid());
     container.add_child(&mut context, container2.get_node_uuid());
     
-    /*
+    
     let scroll_view = ScrollView::new(&mut context, 0.0, 0.0, 0.0, 0.0, 0.5, 300.0, 300.0, (1.0,0.0,1.0), );
     scroll_view.add_content(&mut context, image_view.get_node_uuid());
     context.add_child_to(context.root.unwrap(), scroll_view.get_node_uuid());
-*/
+
     let button = ButtonPrivate::new(&mut context, "Button", 150.0, 5.0, 0.5);
+    core_app.names.insert("Bild".to_owned(), image_view.get_uuid());
 
     context.add_child_to(context.root.unwrap(), button.get_node_uuid());
     context.add_child_to(context.root.unwrap(), label.get_node_uuid());
@@ -259,13 +257,16 @@ pub fn on_button_pressed(mut cx: &mut Context, core_app: &mut CoreApp, event: Ev
 }
 
 pub fn on_scroll(mut cx: &mut Context, core_app: &mut CoreApp, event: Event) {
-
+    let bild = core_app.get_visual_node_from_name("Bild");
     match event {
         Event::Scroll(scroll) => {
             match scroll {
                 Scroll::ImmediateValue(value) => {
                     web_sys::console::log_1(&"scroll".into());
                     web_sys::console::log_1(&value.to_string().into());
+                    let node_uuid = bild.unwrap().get_node_uuid();
+                    let node = cx.get_node(node_uuid);
+                    node.unwrap().opacity = value;
                 },
                 _ => ()
             }

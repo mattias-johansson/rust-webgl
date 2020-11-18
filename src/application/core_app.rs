@@ -1,9 +1,11 @@
 
+use std::collections::HashMap;
 use uuid::Uuid;
 use crate::controls::visual_node::VisualNode;
 
 pub struct CoreApp {
-    pub visual_nodes: Vec<Box <dyn VisualNode>>
+    pub visual_nodes: Vec<Box <dyn VisualNode>>,
+    pub names: HashMap<String, Uuid>
 }
 
 impl CoreApp {
@@ -18,4 +20,9 @@ impl CoreApp {
         None
     }
 
+    pub fn get_visual_node_from_name(&mut self, name: &str) -> Option<&mut Box<dyn VisualNode>> {
+        let thing = self.names.get(name);
+        let uuid : Uuid = *thing.unwrap_or(&Uuid::new_v4());
+        self.get_visual_node(uuid)
+    }
 }
