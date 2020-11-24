@@ -12,9 +12,9 @@ use crate::animation::animation::*;
 use crate::application::context::*;
 use crate::animation::ease::*;
 use uuid::Uuid;
+use serde::*;
 
-
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 enum ButtonState {
     NotPressed,
     Pressed,
@@ -24,7 +24,7 @@ enum ButtonState {
 
 //TODO Nedd to rewrite as composite control. Need to have a container node as "node"
 
-#[derive(Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct ButtonPrivate {
     pub this: Uuid,
     node: Uuid,

@@ -1,3 +1,5 @@
+extern crate wasm_bindgen;
+use wasm_bindgen::prelude::*;
 
 use std::any::Any;
 use uuid::Uuid;
@@ -5,9 +7,9 @@ use crate::application::context::*;
 use crate::controls::visual_node::VisualNode;
 use crate::controls::node::*;
 use crate::events::mouse::*;
+use serde::*;
 
-
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct ImageView {
     this: Uuid,
     node: Uuid
@@ -61,6 +63,7 @@ impl ImageView {
     }
 }
 
+#[wasm_bindgen]
 pub struct ImageViewBuilder {
      x: Option<f32>,
      y: Option<f32>,
@@ -72,8 +75,6 @@ pub struct ImageViewBuilder {
      texture: Option<String>,
      color: Option<(f32,f32,f32)>,
 }
-
-
 
 impl ImageViewBuilder {
     
@@ -130,47 +131,47 @@ impl ImageViewBuilder {
         ImageView::new(cx, x, y, translate_x, translate_y, opacity, width, height, color, texture)
     }
 
-    pub fn x(&mut self, x: f32) -> &mut ImageViewBuilder {
+    pub fn x(mut self, x: f32) -> ImageViewBuilder {
         self.x = Some(x);
         self
     } 
 
-    pub fn y(&mut self, y: f32) -> &mut ImageViewBuilder {
+    pub fn y(mut self, y: f32) -> ImageViewBuilder {
         self.y = Some(y);
         self
     } 
 
-    pub fn translate_x(&mut self, translate_x: f32) -> &mut ImageViewBuilder {    
+    pub fn translate_x(mut self, translate_x: f32) -> ImageViewBuilder {    
         self.translate_x = Some(translate_x);
         self
     } 
 
-    pub fn  translate_y(&mut self, translate_y: f32) -> &mut ImageViewBuilder {
+    pub fn  translate_y(mut self, translate_y: f32) -> ImageViewBuilder {
         self.translate_y = Some(translate_y);
         self
     } 
 
-    pub fn opacity(&mut self, opacity: f32) -> &mut ImageViewBuilder {
+    pub fn opacity(mut self, opacity: f32) -> ImageViewBuilder {
         self.opacity = Some(opacity);
         self
     } 
 
-    pub fn width(&mut self, width: f32) -> &mut ImageViewBuilder {
+    pub fn width(mut self, width: f32) -> ImageViewBuilder {
         self.width = Some(width);
         self
     } 
 
-    pub fn height(&mut self, height: f32) -> &mut ImageViewBuilder {
+    pub fn height(mut self, height: f32) -> ImageViewBuilder {
         self.height = Some(height);
         self
     }
 
-    pub fn color(&mut self, color: (f32,f32,f32)) -> &mut ImageViewBuilder {
+    pub fn color(mut self, color: (f32,f32,f32)) -> ImageViewBuilder {
         self.color = Some(color);
         self
     }
 
-    pub fn image(&mut self, texture: &str) -> &mut ImageViewBuilder {
+    pub fn image(mut self, texture: &str) -> ImageViewBuilder {
         self.texture = Some(texture.to_string());
         self
     }

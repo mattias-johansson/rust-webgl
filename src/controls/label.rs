@@ -8,6 +8,7 @@ use crate::controls::node::*;
 use std::any::Any;
 
 use crate::events::mouse::*;
+use serde::*;
 
 #[derive(PartialEq, Clone)]
 pub struct Label {

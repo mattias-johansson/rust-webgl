@@ -157,7 +157,7 @@ pub fn send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_fra
         for vn in 0..this_frame.len() {
             let mut visual_node = this_frame.get_mut(vn).unwrap();
             if visual_node.get_uuid() == node.owner {
-                web_sys::console::log_2(&"sending to node ".into(), &node.uuid.to_string().into());
+//                web_sys::console::log_2(&"sending to node ".into(), &node.uuid.to_string().into());
                 send_event(Rc::clone(&events), cx, node.position(), &mut visual_node)
             }
         }
@@ -189,7 +189,7 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
 */
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
                     handled = visual_node.event_handler(cx, &events.borrow().event);
-                    web_sys::console::log_1(&"sent event".into());
+//                    web_sys::console::log_1(&"sent event".into());
                 }
             }
         },

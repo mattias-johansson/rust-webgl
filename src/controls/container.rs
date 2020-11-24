@@ -8,9 +8,9 @@ use crate::events::mouse::*;
 use uuid::Uuid;
 
 use crate::application::context::*;
+use serde::*;
 
-
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct Container {
     this: Uuid,
     node: Uuid
