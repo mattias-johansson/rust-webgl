@@ -1,3 +1,8 @@
+extern crate wasm_bindgen;
+
+use crate::color::Color;
+use wasm_bindgen::prelude::*;
+
 #[wasm_bindgen]
 pub struct Container {
     x: f32,
@@ -7,7 +12,7 @@ pub struct Container {
     translate_x: f32,
     translate_y: f32,
     opacity: f32,
-    color: (f32,f32,f32),
+    color: Color,
     clip: bool,
 }
 
@@ -20,7 +25,7 @@ pub struct ContainerBuilder {
     translate_x: Option<f32>,
     translate_y: Option<f32>,
     opacity: Option<f32>,
-    color: Option<(f32,f32,f32)>,
+    color: Option<Color>,
     clip: bool,
 }
 
@@ -69,12 +74,12 @@ impl ContainerBuilder {
            Some(height) => height,
            None => 0.0
        };
-       let color:(f32,f32,f32) = match self.color {
-           Some(color) => color,
-           None => (0.0,0.0,0.0)
+       let color: Color = match &self.color {
+           Some(color) => Color {r: color.r, g: color.g, b: color.b},
+           None => (Color {r: 0.0, g: 0.0, b: 0.0})
        };
        let clip = self.clip;
-       Container::new(cx, x, y, translate_x, translate_y, opacity, width, height, color, clip)
+       Container{x, y, translate_x, translate_y, opacity, width, height, color, clip}
    }
 
    pub fn x(mut self, x: f32) -> ContainerBuilder {
@@ -112,7 +117,7 @@ impl ContainerBuilder {
        self
    }
 
-   pub fn color(mut self, color: (f32,f32,f32)) -> ContainerBuilder {
+   pub fn color(mut self, color: Color) -> ContainerBuilder {
        self.color = Some(color);
        self
    }
@@ -121,3 +126,4 @@ impl ContainerBuilder {
        self.clip = clip;
        self
    }
+}
