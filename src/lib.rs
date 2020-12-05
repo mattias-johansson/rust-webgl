@@ -19,9 +19,8 @@ use crate::controls::page::*;
 use crate::controls::visual_node::VisualNode;
 
 use crate::events::mouse::*;
-use web_sys::{WebGlProgram, WebGlRenderingContext};
+use web_sys::{WebGlProgram, WebGlRenderingContext, Worker};
 
-use crate::controls::container::*;
 use crate::controls::container::*;
 use crate::controls::toggle_button::*;
 use crate::controls::scroll_view::*;
@@ -40,6 +39,9 @@ mod events;
 mod render;
 mod web;
 
+use js_sys::{Function, Object, Reflect, WebAssembly};
+use wasm_bindgen_futures::{spawn_local, JsFuture};
+
 /// Used to run the application from the web
 #[wasm_bindgen]
 pub struct Application {
@@ -51,10 +53,34 @@ pub struct Application {
     context: Context,
     animation_event_listerner: HashMap<Uuid, fn(&mut Context)>,
     core_app: CoreApp,
+    worker: Worker
 }
+
+const WASM: &'static [u8] = include_bytes!("../webgl_api_bg.wasm");
 
 #[wasm_bindgen]
 impl Application {
+
+    async fn run_async() -> Result<(), JsValue> {
+
+        web_sys::console::log_1(&"run_async".into());
+        let worker = Worker::new("./worker.js").unwrap();
+        let a = JsFuture::from(WebAssembly::instantiate_buffer(WASM, &Object::new())).await;
+        match a {
+            Ok(a) => {
+                let b: WebAssembly::Instance = Reflect::get(&a, &"instance".into())?.dyn_into()?;
+                web_sys::console::log_1(&"post".into());        
+                let _ = worker.post_message(&b);
+                web_sys::console::log_1(&"posted".into());
+            }, 
+            Err(e) => {
+                web_sys::console::log_1(&"Error".into());
+                web_sys::console::log_1(&e.as_string().into());
+            }
+        }
+        Ok(())
+    }
+
     /// Create a new Application
     #[wasm_bindgen(constructor)]
     pub fn new() -> Application {
@@ -78,6 +104,10 @@ impl Application {
         
         let core_app = CoreApp { visual_nodes : vec![] , names : HashMap::default()};
 
+        let worker = Worker::new("./worker.js").unwrap();
+
+        let _ = worker.post_message(&"test".into());
+
         Application {
             page,
             gl,
@@ -87,12 +117,18 @@ impl Application {
             context,
             animation_event_listerner,
             core_app,
+            worker,
         }
     }
+
 
     /// Start our application. `index.html` will call this function in order
     /// to begin rendering.
     pub fn start(&mut self) -> Result<(), JsValue> {
+/*        spawn_local(async {
+            Application::run_async().await.unwrap_throw();
+        });
+*/
         web_sys::console::log_1(&"start".into());
         create(&mut self.context, &mut self.core_app);
         let document = web_sys::window().unwrap().document().unwrap();
