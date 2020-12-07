@@ -1,4 +1,5 @@
 extern crate wasm_bindgen;
+use crate::events::application_events::ApplicationEvents;
 use crate::controls::slider::Slider;
 use crate::web::events::attach_touch_move_handler;
 use crate::web::events::attach_touch_end_handler;
@@ -50,17 +51,18 @@ pub struct Application {
     program: WebGlProgram,
     program_color: WebGlProgram,
     events: Rc<RefCell<Handler>>,
+    application_events: Rc<RefCell<ApplicationEvents>>,
     context: Context,
     animation_event_listerner: HashMap<Uuid, fn(&mut Context)>,
     core_app: CoreApp,
     worker: Worker
 }
 
-const WASM: &'static [u8] = include_bytes!("../webgl_api_bg.wasm");
+//const WASM: &'static [u8] = include_bytes!("../webgl_api_bg.wasm");
 
 #[wasm_bindgen]
 impl Application {
-
+    /*
     async fn run_async() -> Result<(), JsValue> {
 
         web_sys::console::log_1(&"run_async".into());
@@ -80,12 +82,20 @@ impl Application {
         }
         Ok(())
     }
+    */
 
     /// Create a new Application
     #[wasm_bindgen(constructor)]
-    pub fn new() -> Application {
-            
+    pub fn new() -> Application {            
         web_sys::console::log_1(&"Application".into());
+
+        let worker = Worker::new("./worker.js").unwrap();
+        let _ = worker.post_message(&"startup".into());
+
+        let application_events = ApplicationEvents::new();
+        let application_events = Rc::new(RefCell::new(application_events));
+        add_on_message_handler(&worker, application_events.clone());
+
         let webgl_context = get_webgl_context();
         let program = create_webgl_program(&webgl_context);
         let program_color = create_webgl_program_color(&webgl_context);
@@ -104,9 +114,7 @@ impl Application {
         
         let core_app = CoreApp { visual_nodes : vec![] , names : HashMap::default()};
 
-        let worker = Worker::new("./worker.js").unwrap();
 
-        let _ = worker.post_message(&"test".into());
 
         Application {
             page,
@@ -114,6 +122,7 @@ impl Application {
             program,
             program_color,
             events,
+            application_events,
             context,
             animation_event_listerner,
             core_app,

@@ -4,16 +4,17 @@ use crate::color::Color;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
+#[derive(PartialEq, Clone, Copy)]
 pub struct Container {
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
-    translate_x: f32,
-    translate_y: f32,
-    opacity: f32,
-    color: Color,
-    clip: bool,
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub translate_x: f32,
+    pub translate_y: f32,
+    pub opacity: f32,
+    pub color: Color,
+    pub clip: bool,
 }
 
 #[wasm_bindgen]
@@ -31,7 +32,8 @@ pub struct ContainerBuilder {
 
 #[wasm_bindgen]
 impl ContainerBuilder {
-   
+
+   #[wasm_bindgen(constructor)]
    pub fn builder() -> ContainerBuilder { 
        let x = None;
        let y = None;

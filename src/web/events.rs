@@ -1,3 +1,5 @@
+use web_sys::Worker;
+use crate::ApplicationEvents;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
@@ -6,6 +8,7 @@ use std::rc::Rc;
 
 use crate::events::handler::*;
 use crate::events::mouse::*;
+
 
 pub fn attach_mouse_down_handler(
     canvas: &web_sys::HtmlCanvasElement,
@@ -140,3 +143,20 @@ pub fn attach_touch_end_handler(
 
     Ok(())
 }
+
+pub fn add_on_message_handler(
+    worker: &Worker,
+    events: Rc<RefCell<ApplicationEvents>>) -> Result<(), JsValue> {
+      
+        let handler = move |event: web_sys::MessageEvent| {
+            let data = event.data();  
+                events.borrow_mut().add_event(data.as_string().unwrap()); 
+        
+            };
+        
+            let handler = Closure::wrap(Box::new(handler) as Box<dyn FnMut(_)>);
+        
+            worker.set_onmessage(Some(handler.as_ref().unchecked_ref()));
+            handler.forget();
+        Ok(())
+    }
