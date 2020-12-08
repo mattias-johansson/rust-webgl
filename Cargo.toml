@@ -25,9 +25,6 @@ makepad-geometry = "0.1.0"
 makepad-internal-iter = "0.1.0"
 makepad-path = "0.1.0"
 
-[dependencies.webgl-api]
-path="./src/public/controls"
-
 [dependencies.web-sys]
 version = "0.3.46"
 features = [
