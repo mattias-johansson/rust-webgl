@@ -1,9 +1,10 @@
 extern crate wasm_bindgen;
 
 use wasm_bindgen::prelude::*;
+use serde::*;
 
 #[wasm_bindgen]
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Serialize)]
 pub struct Color {
     pub r: f32,
     pub g: f32,
