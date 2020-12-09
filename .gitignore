@@ -2,4 +2,6 @@ node_modules
 Cargo.lock
 /target/**
 webgl.js
-webgl_bg.wasm
+*.wasm
+/src/public/target/**
+webgl_api.js
