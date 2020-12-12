@@ -11,7 +11,7 @@ async function run() {
   let color = new Color();
   console.log("WORKER: color created!");
   console.log("WORKER: new color: " + color.r);
-  let container = new ContainerBuilder().x(2.0).color(color).build();
+  let container = new ContainerBuilder().x(300.0).y(300.0).width(400.0).opacity(1.0).height(400.0).color(color).build();
   Application.add(container);
   console.log("WORKER: add");
 

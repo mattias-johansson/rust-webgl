@@ -164,6 +164,7 @@ impl Application {
         send_events_from_context(&mut self.context, events, &mut self.core_app.visual_nodes); //Animation events
         self.context.events = vec![];
 
+        handle_application_events(&mut self.context, Rc::clone(&self.application_events));
 
         //Handle Mouse and Touch events (Currently only one at per frame)
         send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes);              // Touch events
@@ -179,6 +180,20 @@ impl Application {
     }
 }
 
+pub fn handle_application_events(context: &mut Context, app_events: Rc<RefCell<ApplicationEvents>>) {
+    web_sys::console::log_1(&"handle_application_events".into());
+    let mut events = app_events.borrow_mut();
+    if &events.events.len() > &0 {
+    web_sys::console::log_1(&"has events".into());
+        let string = &events.events.pop().unwrap();
+        web_sys::console::log_1(&string.into());
+        let result = serde_json::from_str(string);
+        let object : ContainerPrivate = result.unwrap();
+        let container = Container::from_private(context, object);
+        context.add_child_to(context.root.unwrap(), container.get_node_uuid());
+    }
+
+} 
 
 pub fn send_events_from_context(context: &mut Context, events: &Vec<Event>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
     for event in events {

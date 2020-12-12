@@ -37,6 +37,10 @@ impl VisualNode for Container {
 
 impl Container {
 
+    pub fn from_private(cx: &mut Context, private: ContainerPrivate) -> Container {
+        Container::new(cx, private.x, private.y, private.translate_x, private.translate_y, private.opacity, private.width, private.height, (private.color.r, private.color.g, private.color.b), private.clip)
+    }
+
     pub fn get(&mut self) -> &mut Container {
         self
     }
@@ -176,3 +180,23 @@ impl ContainerBuilder {
         self
     }
 }
+
+#[derive(PartialEq, Clone, Copy, Deserialize)]
+pub struct ContainerPrivate {
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub translate_x: f32,
+    pub translate_y: f32,
+    pub opacity: f32,
+    pub color: Color,
+    pub clip: bool,
+}
+
+#[derive(PartialEq, Clone, Copy, Deserialize)]
+pub struct Color {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+} 

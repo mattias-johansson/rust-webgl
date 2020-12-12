@@ -18,8 +18,7 @@ impl Color {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Color {
 //        panic!("Error");
-        web_sys::console::log_1(&"Creating color".into());
-        Color { r: 0.5, g: 0.4, b: 0.3}
+        Color { r: 1.0, g: 0.0, b: 0.0}
     }
 }
 
