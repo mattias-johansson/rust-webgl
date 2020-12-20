@@ -33,6 +33,8 @@ use crate::render::draw::*;
 use crate::render::gl_context::*;
 use crate::web::events::*;
 
+use serde::*;
+
 mod application;
 mod animation;
 mod controls;
@@ -42,6 +44,18 @@ mod web;
 
 use js_sys::{Function, Object, Reflect, WebAssembly};
 use wasm_bindgen_futures::{spawn_local, JsFuture};
+
+
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
+pub enum MessageType {
+    ObjectCreated(String),
+    ValueUpdated(String),
+    AddNode(String),
+    RemoveNode(String),
+    SetRoot(String)
+}
+
+
 
 /// Used to run the application from the web
 #[wasm_bindgen]
@@ -164,7 +178,7 @@ impl Application {
         send_events_from_context(&mut self.context, events, &mut self.core_app.visual_nodes); //Animation events
         self.context.events = vec![];
 
-        handle_application_events(&mut self.context, Rc::clone(&self.application_events));
+        handle_application_events(&mut self.context, &mut self.core_app, Rc::clone(&self.application_events));
 
         //Handle Mouse and Touch events (Currently only one at per frame)
         send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes);              // Touch events
@@ -180,17 +194,33 @@ impl Application {
     }
 }
 
-pub fn handle_application_events(context: &mut Context, app_events: Rc<RefCell<ApplicationEvents>>) {
-    web_sys::console::log_1(&"handle_application_events".into());
+pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, app_events: Rc<RefCell<ApplicationEvents>>) {
     let mut events = app_events.borrow_mut();
     if &events.events.len() > &0 {
     web_sys::console::log_1(&"has events".into());
         let string = &events.events.pop().unwrap();
         web_sys::console::log_1(&string.into());
         let result = serde_json::from_str(string);
-        let object : ContainerPrivate = result.unwrap();
-        let container = Container::from_private(context, object);
-        context.add_child_to(context.root.unwrap(), container.get_node_uuid());
+        let message : MessageType = result.unwrap();
+        match message {
+            MessageType::SetRoot(data) => {
+                let result = serde_json::from_str(&data);                
+                let object : ContainerPrivate = result.unwrap();
+                let container = Container::from_private(context, object);
+                context.add_child_to(context.root.unwrap(), container.get_node_uuid());
+            },
+            MessageType::ObjectCreated(data) => {
+                let result = serde_json::from_str(&data);                
+                let object : Button = result.unwrap();
+                let button = ButtonPrivate::from_public(context, object);
+                context.add_child_to(context.root.unwrap(), button.get_node_uuid());      
+                core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);          
+            }
+            _ => ()
+        }
+        
+
+
     }
 
 } 

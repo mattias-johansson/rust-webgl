@@ -2,8 +2,10 @@ extern crate wasm_bindgen;
 extern crate serde;
 
 use crate::controls::color::*;
+use crate::controls::button::*;
 use wasm_bindgen::prelude::*;
 use serde::*;
+use crate::globals::messaging::*;
 
 #[wasm_bindgen]
 #[derive(PartialEq, Clone, Copy, Serialize)]
@@ -30,6 +32,16 @@ pub struct ContainerBuilder {
     opacity: Option<f32>,
     color: Option<Color>,
     clip: bool,
+}
+
+#[wasm_bindgen]
+impl Container {
+    pub fn add(&self, button: &Button) -> Result<(), JsValue> {
+        let json = serde_json::to_string(&button).unwrap();
+        let message = MessageType::ObjectCreated(json);
+        send_message(message);
+        Ok(())
+    }
 }
 
 #[wasm_bindgen]
@@ -130,4 +142,5 @@ impl ContainerBuilder {
        self.clip = clip;
        self
    }
+
 }

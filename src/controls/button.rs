@@ -22,6 +22,15 @@ enum ButtonState {
     ToNotPressed,
 }
 
+#[derive(PartialEq, Clone, Serialize, Deserialize)]
+pub struct Button {
+    text: String, 
+    x: f32, 
+    y: f32, 
+    opacity: f32,
+    state: ButtonState,
+}
+
 //TODO Nedd to rewrite as composite control. Need to have a container node as "node"
 
 #[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
@@ -35,6 +44,11 @@ pub struct ButtonPrivate {
 }
 
 impl ButtonPrivate {
+
+    pub fn from_public(cx: &mut Context, public: Button) -> ButtonPrivate {
+        ButtonPrivate::new(cx, public.text.as_str(), public.x, public.y, public.opacity)
+    }
+
     pub fn new(cx: &mut Context, text: &str, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
         let this = Uuid::new_v4();
         let pressed = false;

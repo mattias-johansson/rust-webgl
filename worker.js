@@ -1,38 +1,17 @@
 importScripts('webgl_api.js')
 
-const { Application, Container, ContainerBuilder, Color } = wasm_bindgen;
+const { Application, Container, ContainerBuilder, Color, Button, ButtonBuilder} = wasm_bindgen;
 
 async function run() {
   await wasm_bindgen('/webgl_api_bg.wasm');
 
   console.log("WORKER: done");
-
-  console.log("WORKER: after run");
   let color = new Color();
-  console.log("WORKER: color created!");
-  console.log("WORKER: new color: " + color.r);
   let container = new ContainerBuilder().x(300.0).y(300.0).width(400.0).opacity(1.0).height(400.0).color(color).build();
-  Application.add(container);
+  let button = new ButtonBuilder().x(0.0).y(0.0).text("Knapp").build();
+  container.add(button);
+  Application.set_root(container);
   console.log("WORKER: add");
 
 }
 run();
-/*
-self.onmessage = function(event) {
-
-  let modul = event.data;
-
-  console.log("WORKER: on message");
-    run().then(response => {
-      console.log("WORKER: after run");
-      let color = new Color();
-      console.log("WORKER: color created!");
-      console.log("WORKER: new color: " + color.r);
-      let container = new ContainerBuilder().x(2.0).color(color).build();
-      console.log("WORKER: new containter: " + container.x);
-      let message = JSON.stringify(container);
-      console.log("WORKER: sending message: " + message);
-      postMessage(message);
-  });
-}
-*/

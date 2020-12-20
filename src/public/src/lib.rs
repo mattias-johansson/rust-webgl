@@ -1,18 +1,18 @@
-//use std::cell::RefCell;
-//use std::rc::Rc;
+extern crate serde;
+mod controls;
+mod globals;
+
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{DedicatedWorkerGlobalScope};
-//use web_sys::{ErrorEvent, Event, Worker, MessageEvent};
 
-mod controls;
 use self::controls::container::*;
+use self::globals::messaging::*;
+use serde::*;
 
 /// Used to run the application from the web
 #[wasm_bindgen]
-pub struct Application {
-
-}
+pub struct Application {}
 
 #[wasm_bindgen]
 impl Application {
@@ -21,10 +21,14 @@ impl Application {
         Application {}
     }
 
-    pub fn add(object : &Container) -> Result<(), JsValue> {
-        let global = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
-        let json = serde_json::to_string(&object);
-        global.post_message(&json.unwrap().into())?;
+    pub fn set_root(object : &Container) -> Result<(), JsValue> {
+        let json = serde_json::to_string(&object).unwrap();
+        let message = MessageType::SetRoot(json);
+        send_message(message);
         Ok(())
     }
+    
 }
+/*
+
+*/
