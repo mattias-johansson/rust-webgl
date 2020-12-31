@@ -13,6 +13,7 @@ pub fn get_webgl_context() -> WebGlRenderingContext {
 
     let ctx_options = js_sys::Object::new();
     js_sys::Reflect::set(&ctx_options, &"stencil".into(), &true.into()).unwrap();
+    js_sys::Reflect::set(&ctx_options, &"alpha".into(), &false.into()).unwrap();
             
     let gl = canvas
         .get_context_with_context_options("webgl", &ctx_options)

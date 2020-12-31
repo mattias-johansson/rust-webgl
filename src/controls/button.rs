@@ -13,6 +13,7 @@ use crate::application::context::*;
 use crate::animation::ease::*;
 use uuid::Uuid;
 use serde::*;
+use crate::globals::messaging::*;
 
 #[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 enum ButtonState {
@@ -115,7 +116,7 @@ impl ButtonPrivate {
         let width =  145.0;
         let height = 34.0;
         let mut node = Node::new(this, x, y, width, height);
-        node.opacity = 1.0;
+        node.opacity = 0.0;
         node.texture = Some(Node::create_texture(cx, "/assets/button_pressed.png"));
         node
     }
@@ -233,6 +234,7 @@ impl VisualNode for ButtonPrivate {
                     self.pressed = false;
                     self.on_button_pressed(cx);
                     cx.cb.add_trigged(self.this, Event::None);
+                    send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
                 }else if event.event == MouseEvent::Down {
                     self.pressed = true; 
                     self.on_button_pressed(cx);

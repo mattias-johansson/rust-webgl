@@ -4,6 +4,9 @@ extern crate serde;
 use wasm_bindgen::prelude::*;
 use serde::*;
 
+use js_sys::{Function};
+use uuid::Uuid;
+
 #[derive(PartialEq, Eq, Clone, Copy, Serialize)]
 enum ButtonState {
     NotPressed,
@@ -12,14 +15,20 @@ enum ButtonState {
     ToNotPressed,
 }
 
+pub struct ButtonSignal {
+    this: Uuid,
+    onClicked: Option<Function>
+}
+
 #[wasm_bindgen]
 #[derive(PartialEq, Clone, Serialize)]
 pub struct Button {
+    this: Uuid,
     text: String, 
     x: f32, 
     y: f32, 
     opacity: f32,
-    state: ButtonState,
+    state: ButtonState
 }
 
 #[wasm_bindgen]
@@ -27,7 +36,8 @@ pub struct ButtonBuilder {
     x: Option<f32>,
     y: Option<f32>,
     opacity: Option<f32>,
-    text: Option<String>
+    text: Option<String>,
+    callback: Option<Function>
 }
 
 #[wasm_bindgen]
@@ -39,10 +49,12 @@ impl ButtonBuilder {
         let y = None;
         let opacity = None;
         let text = None;
-        ButtonBuilder { x, y, opacity, text }
+        let callback = None;
+        ButtonBuilder { x, y, opacity, text, callback }
     }
 
     pub fn build(&self) -> Button {
+        let this = Uuid::new_v4();
         let x:f32 = match self.x {
             Some(x) => x,
             None => 0.0
@@ -60,7 +72,7 @@ impl ButtonBuilder {
             None => "".to_owned()
         };
         let state = ButtonState::NotPressed;
-        Button {x,y,opacity,text,state}
+        Button {this, x,y,opacity,text,state}
     }
 
     pub fn x(mut self, x: f32) -> ButtonBuilder {
@@ -84,4 +96,8 @@ impl ButtonBuilder {
         self
     } 
      
+    pub fn callback(mut self, callback: Function) -> ButtonBuilder {
+        self.callback = Some(callback);
+        self
+    } 
 }

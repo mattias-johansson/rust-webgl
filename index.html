@@ -39,16 +39,18 @@
       async function run() {
         await wasm_bindgen('/webgl_bg.wasm');
 
-        const application = new Application()
-            application.start()
-  
-            let time = Date.now();
-            function eventLoop () {
-              const dt = Date.now() - time
-              application.event_loop(dt)
-              window.requestAnimationFrame(eventLoop)
-            }
-            eventLoop ();
+        const application = new Application();
+        application.start();
+
+        let start_time;
+        function eventLoop (time) {
+          if(start_time === undefined) {
+            start_time = time;
+          }
+          application.event_loop(time);
+          window.requestAnimationFrame(eventLoop);
+        }
+        eventLoop ();
       }
       console.log("run");
       run();

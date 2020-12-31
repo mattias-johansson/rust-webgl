@@ -1,3 +1,4 @@
+
 extern crate serde;
 
 use wasm_bindgen::prelude::*;
@@ -6,7 +7,6 @@ use web_sys::{DedicatedWorkerGlobalScope};
 
 use serde::*;
 use uuid::Uuid;
-
 
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum MessageType {
@@ -23,11 +23,3 @@ pub fn send_message(message: MessageType) -> Result<(), JsValue> {
     global.post_message(&json.unwrap().into())?;
     Ok(())
 }
-
-/*
-pub fn send<T>(r#type: MessageType, object: &T) -> Result<(), JsValue> where T : Serialize {
-    let data = serde_json::to_string(&object).unwrap();
-    let message = Message { r#type, data };
-    send_message(message)
-}
-*/
