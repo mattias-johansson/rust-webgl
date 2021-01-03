@@ -52,7 +52,8 @@ pub fn add_on_message_handler(objects: HashMap<Uuid, HashMap<String, Function>>)
                     web_sys::console::log_1(&"value updated signal4".into());
                     let callback = optional_callback.unwrap();
                     web_sys::console::log_1(&"value updated signal5".into());
-                    callback.call0(&JsValue::from(value));
+                    let globalic = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
+                    callback.call1(&JsValue::from(globalic), &JsValue::from(&value));
                 },
                 _ => ()
             }
