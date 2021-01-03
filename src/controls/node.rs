@@ -1,5 +1,3 @@
-
-
 use uuid::Uuid;
 use crate::application::context::*;
 use crate::render::textures::*;

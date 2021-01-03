@@ -5,8 +5,11 @@ mod globals;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{DedicatedWorkerGlobalScope};
+use js_sys::{Function};
 
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use self::controls::container::*;
 use self::globals::messaging::*;
@@ -16,14 +19,15 @@ use uuid::Uuid;
 /// Used to run the application from the web
 #[wasm_bindgen]
 pub struct Application {
-    objects:  HashMap<Uuid, String>
+    objects:  HashMap<Uuid, HashMap<String, Function>>
 }
 
 #[wasm_bindgen]
 impl Application {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Application {   
-        let objects : HashMap<Uuid, String> = HashMap::new();
+        web_sys::console::log_1(&"new application".into());
+        let objects : HashMap<Uuid, HashMap<String, Function>> = HashMap::new();
         Application { objects }
     }
 
@@ -33,22 +37,7 @@ impl Application {
         send_message(message);
         Ok(())
     }
-/*
-    fn add_on_message_handler(
-        events: Rc<RefCell<ApplicationEvents>>) -> Result<(), JsValue> {
-        
-        let global = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
-        let handler = move |event: web_sys::MessageEvent| {
-            let data = event.data();  
-                events.borrow_mut().add_event(data.as_string().unwrap()); 
-        
-            };
-        
-            let handler = Closure::wrap(Box::new(handler) as Box<dyn FnMut(_)>);
-        
-            global.set_onmessage(Some(handler.as_ref().unchecked_ref()));
-            handler.forget();
-        Ok(())
-    }
-    */
+    
 }
+
+

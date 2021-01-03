@@ -7,8 +7,9 @@ use crate::web::events::attach_touch_start_handler;
 use crate::web::events::attach_mouse_move_handler;
 use crate::application::core_app::CoreApp;
 
-use crate::events::mouse::*;
 use uuid::Uuid;
+
+use crate::events::mouse::*;
 use std::collections::HashMap;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -50,12 +51,8 @@ pub struct Application {
     events: Rc<RefCell<Handler>>,
     application_events: Rc<RefCell<ApplicationEvents>>,
     context: Context,
-    animation_event_listerner: HashMap<Uuid, fn(&mut Context)>,
     core_app: CoreApp,
-    worker: Worker
 }
-
-//const WASM: &'static [u8] = include_bytes!("../webgl_api_bg.wasm");
 
 #[wasm_bindgen]
 impl Application {
@@ -70,23 +67,20 @@ impl Application {
 
         let application_events = ApplicationEvents::new();
         let application_events = Rc::new(RefCell::new(application_events));
-        add_on_message_handler(&worker, application_events.clone());
+        let _ = add_on_message_handler(&worker, application_events.clone());
 
         let webgl_context = get_webgl_context();
         let program = create_webgl_program(&webgl_context);
         let program_color = create_webgl_program_color(&webgl_context);
-        
         
         setup_redering_context(&webgl_context, &program);
         let gl = Rc::new(webgl_context);
 
         let events = Handler::new();
         let events = Rc::new(RefCell::new(events));
-        let mut context = Context::new();
+        let mut context = Context::new(worker);
         let page = Page::new(&mut context);
         context.root = Some(page.node);
-
-        let animation_event_listerner = HashMap::default();
         
         let core_app = CoreApp { visual_nodes : vec![] , names : HashMap::default()};
 
@@ -98,9 +92,7 @@ impl Application {
             events,
             application_events,
             context,
-            animation_event_listerner,
             core_app,
-            worker,
         }
     }
 
@@ -108,10 +100,6 @@ impl Application {
     /// Start our application. `index.html` will call this function in order
     /// to begin rendering.
     pub fn start(&mut self) -> Result<(), JsValue> {
-/*        spawn_local(async {
-            Application::run_async().await.unwrap_throw();
-        });
-*/
         web_sys::console::log_1(&"start".into());
         create(&mut self.context, &mut self.core_app);
         let document = web_sys::window().unwrap().document().unwrap();
@@ -133,15 +121,15 @@ impl Application {
      * The event loop called from JavaScript
      */
     pub fn event_loop(&mut self, dt: f32) {
-        //Handle animation events & clear events when done
+        // Handle animation events & clear events when done
         let events = &self.context.events.clone();
-        send_events_from_context(&mut self.context, events, &mut self.core_app.visual_nodes); //Animation events
+        send_events_from_context(&mut self.context, events, &mut self.core_app.visual_nodes);  //Animation events
         self.context.events = vec![];
 
         handle_application_events(&mut self.context, &mut self.core_app, Rc::clone(&self.application_events));
 
-        //Handle Mouse and Touch events (Currently only one at per frame)
-        send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes);              // Touch events
+        // Handle Mouse and Touch events (Currently only one at per frame)
+        send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes);  // Touch events
         
         let callbacks = self.context.cb.clone();
         callbacks.trigger_callbacks(&mut self.context, &mut self.core_app);
@@ -175,12 +163,10 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                 let button = ButtonPrivate::from_public(context, object);
                 context.add_child_to(context.root.unwrap(), button.get_node_uuid());      
                 core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);          
-            }
+            },
             _ => ()
         }
         
-
-
     }
 
 } 
@@ -226,20 +212,8 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 if event.event != MouseEvent::None {
                 let x = event.x;
                 let y = event.y;
-
-/*                web_sys::console::log_1(&"event".into());
-                web_sys::console::log_1(&event.x.to_string().into());
-                web_sys::console::log_1(&event.y.to_string().into());
-                web_sys::console::log_1(&"node from".into());
-                web_sys::console::log_1(&xy.0.to_string().into());
-                web_sys::console::log_1(&xy.1.to_string().into());
-                web_sys::console::log_1(&"node to".into());
-                web_sys::console::log_1(&xy.2.to_string().into());
-                web_sys::console::log_1(&xy.3.to_string().into());
-*/
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
                     handled = visual_node.event_handler(cx, &events.borrow().event);
-//                    web_sys::console::log_1(&"sent event".into());
                 }
             }
         },
@@ -269,12 +243,10 @@ pub fn get_device_pixel_ratio() -> f64 {
 
 pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
     let slider = Slider::new(&mut context, 500.0, 500.0, 1.0);
-    let image_view = ImageViewBuilder::builder().x(0.0).y(0.0).width(145.0).height(34.0).opacity(1.0).image("assets/button.png").build(&mut context);
-    let image_view2 = ImageViewBuilder::builder().x(0.0).y(34.0).width(145.0).height(34.0).opacity(1.0).image("assets/button_pressed.png").build(&mut context);
 
     let container = ContainerBuilder::builder().x(0.0).height(703.0).width(1280.0).color((1.0,1.0,1.0)).opacity(1.0).clip(true).build(&mut context);
     //let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(400.0).height(400.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
-    let label = Label::new(context, 5.0, 5.0, "Test label");
+    let label = Label::new(context, 45.0, 45.0, "Test label");
     context.add_child_to(context.root.unwrap(), container.get_node_uuid());
     container.add_child(&mut context, slider.get_node_uuid());
     //container.add_child(&mut context, container2.get_node_uuid());
@@ -282,12 +254,9 @@ pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
     
     //let scroll_view = ScrollView::new(&mut context, 0.0, 0.0, 0.0, 0.0, 0.5, 300.0, 300.0, (1.0,0.0,1.0), );
 //    scroll_view.add_content(&mut context, image_view.get_node_uuid());
-    container.add_child(&mut context, image_view2.get_node_uuid());
-    container.add_child(&mut context, image_view.get_node_uuid());
     //context.add_child_to(context.root.unwrap(), scroll_view.get_node_uuid());
 
-    let button = ButtonPrivate::new(&mut context, "Button", 150.0, 5.0, 0.5);
-    core_app.names.insert("Bild".to_owned(), image_view.get_uuid());
+    let button = ButtonPrivate::new(Uuid::new_v4(), &mut context, "Button", 150.0, 5.0, 0.5);
 
     container.add_child(&mut context,button.get_node_uuid());
     container.add_child(&mut context,label.get_node_uuid());
@@ -295,8 +264,6 @@ pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
     context.cb.add_subscriber(button.this, on_button_pressed);
     context.cb.add_subscriber(slider.this, on_slider_event);
 
-    core_app.visual_nodes.push(Box::new(image_view) as Box<dyn VisualNode>);
-    core_app.visual_nodes.push(Box::new(image_view2) as Box<dyn VisualNode>);
     core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
     core_app.visual_nodes.push(Box::new(slider) as Box<dyn VisualNode>);
 //    core_app.visual_nodes.push(Box::new(scroll_view) as Box<dyn VisualNode>);
@@ -306,7 +273,7 @@ pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
 pub fn on_button_pressed(mut cx: &mut Context, core_app: &mut CoreApp, event: Event) {
     let y = cx.nodes.len() as f32 * 20.0;
     let button = ToggleButtonPrivate::new(&mut cx, 5.0, y, 1.0);
-    cx.adgid_child_to(cx.root.unwrap(), button.get_node_uuid());
+    cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
     core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
 }
 

@@ -2,11 +2,15 @@
 extern crate serde;
 
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::{DedicatedWorkerGlobalScope};
-
+use web_sys::{Worker};
+    
 use serde::*;
 use uuid::Uuid;
+
+pub struct Messaging {
+    pub worker: Worker
+}
+
 
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum MessageType {
@@ -17,9 +21,11 @@ pub enum MessageType {
     SetRoot(String)
 }
 
-pub fn send_message(message: MessageType) -> Result<(), JsValue> {
-    let global = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
-    let json = serde_json::to_string(&message);
-    global.post_message(&json.unwrap().into())?;
-    Ok(())
+impl Messaging {
+    pub fn send_message(&self, message: MessageType) -> Result<(), JsValue> {
+        web_sys::console::log_1(&"send_message".into());
+        let json = serde_json::to_string(&message);
+        self.worker.post_message(&json.unwrap().into())?;
+        Ok(())
+    }
 }

@@ -1,4 +1,3 @@
-
 use crate::events::mouse::*;
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
@@ -123,7 +122,7 @@ impl ScrollView {
         self.scroll_y = None;
     }
 
-    fn new_node(owner: Uuid, cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  Node {
+    fn new_node(owner: Uuid, _cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  Node {
         let x:f32 = x;
         let y:f32 = y;
         let translate_x = translate_x;

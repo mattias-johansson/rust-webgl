@@ -1,11 +1,15 @@
 extern crate wasm_bindgen;
 extern crate serde;
 
+use std::collections::HashMap;
+
 use wasm_bindgen::prelude::*;
+use js_sys::{Function};
+
+use uuid::Uuid;
 use serde::*;
 
-use js_sys::{Function};
-use uuid::Uuid;
+use crate::globals::messaging::*;
 
 #[derive(PartialEq, Eq, Clone, Copy, Serialize)]
 enum ButtonState {
@@ -53,7 +57,7 @@ impl ButtonBuilder {
         ButtonBuilder { x, y, opacity, text, callback }
     }
 
-    pub fn build(&self) -> Button {
+    pub fn build(&mut self) -> Button {
         let this = Uuid::new_v4();
         let x:f32 = match self.x {
             Some(x) => x,
@@ -72,7 +76,17 @@ impl ButtonBuilder {
             None => "".to_owned()
         };
         let state = ButtonState::NotPressed;
-        Button {this, x,y,opacity,text,state}
+        let callback = self.callback.take();
+        if callback.is_some() {
+            let mut signal: HashMap<String, Function> = HashMap::new();
+            signal.insert("onClicked".to_owned(), callback.unwrap());
+            let mut listener = HashMap::new();
+            listener.insert(this, signal);
+
+            web_sys::console::log_1(&this.to_string().into()); 
+            add_on_message_handler(listener);
+        }
+        Button { this, x, y, opacity, text, state }
     }
 
     pub fn x(mut self, x: f32) -> ButtonBuilder {

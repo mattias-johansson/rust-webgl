@@ -4,7 +4,10 @@ use crate::animation::animation::Animation;
 use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::render::textures::*;
-use crate::render::word::*;
+use crate::globals::messaging::*;
+
+use web_sys::{Worker};
+
 use uuid::Uuid;
 use std::collections::HashMap;
 
@@ -20,11 +23,12 @@ pub struct Context {
     pub fonts: Word,
     pub vertices: HashMap<Uuid, Vec<f32>>,
     pub dirty: bool,
+    pub messaging: Messaging,
 
 }
 
 impl Context {
-    pub fn new() -> Context {
+    pub fn new(worker: Worker) -> Context {
         let nodes = vec![];
         let node_relations = HashMap::default();
         let animations = vec![];
@@ -36,8 +40,9 @@ impl Context {
         let fonts = Word::default();
         let vertices = HashMap::default();
         let dirty = false;
+        let messaging = Messaging { worker };
         
-        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb, fonts, vertices, dirty }
+        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb, fonts, vertices, dirty, messaging }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {

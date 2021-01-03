@@ -1,4 +1,3 @@
-use crate::ContainerPrivate;
 
 pub struct ApplicationEvents {
     pub events: Vec<String>,

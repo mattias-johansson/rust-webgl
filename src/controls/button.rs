@@ -2,7 +2,6 @@ use crate::render::word::Word;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use std::rc::Rc;
 use std::any::Any;
 
 use crate::controls::visual_node::*;
@@ -25,6 +24,7 @@ enum ButtonState {
 
 #[derive(PartialEq, Clone, Serialize, Deserialize)]
 pub struct Button {
+    this: Uuid,
     text: String, 
     x: f32, 
     y: f32, 
@@ -47,11 +47,11 @@ pub struct ButtonPrivate {
 impl ButtonPrivate {
 
     pub fn from_public(cx: &mut Context, public: Button) -> ButtonPrivate {
-        ButtonPrivate::new(cx, public.text.as_str(), public.x, public.y, public.opacity)
+        ButtonPrivate::new(public.this, cx, public.text.as_str(), public.x, public.y, public.opacity)
     }
 
-    pub fn new(cx: &mut Context, text: &str, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
-        let this = Uuid::new_v4();
+    pub fn new(this: Uuid, cx: &mut Context, text: &str, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
+//        let this = Uuid::new_v4();
         let pressed = false;
 
         let mut node = Node::new(this, x, y, 145.0, 34.0);
@@ -231,10 +231,11 @@ impl VisualNode for ButtonPrivate {
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
+                    web_sys::console::log_1(&"mouse up".into());
                     self.pressed = false;
                     self.on_button_pressed(cx);
                     cx.cb.add_trigged(self.this, Event::None);
-                    send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
+                    let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
                 }else if event.event == MouseEvent::Down {
                     self.pressed = true; 
                     self.on_button_pressed(cx);

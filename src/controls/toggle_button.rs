@@ -7,7 +7,6 @@ use crate::animation::ease::*;
 extern crate erased_serde;
 use uuid::Uuid;
 use crate::application::context::*;
-use std::rc::Rc;
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum ToggleButtonState {
