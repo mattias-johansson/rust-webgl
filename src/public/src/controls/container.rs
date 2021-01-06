@@ -36,7 +36,7 @@ pub struct ContainerBuilder {
 
 #[wasm_bindgen]
 impl Container {
-    pub fn add(&self, button: Button) -> Result<(), JsValue> {
+    pub fn add(&self, button: &Button) -> Result<(), JsValue> {
         let json = serde_json::to_string(&button).unwrap();
         let message = MessageType::ObjectCreated(json);
         send_message(message);

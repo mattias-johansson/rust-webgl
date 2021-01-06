@@ -12,14 +12,16 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use self::controls::container::*;
+use self::controls::button::*;
 use self::globals::messaging::*;
+use self::globals::listeners::*;
 use serde::*;
 use uuid::Uuid;
 
 /// Used to run the application from the web
 #[wasm_bindgen]
 pub struct Application {
-    objects:  HashMap<Uuid, HashMap<String, Function>>
+    listeners: Listeners
 }
 
 #[wasm_bindgen]
@@ -27,8 +29,9 @@ impl Application {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Application {   
         web_sys::console::log_1(&"new application".into());
-        let objects : HashMap<Uuid, HashMap<String, Function>> = HashMap::new();
-        Application { objects }
+        let listeners = Listeners::new();
+        add_on_message_handler(Rc::clone(&listeners.objects));
+        Application { listeners }
     }
 
     pub fn set_root(object : Container) -> Result<(), JsValue> {
@@ -37,7 +40,12 @@ impl Application {
         send_message(message);
         Ok(())
     }
-    
+
+    pub fn add_listener(&mut self, sender: &Button, signal:String, callback: Function ) -> Result<(), JsValue> {
+        self.listeners.add_listener(sender.get_uuid(), signal, callback);
+        Ok(())
+    }
+
 }
 
 

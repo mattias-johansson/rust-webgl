@@ -9,8 +9,8 @@ use uuid::Uuid;
 use js_sys::{Function};
 use std::collections::HashMap;
 
-
-
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum MessageType {
@@ -28,13 +28,14 @@ pub fn send_message(message: MessageType) -> Result<(), JsValue> {
     Ok(())
 }
 
-pub fn add_on_message_handler(objects: HashMap<Uuid, HashMap<String, Function>>) -> Result<(), JsValue> {
+pub fn add_on_message_handler(objects: Rc<RefCell<HashMap<String, HashMap<String, Vec<Function>>>>>) -> Result<(), JsValue> {
     
     web_sys::console::log_1(&"add_on_message_handler".into());
-    web_sys::console::log_1(&objects.len().to_string().into());
+//    web_sys::console::log_1(&objects.len().to_string().into());
 
     let global = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
     let handler = move |event: web_sys::MessageEvent| {
+        let objects = objects.borrow();
         web_sys::console::log_1(&"message".into());
           let data = event.data().as_string().unwrap();  
             let result = serde_json::from_str(&data);
@@ -44,16 +45,18 @@ pub fn add_on_message_handler(objects: HashMap<Uuid, HashMap<String, Function>>)
                     web_sys::console::log_1(&uuid.to_string().into());
                     web_sys::console::log_1(&"value updated signal1".into());
                     web_sys::console::log_1(&objects.len().to_string().into());
-                    let optional_listener = objects.get(&uuid);
+                    let optional_listener = objects.get(&uuid.to_string());
                     web_sys::console::log_1(&"value updated signal2".into());
                     let listener = optional_listener.unwrap();
                     web_sys::console::log_1(&"value updated signal3".into());
                     let optional_callback = listener.get(&signal);
                     web_sys::console::log_1(&"value updated signal4".into());
-                    let callback = optional_callback.unwrap();
+                    let callbacks = optional_callback.unwrap();
                     web_sys::console::log_1(&"value updated signal5".into());
-                    let globalic = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
-                    callback.call1(&JsValue::from(globalic), &JsValue::from(&value));
+                    for callback in callbacks {
+                        let globalic = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
+                        callback.call1(&JsValue::from(globalic), &JsValue::from(&value));
+                    }
                 },
                 _ => ()
             }

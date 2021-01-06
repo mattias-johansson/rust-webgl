@@ -35,6 +35,12 @@ pub struct Button {
     state: ButtonState
 }
 
+impl Button {
+    pub fn get_uuid(&self) -> String {
+        self.this.to_string()
+    }
+}
+
 #[wasm_bindgen]
 pub struct ButtonBuilder {
     x: Option<f32>,
@@ -76,16 +82,6 @@ impl ButtonBuilder {
             None => "".to_owned()
         };
         let state = ButtonState::NotPressed;
-        let callback = self.callback.take();
-        if callback.is_some() {
-            let mut signal: HashMap<String, Function> = HashMap::new();
-            signal.insert("onClicked".to_owned(), callback.unwrap());
-            let mut listener = HashMap::new();
-            listener.insert(this, signal);
-
-            web_sys::console::log_1(&this.to_string().into()); 
-            add_on_message_handler(listener);
-        }
         Button { this, x, y, opacity, text, state }
     }
 
