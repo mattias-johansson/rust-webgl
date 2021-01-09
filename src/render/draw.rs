@@ -42,7 +42,7 @@ pub fn update_target_attributes(dt: f32, cx: &mut Context) {
 }
 
 fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
-    web_sys::console::log_1(&"update_animation:".into());
+//    web_sys::console::log_1(&"update_animation:".into());
     cx.dirty = true;
     let target_node = cx.get_node(animation.target_node);
     if target_node.is_some() {

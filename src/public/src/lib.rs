@@ -34,7 +34,7 @@ impl Application {
         Application { listeners }
     }
 
-    pub fn set_root(object : Container) -> Result<(), JsValue> {
+    pub fn set_root(object : &Container) -> Result<(), JsValue> {
         let json = serde_json::to_string(&object).unwrap();
         let message = MessageType::SetRoot(json);
         send_message(message);

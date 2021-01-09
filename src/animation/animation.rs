@@ -76,8 +76,8 @@ impl Animation {
             x = start + (ease * (end - start));
         }
 
-        web_sys::console::log_1(&"animation value".into());
-        web_sys::console::log_1(&x.into());
+//        web_sys::console::log_1(&"animation value".into());
+//        web_sys::console::log_1(&x.into());
 
         x
     } 

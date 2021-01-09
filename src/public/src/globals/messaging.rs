@@ -23,8 +23,12 @@ pub enum MessageType {
 
 pub fn send_message(message: MessageType) -> Result<(), JsValue> {
     let global = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
-    let json = serde_json::to_string(&message);
-    global.post_message(&json.unwrap().into())?;
+    let json = serde_json::to_string(&message).unwrap();
+
+    web_sys::console::log_1(&json.into());
+    let json = serde_json::to_string(&message).unwrap();
+    
+    global.post_message(&json.into())?;
     Ok(())
 }
 
@@ -42,17 +46,13 @@ pub fn add_on_message_handler(objects: Rc<RefCell<HashMap<String, HashMap<String
             let message : MessageType = result.unwrap();
             match message {
                 MessageType::ValueUpdated(uuid, signal, value) => {
-                    web_sys::console::log_1(&uuid.to_string().into());
-                    web_sys::console::log_1(&"value updated signal1".into());
-                    web_sys::console::log_1(&objects.len().to_string().into());
+                    web_sys::console::log_1(&"value updated signal".into());
                     let optional_listener = objects.get(&uuid.to_string());
-                    web_sys::console::log_1(&"value updated signal2".into());
                     let listener = optional_listener.unwrap();
-                    web_sys::console::log_1(&"value updated signal3".into());
                     let optional_callback = listener.get(&signal);
-                    web_sys::console::log_1(&"value updated signal4".into());
                     let callbacks = optional_callback.unwrap();
                     web_sys::console::log_1(&"value updated signal5".into());
+                    web_sys::console::log_1(&callbacks.len().to_string().into());
                     for callback in callbacks {
                         let globalic = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
                         callback.call1(&JsValue::from(globalic), &JsValue::from(&value));

@@ -119,12 +119,12 @@ impl VisualNode for Slider {
     }
 
     fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool {
-        web_sys::console::log_1(&"got event".into());
+//        web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.end_scroll_event(cx, &event);
-                    web_sys::console::log_1(&"Mouse up!".into());
+                    web_sys::console::log_1(&"SLIDER: Mouse up!".into());
                 } else if event.event == MouseEvent::Down {
                     self.start_scroll_event(cx, &event);
                 } else if event.event == MouseEvent::Move {

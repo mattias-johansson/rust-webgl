@@ -158,6 +158,7 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                 context.add_child_to(context.root.unwrap(), container.get_node_uuid());
             },
             MessageType::ObjectCreated(data) => {
+                web_sys::console::log_1(&"ObjectCreated".into());
                 let result = serde_json::from_str(&data);                
                 let object : Button = result.unwrap();
                 let button = ButtonPrivate::from_public(context, object);
@@ -174,7 +175,7 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
 pub fn send_events_from_context(context: &mut Context, events: &Vec<Event>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
     for event in events {
         for vn in 0..this_frame.len() {
-            web_sys::console::log_1(&"sending animation event:".into());
+//            web_sys::console::log_1(&"sending animation event:".into());
             this_frame.get_mut(vn).unwrap().event_handler(context, &event);
         }
     }
@@ -193,7 +194,7 @@ pub fn send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_fra
         for vn in 0..this_frame.len() {
             let mut visual_node = this_frame.get_mut(vn).unwrap();
             if visual_node.get_uuid() == node.owner {
-//                web_sys::console::log_2(&"sending to node ".into(), &node.uuid.to_string().into());
+                web_sys::console::log_2(&"sending to visual_node ".into(), &node.owner.to_string().into());
                 send_event(Rc::clone(&events), cx, node.position(), &mut visual_node)
             }
         }
@@ -213,6 +214,10 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 let x = event.x;
                 let y = event.y;
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
+//                    web_sys::console::log_1(&"x".into());
+//                    web_sys::console::log_1(&x.to_string().into());
+//                    web_sys::console::log_1(&"y".into());
+//                    web_sys::console::log_1(&y.to_string().into());
                     handled = visual_node.event_handler(cx, &events.borrow().event);
                 }
             }
