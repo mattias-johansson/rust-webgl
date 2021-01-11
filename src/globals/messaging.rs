@@ -14,7 +14,7 @@ pub struct Messaging {
 
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum MessageType {
-    ObjectCreated(String),
+    ObjectCreated(Uuid, String),
     ValueUpdated(Uuid, String, String),
     AddNode(String),
     RemoveNode(String),

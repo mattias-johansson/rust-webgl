@@ -7,18 +7,21 @@ use wasm_bindgen::prelude::*;
 use serde::*;
 use crate::globals::messaging::*;
 
+use uuid::Uuid;
+
 #[wasm_bindgen]
-#[derive(PartialEq, Clone, Copy, Serialize)]
+#[derive(PartialEq, Clone, Serialize)]
 pub struct Container {
-    pub x: f32,
-    pub y: f32,
-    pub width: f32,
-    pub height: f32,
-    pub translate_x: f32,
-    pub translate_y: f32,
-    pub opacity: f32,
-    pub color: Color,
-    pub clip: bool,
+    this: Uuid,
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    translate_x: f32,
+    translate_y: f32,
+    opacity: f32,
+    color: Color,
+    clip: bool,
 }
 
 #[wasm_bindgen]
@@ -36,11 +39,16 @@ pub struct ContainerBuilder {
 
 #[wasm_bindgen]
 impl Container {
+
     pub fn add(&self, button: &Button) -> Result<(), JsValue> {
         let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::ObjectCreated(json);
+        let message = MessageType::ObjectCreated(self.this, json);
         send_message(message);
         Ok(())
+    }
+
+    pub fn get_uuid(&self) -> String {
+        self.this.to_string()
     }
 }
 
@@ -62,6 +70,7 @@ impl ContainerBuilder {
    }
 
    pub fn build(&self) -> Container {
+       let this = Uuid::new_v4();
        let x:f32 = match self.x {
            Some(x) => x,
            None => 0.0
@@ -95,7 +104,7 @@ impl ContainerBuilder {
            None => (Color {r: 0.0, g: 0.0, b: 0.0})
        };
        let clip = self.clip;
-       Container{x, y, translate_x, translate_y, opacity, width, height, color, clip}
+       Container{ this, x, y, translate_x, translate_y, opacity, width, height, color, clip }
    }
 
    pub fn x(mut self, x: f32) -> ContainerBuilder {

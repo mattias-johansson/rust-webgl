@@ -1,15 +1,11 @@
 extern crate wasm_bindgen;
 extern crate serde;
 
-use std::collections::HashMap;
-
 use wasm_bindgen::prelude::*;
 use js_sys::{Function};
 
 use uuid::Uuid;
 use serde::*;
-
-use crate::globals::messaging::*;
 
 #[derive(PartialEq, Eq, Clone, Copy, Serialize)]
 enum ButtonState {

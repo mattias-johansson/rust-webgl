@@ -1,13 +1,10 @@
 extern crate wasm_bindgen;
 use crate::events::application_events::ApplicationEvents;
-use crate::controls::slider::Slider;
 use crate::web::events::attach_touch_move_handler;
 use crate::web::events::attach_touch_end_handler;
 use crate::web::events::attach_touch_start_handler;
 use crate::web::events::attach_mouse_move_handler;
 use crate::application::core_app::CoreApp;
-
-use uuid::Uuid;
 
 use crate::events::mouse::*;
 use std::collections::HashMap;
@@ -22,11 +19,8 @@ use crate::controls::visual_node::VisualNode;
 use web_sys::{WebGlProgram, WebGlRenderingContext, Worker};
 
 use crate::controls::container::*;
-use crate::controls::toggle_button::*;
-use crate::controls::scroll_view::*;
 use crate::controls::button::*;
-use crate::controls::image_view::*;
-use crate::controls::label::*;
+
 use crate::events::handler::*;
 use crate::render::draw::*;
 use crate::render::gl_context::*;
@@ -59,10 +53,10 @@ impl Application {
 
     /// Create a new Application
     #[wasm_bindgen(constructor)]
-    pub fn new() -> Application {            
+    pub fn new(worker: &str) -> Application {            
         web_sys::console::log_1(&"Application".into());
 
-        let worker = Worker::new("./worker.js").unwrap();
+        let worker = Worker::new(worker).unwrap();
         let _ = worker.post_message(&"startup".into());
 
         let application_events = ApplicationEvents::new();
@@ -101,7 +95,7 @@ impl Application {
     /// to begin rendering.
     pub fn start(&mut self) -> Result<(), JsValue> {
         web_sys::console::log_1(&"start".into());
-        create(&mut self.context, &mut self.core_app);
+//        create(&mut self.context, &mut self.core_app);
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
         let canvas: web_sys::HtmlCanvasElement =
@@ -156,13 +150,15 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                 let object : ContainerPrivate = result.unwrap();
                 let container = Container::from_private(context, object);
                 context.add_child_to(context.root.unwrap(), container.get_node_uuid());
+                core_app.visual_nodes.push(Box::new(container) as Box<dyn VisualNode>);          
             },
-            MessageType::ObjectCreated(data) => {
+            MessageType::ObjectCreated(parent, data) => {
                 web_sys::console::log_1(&"ObjectCreated".into());
                 let result = serde_json::from_str(&data);                
                 let object : Button = result.unwrap();
                 let button = ButtonPrivate::from_public(context, object);
-                context.add_child_to(context.root.unwrap(), button.get_node_uuid());      
+                let container = core_app.get_visual_node(parent).unwrap();
+                context.add_child_to(container.get_node_uuid(), button.get_node_uuid());
                 core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);          
             },
             _ => ()
@@ -188,13 +184,14 @@ pub fn send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_fra
         return
     }
 
-    for vn in 0..this_frame.len() {
+    for vn in (0..this_frame.len()).rev() {
         let mut visual_node = this_frame.get_mut(vn).unwrap();
         let root_node_uuid = visual_node.get_node_uuid();
         let node = context.get_node_unmut(root_node_uuid).unwrap();
+        let position = node.position();
         web_sys::console::debug_2(&"sending to visual_node ".into(), &node.owner.to_string().into());
         
-        send_event(Rc::clone(&events), context, node.position(), &mut visual_node)
+        send_event(Rc::clone(&events), context, position, &mut visual_node)
     }
 
     let event = Event::None;
@@ -240,7 +237,7 @@ pub fn get_device_pixel_ratio() -> f64 {
     let window = window.dyn_into::<web_sys::Window>().unwrap();
     window.device_pixel_ratio()
 }
-
+/*
 pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
     let slider = Slider::new(&mut context, 500.0, 500.0, 1.0);
 
@@ -296,3 +293,4 @@ pub fn on_slider_event(mut cx: &mut Context, core_app: &mut CoreApp, event: Even
         _ => ()
     }
 }
+*/

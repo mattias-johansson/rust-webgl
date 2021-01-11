@@ -3,7 +3,6 @@ use js_sys::{Function};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use uuid::Uuid;
 
 pub struct Listeners {
     pub objects:  Rc<RefCell<HashMap<String, HashMap<String, Vec<Function>>>>>
@@ -18,10 +17,10 @@ impl Listeners {
     pub fn add_listener(&mut self, sender: String, signal: String, callback: Function) {
         let mut objects = self.objects.borrow_mut();
         let sender_listers = objects.get_mut(&sender);
-        match(sender_listers) {
+        match sender_listers {
             Some(sender_listers) => {
                 let signal_listener = sender_listers.get_mut(&signal);
-                match (signal_listener) {
+                match signal_listener {
                     Some(signal_listener) => {
                         signal_listener.push(callback);
                     },

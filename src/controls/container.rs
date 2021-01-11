@@ -35,7 +35,7 @@ impl VisualNode for Container {
 impl Container {
 
     pub fn from_private(cx: &mut Context, private: ContainerPrivate) -> Container {
-        Container::new(cx, private.x, private.y, private.translate_x, private.translate_y, private.opacity, private.width, private.height, (private.color.r, private.color.g, private.color.b), private.clip)
+        Container::new(private.this, cx, private.x, private.y, private.translate_x, private.translate_y, private.opacity, private.width, private.height, (private.color.r, private.color.g, private.color.b), private.clip)
     }
 
     pub fn get(&mut self) -> &mut Container {
@@ -46,7 +46,7 @@ impl Container {
         cx.add_child_to(self.node, child);
     }
 
-    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  Container {
+    pub fn new(this: Uuid, cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  Container {
         let x:f32 = x;
         let y:f32 = y;
         let translate_x = translate_x;
@@ -59,12 +59,12 @@ impl Container {
         let dirty = true;
         let end_clip = false;
         let uuid = Uuid::new_v4();
-        let owner = Uuid::new_v4();
+        let owner = this;
         let text = false;
         let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty, clip, end_clip, text };
         let node_uuid = node.uuid;
         cx.nodes.push(node);
-        Container { this: owner, node: node_uuid }
+        Container { this: this, node: node_uuid }
     }
 }
 
@@ -96,6 +96,7 @@ impl ContainerBuilder {
     }
 
     pub fn build(&self, cx: &mut Context) -> Container {
+        let this = Uuid::new_v4();
         let x:f32 = match self.x {
             Some(x) => x,
             None => 0.0
@@ -129,7 +130,7 @@ impl ContainerBuilder {
             None => (0.0,0.0,0.0)
         };
         let clip = self.clip;
-        Container::new(cx, x, y, translate_x, translate_y, opacity, width, height, color, clip)
+        Container::new(this, cx, x, y, translate_x, translate_y, opacity, width, height, color, clip)
     }
 
     pub fn x(&mut self, x: f32) -> &mut ContainerBuilder {
@@ -180,6 +181,7 @@ impl ContainerBuilder {
 
 #[derive(PartialEq, Clone, Copy, Deserialize)]
 pub struct ContainerPrivate {
+    pub this: Uuid,
     pub x: f32,
     pub y: f32,
     pub width: f32,

@@ -11,14 +11,12 @@ pub struct Color {
     pub b: f32,
 } 
 
-
 #[wasm_bindgen]
 impl Color {
 
     #[wasm_bindgen(constructor)]
     pub fn new() -> Color {
-//        panic!("Error");
-        Color { r: 1.0, g: 0.0, b: 0.0}
+        Color { r: 0.0, g: 0.0, b: 0.0 }
     }
 }
 

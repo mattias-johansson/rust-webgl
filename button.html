@@ -9,16 +9,6 @@
     margin:0%;
     background: #FFF;
   }
-  #all {
-    background: #AAF;
-  }
-  h2 { 
-    text-align: center;
-    font-weight: lighter;
-  }
-  canvas {
-    background: #FFF;
-  }
   </style>
   <body id="app">
     <canvas id="canvas" width="1280px" height="703px"/>
@@ -39,7 +29,7 @@
       async function run() {
         await wasm_bindgen('/webgl_bg.wasm');
 
-        const application = new Application('worker.js');
+        const application = new Application('button.js');
         application.start();
 
         let start_time;
