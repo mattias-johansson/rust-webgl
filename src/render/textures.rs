@@ -2,6 +2,7 @@ use uuid::Uuid;
 use std::collections::HashMap;
 
 use web_sys::WebGlRenderingContext;
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::render::lti::*;
@@ -37,7 +38,7 @@ impl Textures {
         Textures { textures_by_string: HashMap::default(), textures: HashMap::default(), last_used_pos_u: 33984u64 as u32, last_used_pos_i: 0 as i32}
     }
 
-    pub fn load_texture(&mut self, gl: Rc<WebGlRenderingContext>, texture_id: &Uuid) -> i32 {
+    pub fn load_texture(&mut self, gl: Rc<WebGlRenderingContext>, texture_id: &Uuid, dirty: Rc<RefCell<bool>>) -> i32 {
         let free_pos = self.get_free_pos();
         let texture = self.textures.get_mut(texture_id);
         match texture {
@@ -45,7 +46,7 @@ impl Textures {
                 if texture.location ==  -1 {
                     match free_pos {
                         Some(free_pos) => {
-                            load_texture_image(gl, texture.src.as_str(), free_pos.1);
+                            load_texture_image(gl, texture.src.as_str(), free_pos.1, dirty);
                             self.last_used_pos_i = self.last_used_pos_i +1;
                             self.last_used_pos_u = self.last_used_pos_u +1;
                             texture.location = free_pos.0;

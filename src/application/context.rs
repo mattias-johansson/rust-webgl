@@ -10,6 +10,8 @@ use web_sys::{Worker};
 
 use uuid::Uuid;
 use std::collections::HashMap;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct Context {
     pub nodes: Vec<Node>,
@@ -22,7 +24,7 @@ pub struct Context {
     pub cb: Callbacks,
     pub fonts: Word,
     pub vertices: HashMap<Uuid, Vec<f32>>,
-    pub dirty: bool,
+    pub dirty: Rc<RefCell<bool>>,
     pub messaging: Messaging,
 
 }
@@ -39,7 +41,7 @@ impl Context {
         let cb = Callbacks::new();
         let fonts = Word::default();
         let vertices = HashMap::default();
-        let dirty = false;
+        let dirty = Rc::new(RefCell::new(false));
         let messaging = Messaging { worker };
         
         Context { nodes, node_relations, animations, events, textures, root, callbacks, cb, fonts, vertices, dirty, messaging }
@@ -84,7 +86,8 @@ impl Context {
     }
 
     pub fn add_child_to(&mut self, parent: Uuid, child: Uuid) {
-        self.dirty = true;
+        let mut dirty = self.dirty.borrow_mut();
+        *dirty = true;
         let mut children : Option<&mut Vec<Uuid>> = self.node_relations.get_mut(&parent);
         match &mut children {
             Some(children) => {
@@ -99,7 +102,8 @@ impl Context {
     }
 
     pub fn remove_child_from(&mut self, parent: Uuid, to_remove: Uuid) {
-        self.dirty = true;
+        let mut dirty = self.dirty.borrow_mut();
+        *dirty = true;
         let mut children : Option<&mut Vec<Uuid>> = self.node_relations.get_mut(&parent);
         match &mut children {
             Some(children) => {

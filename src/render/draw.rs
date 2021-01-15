@@ -43,7 +43,10 @@ pub fn update_target_attributes(dt: f32, cx: &mut Context) {
 
 fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
 //    web_sys::console::log_1(&"update_animation:".into());
-    cx.dirty = true;
+    {
+        let mut dirty = cx.dirty.borrow_mut();
+        *dirty = true;
+    }
     let target_node = cx.get_node(animation.target_node);
     if target_node.is_some() {
         let value = animation.get_animated_value(dt);
@@ -92,7 +95,7 @@ pub fn draw_scene(
     program: &WebGlProgram,
     program_color: &WebGlProgram,
 ) {
-    if cx.dirty == false {
+    if *cx.dirty.borrow() == false {
         return;
     }
     let uuid = cx.root.unwrap();
@@ -134,7 +137,7 @@ pub fn draw_scene(
         } else {
             match &node.texture {
                 Some(texture) => {
-                    let texture_slot = cx.textures.load_texture(Rc::clone(&webgl_context), texture);
+                    let texture_slot = cx.textures.load_texture(Rc::clone(&webgl_context), texture, Rc::clone(&cx.dirty));
                     render(
                         &webgl_context,
                         program,
@@ -159,7 +162,9 @@ pub fn draw_scene(
             };
         }
     }
-    cx.dirty = false;
+    
+    let mut dirty = cx.dirty.borrow_mut();
+    *dirty = false;
 }
 
 fn render(
