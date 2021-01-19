@@ -196,7 +196,7 @@ pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>
     let thing = cx.node_relations.clone();
     match thing.get(&parent.uuid) {
         Some(children) => {
-            for child in children.as_slice() {
+            for child in children.iter().rev() {
                 let node = cx.get_node_unmut(*child);
                 let node = *node.unwrap();
                 let node_owner = node.owner;
