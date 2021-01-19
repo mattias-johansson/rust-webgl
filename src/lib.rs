@@ -1,4 +1,6 @@
 extern crate wasm_bindgen;
+use uuid::Uuid;
+use crate::controls::node::Node;
 use crate::events::application_events::ApplicationEvents;
 use crate::web::events::attach_touch_move_handler;
 use crate::web::events::attach_touch_end_handler;
@@ -123,7 +125,7 @@ impl Application {
         handle_application_events(&mut self.context, &mut self.core_app, Rc::clone(&self.application_events));
 
         // Handle Mouse and Touch events (Currently only one at per frame)
-        send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes);  // Touch events
+        new_send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes);  // Touch events
         
         let callbacks = self.context.cb.clone();
         callbacks.trigger_callbacks(&mut self.context, &mut self.core_app);
@@ -177,6 +179,55 @@ pub fn send_events_from_context(context: &mut Context, events: &Vec<Event>, this
     }
 }
 
+pub fn new_send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
+    let event = events.borrow().event;
+    if event == Event::None {
+        return
+    }
+    let uuid = context.root.unwrap();
+    let node = context.get_node_unmut(uuid);
+    let node = *node.unwrap();
+
+    travers_tree(context, node, events, this_frame);
+
+}
+
+pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
+    let thing = cx.node_relations.clone();
+    match thing.get(&parent.uuid) {
+        Some(children) => {
+            for child in children.as_slice() {
+                let node = cx.get_node_unmut(*child);
+                let node = *node.unwrap();
+                let node_owner = node.owner;
+                let optional_visual_node = get_visual_node(this_frame, node_owner);
+                match optional_visual_node {
+                    Some(mut visual_node) => {
+                        let x = node.x + parent.x + node.translate_x + parent.translate_x;
+                        let y = node.y + parent.y + node.translate_y + parent.translate_y;
+                        let x1 = x + node.width;
+                        let y1 = y + node.height;
+                        send_event(Rc::clone(&events), cx, (x, y, x1, y1), &mut visual_node);
+                    },
+                    _ => ()
+                }
+                travers_tree(cx, node, Rc::clone(&events), this_frame);
+            }
+        }
+        None => (),
+    }
+}
+
+pub fn get_visual_node(frame: &mut Vec<Box<dyn VisualNode>>, uuid: Uuid) -> Option<&mut Box<dyn VisualNode>> {
+    let visual_nodes: &mut Vec<Box<dyn VisualNode>> = frame.as_mut(); 
+    for visual_node in visual_nodes {
+        if uuid == visual_node.get_uuid() {
+            return Some(visual_node);
+        }
+    }
+    None
+}
+
 pub fn send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
 
     let event = events.borrow().event;
@@ -208,8 +259,7 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 let x = event.x;
                 let y = event.y;
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-                    web_sys::console::debug_2(&"x".into(), &x.to_string().into());
-                    web_sys::console::debug_2(&"y".into(), &y.to_string().into());
+                    web_sys::console::debug_4(&"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
                     handled = visual_node.event_handler(cx, &events.borrow().event);
                 }
             }
