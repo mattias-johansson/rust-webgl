@@ -71,7 +71,8 @@ impl Node {
     pub fn position(&self) -> (f32, f32, f32, f32) {
         (self.x, self.y, self.x + self.width, self.y + self.height)
     }
-/*
+
+    /*
     pub fn event_handler(&self, mut cx: &mut Context) -> bool {
         match self.callback {
             Some(callback) => {

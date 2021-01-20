@@ -4,9 +4,10 @@ use crate::controls::node::*;
 use crate::application::context::*;
 use uuid::Uuid;
 use std::any::Any;
+use serde::*;
 
 #[derive(PartialEq, Clone, Copy)]
-pub struct ScrollView {
+pub struct ScrollViewPrivate {
     this: Uuid,
     node_uuid: Uuid,
     scroll_uuid: Uuid,
@@ -14,24 +15,27 @@ pub struct ScrollView {
     scroll_y: Option<f32>
 }
 
-impl ScrollView {
+impl ScrollViewPrivate {
 
-    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32)) ->  ScrollView {
+    pub fn from_public(cx: &mut Context, public: ScrollView) -> ScrollViewPrivate {
+        ScrollViewPrivate::new(public.this, cx, public.x, public.y, public.translate_x, public.translate_y, public.opacity, public.width, public.height, (public.color.r, public.color.g, public.color.b))
+    }
+
+    pub fn new(owner: Uuid, cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32)) ->  ScrollViewPrivate {
         
-        let owner = Uuid::new_v4();
+        let owner = owner;
 
-        let root_node = ScrollView::new_node(owner, cx, x, y, translate_x, translate_y, opacity, width, height, color, true);
+        let root_node = ScrollViewPrivate::new_node(owner, cx, x, y, translate_x, translate_y, opacity, width, height, color, true);
         let node_uuid = root_node.uuid;
 
-        let scroll_node = ScrollView::new_node(owner, cx, 0.0, 0.0, 0.0, 0.0, opacity, width, height, (1.0,1.0,1.0), false);
+        let scroll_node = ScrollViewPrivate::new_node(owner, cx, 0.0, 0.0, 0.0, 0.0, opacity, width, height, (1.0,1.0,1.0), false);
         let scroll_node_uuid = scroll_node.uuid;
 
         cx.add_child_to(node_uuid, scroll_node_uuid);
         cx.nodes.push(root_node);
         cx.nodes.push(scroll_node);
 
-
-        ScrollView { this: owner, node_uuid, scroll_uuid: scroll_node_uuid, scroll_x: None, scroll_y: None}
+        ScrollViewPrivate { this: owner, node_uuid, scroll_uuid: scroll_node_uuid, scroll_x: None, scroll_y: None}
     }
 
     pub fn add_content(&self, cx: &mut Context, child: Uuid) {
@@ -140,7 +144,7 @@ impl ScrollView {
     }
 }
 
-impl VisualNode for ScrollView {
+impl VisualNode for ScrollViewPrivate {
 
     fn get_node_uuid(&self) -> Uuid {
         self.node_uuid
@@ -176,3 +180,25 @@ impl VisualNode for ScrollView {
         self.this
     }
 }
+
+
+#[derive(PartialEq, Clone, Copy, Deserialize)]
+pub struct ScrollView {
+    pub this: Uuid,
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub translate_x: f32,
+    pub translate_y: f32,
+    pub opacity: f32,
+    pub color: Color,
+    pub clip: bool,
+}
+
+#[derive(PartialEq, Clone, Copy, Deserialize)]
+pub struct Color {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+} 

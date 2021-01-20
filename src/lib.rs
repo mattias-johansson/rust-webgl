@@ -138,6 +138,14 @@ impl Application {
     }
 }
 
+pub fn object_creator<R, T>(cx: &mut Context, public:R) ->  T
+    where
+        R: Clone,
+        T: VisualNode,
+{
+    ButtonPrivate::new(Uuid::new_v4(), &mut context, "Button", 150.0, 5.0, 0.5)
+}
+
 pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, app_events: Rc<RefCell<ApplicationEvents>>) {
     let mut events = app_events.borrow_mut();
     if &events.events.len() > &0 {
@@ -157,8 +165,8 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
             MessageType::ObjectCreated(parent, data) => {
                 web_sys::console::log_1(&"ObjectCreated".into());
                 let result = serde_json::from_str(&data);                
-                let object : Button = result.unwrap();
-                let button = ButtonPrivate::from_public(context, object);
+                //let object = result.unwrap();
+                let button = ButtonPrivate::from_public(context, result.unwrap());
                 let container = core_app.get_visual_node(parent).unwrap();
                 context.add_child_to(container.get_node_uuid(), button.get_node_uuid());
                 core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);          

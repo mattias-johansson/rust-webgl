@@ -11,18 +11,21 @@ use crate::events::mouse::*;
 use serde::*;
 
 #[derive(PartialEq, Clone)]
-pub struct Label {
+pub struct LabelPrivate {
     this: Uuid,
     pub node: Uuid,
     pub word: Word,
     pub text: String,
 }
 
-impl Label {
+impl LabelPrivate {
 
-    pub fn new(cx: &mut Context, x: f32, y: f32, text: &str) -> Label {
-        let this = Uuid::new_v4();
-        let node = Node::new(this, x, y, 0.0, 0.0);
+    pub fn from_public(cx: &mut Context, public: Label) -> LabelPrivate {
+        LabelPrivate::new(public.this, cx, public.x, public.y, public.translate_x, public.translate_y, public.opacity, public.width, public.height, public.text.as_str())
+    }
+
+    pub fn new(this: Uuid, cx: &mut Context, x: f32, y: f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, text: &str) -> LabelPrivate {
+        let node = Node::new(this, x, y, width, height);
         let node_uuid_parent = node.uuid;
         cx.nodes.push(node);
         let text = String::from(text);
@@ -41,13 +44,13 @@ impl Label {
             cx.add_child_to(node_uuid_parent, node_uuid);
 
         }
-        Label { this, node: node_uuid_parent, word, text }
-
+        LabelPrivate { this, node: node_uuid_parent, word, text }
     }
 
 }
 
-impl VisualNode for Label {
+impl VisualNode for LabelPrivate {
+
     fn get_node_uuid(&self) -> Uuid {
         self.node
     }
@@ -63,4 +66,17 @@ impl VisualNode for Label {
     fn get_uuid(&self) -> uuid::Uuid { 
         self.this
     }
+}
+
+#[derive(PartialEq, Clone, Deserialize)]
+pub struct Label {
+    pub this: Uuid,
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub translate_x: f32,
+    pub translate_y: f32,
+    pub opacity: f32,
+    pub text: String,
 }

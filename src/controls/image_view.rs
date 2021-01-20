@@ -10,12 +10,12 @@ use crate::events::mouse::*;
 use serde::*;
 
 #[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
-pub struct ImageView {
+pub struct ImageViewPrivate {
     this: Uuid,
     node: Uuid
 }
 
-impl VisualNode for ImageView {
+impl VisualNode for ImageViewPrivate {
 
     fn get_node_uuid(&self) -> Uuid {
         self.node
@@ -34,13 +34,17 @@ impl VisualNode for ImageView {
     }
 }
 
-impl ImageView {
+impl ImageViewPrivate {
 
-    pub fn get(&mut self) -> &mut ImageView {
+    pub fn from_public(cx: &mut Context, public: ImageView) -> ImageViewPrivate {
+        ImageViewPrivate::new(public.this, cx, public.x, public.y, public.translate_x, public.translate_y, public.opacity, public.width, public.height, public.image.as_str())
+    }
+
+    pub fn get(&mut self) -> &mut ImageViewPrivate {
         self
     }
 
-    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), texture: &str) ->  ImageView {
+    pub fn new(this: Uuid, cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, texture: &str) -> ImageViewPrivate {
         let x:f32 = x;
         let y:f32 = y;
         let translate_x = translate_x;
@@ -49,17 +53,17 @@ impl ImageView {
         let width = width;
         let height = height;
         let texture = Some(Node::create_texture(cx, texture));
-        let color = color;
+        let color = (1.0, 1.0, 1.0);
         let dirty = true;
         let clip = false;
         let end_clip = false;
         let uuid = Uuid::new_v4();
-        let owner = Uuid::new_v4();
+        let owner = this;
         let text = false;
         let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty, clip, end_clip, text };
         let node_uuid = node.uuid;
         cx.nodes.push(node);
-        ImageView { this: owner, node: node_uuid }
+        ImageViewPrivate { this: owner, node: node_uuid }
     }
 }
 
@@ -91,7 +95,7 @@ impl ImageViewBuilder {
         ImageViewBuilder { x, y, translate_x, translate_y, opacity, width, height, color, texture }
     }
 
-    pub fn build(&self, cx: &mut Context) -> ImageView {
+    pub fn build(&self, cx: &mut Context) -> ImageViewPrivate {
         let x:f32 = match self.x {
             Some(x) => x,
             None => 0.0
@@ -128,7 +132,8 @@ impl ImageViewBuilder {
             Some(color) => color,
             None => (0.0,0.0,0.0)
         };
-        ImageView::new(cx, x, y, translate_x, translate_y, opacity, width, height, color, texture)
+        let uuid = Uuid::new_v4();
+        ImageViewPrivate::new(uuid, cx, x, y, translate_x, translate_y, opacity, width, height, texture)
     }
 
     pub fn x(mut self, x: f32) -> ImageViewBuilder {
@@ -176,4 +181,17 @@ impl ImageViewBuilder {
         self
     }
     
+}
+
+#[derive(PartialEq, Clone, Deserialize)]
+pub struct ImageView {
+    pub this: Uuid,
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub translate_x: f32,
+    pub translate_y: f32,
+    pub opacity: f32,
+    pub image: String,
 }

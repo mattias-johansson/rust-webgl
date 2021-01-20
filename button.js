@@ -26,15 +26,15 @@ class App {
   constructor() {
     this.application = new Application();
     let color = new Color();
+    color.r = 1.0;
+    color.g = 1.0;
+    color.b = 1.0;
     this.container = new ContainerBuilder().x(300.0).y(300.0).width(400.0).opacity(1.0).height(400.0).color(color).build();
     let button = new ButtonBuilder().x(0.0).y(0.0).text("Knapp").build();
     this.container.add(button);
     Application.set_root(this.container);
     this.application.add_listener(button, "onClicked", log);
-    this.application.add_listener(button, "onClicked", addButton);
-    let button2 = new ButtonBuilder().x(150.0).y(30.0).text("Ny knapp").build();
-    this.container.add(button2);
-  
+    this.application.add_listener(button, "onClicked", addButton);  
     console.log("WORKER: add");  
   }
 
