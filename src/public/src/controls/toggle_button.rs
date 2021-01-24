@@ -1,50 +1,34 @@
+
 extern crate wasm_bindgen;
 extern crate serde;
-use crate::controls::control::Control;
-
 use wasm_bindgen::prelude::*;
 use js_sys::{Function};
+
 use uuid::Uuid;
 use serde::*;
 
-#[derive(PartialEq, Eq, Clone, Copy, Serialize)]
-enum ButtonState {
-    NotPressed,
-    Pressed,
-    ToPressed,
-    ToNotPressed,
-}
-
-pub struct ButtonSignal {
-    this: Uuid,
-    onClicked: Option<Function>
-}
-
 #[wasm_bindgen]
 #[derive(PartialEq, Clone, Serialize)]
-pub struct Button {
+pub struct ToggleButton {
     this: Uuid,
     text: String, 
     x: f32, 
     y: f32, 
     opacity: f32,
-    state: ButtonState
+    state: ToggleButtonState
 }
 
-impl Button {
-    pub fn get_uuid(&self) -> String {
-        self.this.to_string()
-    }
+#[derive(PartialEq, Eq, Clone, Copy, Serialize)]
+enum ToggleButtonState {
+    On,
+    Off,
+    ToOn,
+    ToOff,
 }
 
-impl Control for Button {
-    fn get_type() -> String {
-        "button".to_owned()
-    }
-}
 
 #[wasm_bindgen]
-pub struct ButtonBuilder {
+pub struct ToggleButtonBuilder {
     x: Option<f32>,
     y: Option<f32>,
     opacity: Option<f32>,
@@ -52,18 +36,18 @@ pub struct ButtonBuilder {
 }
 
 #[wasm_bindgen]
-impl ButtonBuilder {
+impl ToggleButtonBuilder {
 
     #[wasm_bindgen(constructor)]
-    pub fn builder() -> ButtonBuilder { 
+    pub fn builder() -> ToggleButtonBuilder { 
         let x = None;
         let y = None;
         let opacity = None;
         let text = None;
-        ButtonBuilder { x, y, opacity, text }
+        ToggleButtonBuilder { x, y, opacity, text }
     }
 
-    pub fn build(&mut self) -> Button {
+    pub fn build(&mut self) -> ToggleButton {
         let this = Uuid::new_v4();
         let x:f32 = match self.x {
             Some(x) => x,
@@ -81,26 +65,26 @@ impl ButtonBuilder {
             Some(text) => text.to_string(),
             None => "".to_owned()
         };
-        let state = ButtonState::NotPressed;
-        Button { this, x, y, opacity, text, state }
+        let state = ToggleButtonState::Off;
+        ToggleButton { this, x, y, opacity, text, state }
     }
 
-    pub fn x(mut self, x: f32) -> ButtonBuilder {
+    pub fn x(mut self, x: f32) -> ToggleButtonBuilder {
         self.x = Some(x);
         self
     } 
     
-    pub fn y(mut self, y: f32) -> ButtonBuilder {
+    pub fn y(mut self, y: f32) -> ToggleButtonBuilder {
         self.y = Some(y);
         self
     } 
     
-    pub fn opacity(mut self, opacity: f32) -> ButtonBuilder {
+    pub fn opacity(mut self, opacity: f32) -> ToggleButtonBuilder {
         self.opacity = Some(opacity);
         self
     } 
     
-    pub fn text(mut self, text: &str) -> ButtonBuilder {
+    pub fn text(mut self, text: &str) -> ToggleButtonBuilder {
         let owned_text = text.to_owned();
         self.text = Some(owned_text);
         self

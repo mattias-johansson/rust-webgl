@@ -14,7 +14,7 @@ use std::rc::Rc;
 
 #[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum MessageType {
-    ObjectCreated(Uuid, String),
+    ObjectCreated(Uuid, String, String),
     ValueUpdated(Uuid, String, String),
     AddNode(String),
     RemoveNode(String),

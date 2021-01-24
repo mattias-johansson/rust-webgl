@@ -53,7 +53,7 @@ impl ImageViewPrivate {
         let width = width;
         let height = height;
         let texture = Some(Node::create_texture(cx, texture));
-        let color = (1.0, 1.0, 1.0);
+        let color = (0.0, 0.0, 0.0);
         let dirty = true;
         let clip = false;
         let end_clip = false;

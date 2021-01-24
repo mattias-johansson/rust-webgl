@@ -1,50 +1,25 @@
+
 extern crate wasm_bindgen;
 extern crate serde;
-use crate::controls::control::Control;
-
 use wasm_bindgen::prelude::*;
 use js_sys::{Function};
+
 use uuid::Uuid;
 use serde::*;
 
-#[derive(PartialEq, Eq, Clone, Copy, Serialize)]
-enum ButtonState {
-    NotPressed,
-    Pressed,
-    ToPressed,
-    ToNotPressed,
-}
-
-pub struct ButtonSignal {
-    this: Uuid,
-    onClicked: Option<Function>
-}
-
 #[wasm_bindgen]
-#[derive(PartialEq, Clone, Serialize)]
-pub struct Button {
+#[derive(PartialEq, Clone, Serialize, Deserialize)]
+pub struct Slider {
     this: Uuid,
     text: String, 
     x: f32, 
     y: f32, 
     opacity: f32,
-    state: ButtonState
 }
 
-impl Button {
-    pub fn get_uuid(&self) -> String {
-        self.this.to_string()
-    }
-}
-
-impl Control for Button {
-    fn get_type() -> String {
-        "button".to_owned()
-    }
-}
 
 #[wasm_bindgen]
-pub struct ButtonBuilder {
+pub struct SliderBuilder {
     x: Option<f32>,
     y: Option<f32>,
     opacity: Option<f32>,
@@ -52,18 +27,18 @@ pub struct ButtonBuilder {
 }
 
 #[wasm_bindgen]
-impl ButtonBuilder {
+impl SliderBuilder {
 
     #[wasm_bindgen(constructor)]
-    pub fn builder() -> ButtonBuilder { 
+    pub fn builder() -> SliderBuilder { 
         let x = None;
         let y = None;
         let opacity = None;
         let text = None;
-        ButtonBuilder { x, y, opacity, text }
+        SliderBuilder { x, y, opacity, text }
     }
 
-    pub fn build(&mut self) -> Button {
+    pub fn build(&mut self) -> Slider {
         let this = Uuid::new_v4();
         let x:f32 = match self.x {
             Some(x) => x,
@@ -81,26 +56,25 @@ impl ButtonBuilder {
             Some(text) => text.to_string(),
             None => "".to_owned()
         };
-        let state = ButtonState::NotPressed;
-        Button { this, x, y, opacity, text, state }
+        Slider { this, text, x, y, opacity }
     }
 
-    pub fn x(mut self, x: f32) -> ButtonBuilder {
+    pub fn x(mut self, x: f32) -> SliderBuilder {
         self.x = Some(x);
         self
     } 
     
-    pub fn y(mut self, y: f32) -> ButtonBuilder {
+    pub fn y(mut self, y: f32) -> SliderBuilder {
         self.y = Some(y);
         self
     } 
     
-    pub fn opacity(mut self, opacity: f32) -> ButtonBuilder {
+    pub fn opacity(mut self, opacity: f32) -> SliderBuilder {
         self.opacity = Some(opacity);
         self
     } 
     
-    pub fn text(mut self, text: &str) -> ButtonBuilder {
+    pub fn text(mut self, text: &str) -> SliderBuilder {
         let owned_text = text.to_owned();
         self.text = Some(owned_text);
         self

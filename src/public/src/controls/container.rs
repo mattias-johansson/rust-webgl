@@ -3,6 +3,11 @@ extern crate serde;
 
 use crate::controls::color::*;
 use crate::controls::button::*;
+use crate::controls::toggle_button::*;
+use crate::controls::image_view::*;
+use crate::controls::label::*;
+use crate::controls::slider::*;
+use crate::controls::control::Control;
 use wasm_bindgen::prelude::*;
 use serde::*;
 use crate::globals::messaging::*;
@@ -39,16 +44,57 @@ pub struct ContainerBuilder {
 
 #[wasm_bindgen]
 impl Container {
-
-    pub fn add(&self, button: &Button) -> Result<(), JsValue> {
+/*
+    pub fn add<T>(&self, object: &T) -> Result<(), JsValue> where T: Control{
+        let json = serde_json::to_string(&object).unwrap();
+        let message = MessageType::ObjectCreated(self.this, object.get_type(), json);
+        send_message(message);
+        Ok(())
+    }
+*/
+    pub fn add_button(&self, button: &Button) -> Result<(), JsValue> {
         let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::ObjectCreated(self.this, json);
+        let message = MessageType::ObjectCreated(self.this, "button".to_owned(), json);
+        send_message(message);
+        Ok(())
+    }
+
+    pub fn add_toggle_button(&self, button: &ToggleButton) -> Result<(), JsValue> {
+        let json = serde_json::to_string(&button).unwrap();
+        let message = MessageType::ObjectCreated(self.this, "togglebutton".to_owned(), json);
+        send_message(message);
+        Ok(())
+    }
+
+    pub fn add_slider(&self, button: &Slider) -> Result<(), JsValue> {
+        let json = serde_json::to_string(&button).unwrap();
+        let message = MessageType::ObjectCreated(self.this, "slider".to_owned(), json);
+        send_message(message);
+        Ok(())
+    }
+
+    pub fn add_image_view(&self, button: &ImageView) -> Result<(), JsValue> {
+        let json = serde_json::to_string(&button).unwrap();
+        let message = MessageType::ObjectCreated(self.this, "imageview".to_owned(), json);
+        send_message(message);
+        Ok(())
+    }
+
+    pub fn add_label(&self, button: &Label) -> Result<(), JsValue> {
+        let json = serde_json::to_string(&button).unwrap();
+        let message = MessageType::ObjectCreated(self.this, "label".to_owned(), json);
         send_message(message);
         Ok(())
     }
 
     pub fn get_uuid(&self) -> String {
         self.this.to_string()
+    }
+}
+
+impl Control for Container {
+    fn get_type() -> String {
+        "container".to_owned()
     }
 }
 

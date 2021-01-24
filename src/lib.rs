@@ -1,4 +1,8 @@
 extern crate wasm_bindgen;
+use crate::controls::slider::SliderPrivate;
+use crate::controls::label::LabelPrivate;
+use crate::controls::image_view::ImageViewPrivate;
+use crate::controls::toggle_button::ToggleButtonPrivate;
 use uuid::Uuid;
 use crate::controls::node::Node;
 use crate::events::application_events::ApplicationEvents;
@@ -137,7 +141,7 @@ impl Application {
         //panic!("one loop");
     }
 }
-
+/*
 pub fn object_creator<R, T>(cx: &mut Context, public:R) ->  T
     where
         R: Clone,
@@ -145,7 +149,7 @@ pub fn object_creator<R, T>(cx: &mut Context, public:R) ->  T
 {
     ButtonPrivate::new(Uuid::new_v4(), &mut context, "Button", 150.0, 5.0, 0.5)
 }
-
+*/
 pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, app_events: Rc<RefCell<ApplicationEvents>>) {
     let mut events = app_events.borrow_mut();
     if &events.events.len() > &0 {
@@ -157,19 +161,49 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
         match message {
             MessageType::SetRoot(data) => {
                 let result = serde_json::from_str(&data);                
-                let object : ContainerPrivate = result.unwrap();
-                let container = Container::from_private(context, object);
+                let object : Container = result.unwrap();
+                let container = ContainerPrivate::from_public(context, object);
                 context.add_child_to(context.root.unwrap(), container.get_node_uuid());
                 core_app.visual_nodes.push(Box::new(container) as Box<dyn VisualNode>);          
             },
-            MessageType::ObjectCreated(parent, data) => {
+            MessageType::ObjectCreated(parent, object_type, data) => {
                 web_sys::console::log_1(&"ObjectCreated".into());
-                let result = serde_json::from_str(&data);                
-                //let object = result.unwrap();
-                let button = ButtonPrivate::from_public(context, result.unwrap());
-                let container = core_app.get_visual_node(parent).unwrap();
-                context.add_child_to(container.get_node_uuid(), button.get_node_uuid());
-                core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);          
+                if object_type == "button" {
+                    let result = serde_json::from_str(&data);
+                    let object = result.unwrap();
+                    let button = ButtonPrivate::from_public(context, object);
+                    let container = core_app.get_visual_node(parent).unwrap();
+                    context.add_child_to(container.get_node_uuid(), button.get_node_uuid());
+                    core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+                } else if object_type == "togglebutton" {
+                    let result = serde_json::from_str(&data);
+                    let object = result.unwrap();
+                    let button = ToggleButtonPrivate::from_public(context, object);
+                    let container = core_app.get_visual_node(parent).unwrap();
+                    context.add_child_to(container.get_node_uuid(), button.get_node_uuid());
+                    core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+                } else if object_type == "imageview" {
+                    let result = serde_json::from_str(&data);
+                    let object = result.unwrap();
+                    let button = ImageViewPrivate::from_public(context, object);
+                    let container = core_app.get_visual_node(parent).unwrap();
+                    context.add_child_to(container.get_node_uuid(), button.get_node_uuid());
+                    core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+                } else if object_type == "label" {
+                    let result = serde_json::from_str(&data);
+                    let object = result.unwrap();
+                    let button = LabelPrivate::from_public(context, object);
+                    let container = core_app.get_visual_node(parent).unwrap();
+                    context.add_child_to(container.get_node_uuid(), button.get_node_uuid());
+                    core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+                } else if object_type == "slider" {
+                    let result = serde_json::from_str(&data);
+                    let object = result.unwrap();
+                    let button = SliderPrivate::from_public(context, object);
+                    let container = core_app.get_visual_node(parent).unwrap();
+                    context.add_child_to(container.get_node_uuid(), button.get_node_uuid());
+                    core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
+                }     
             },
             _ => ()
         }
@@ -295,60 +329,3 @@ pub fn get_device_pixel_ratio() -> f64 {
     let window = window.dyn_into::<web_sys::Window>().unwrap();
     window.device_pixel_ratio()
 }
-/*
-pub fn create(mut context: &mut Context, core_app: &mut CoreApp) {
-    let slider = Slider::new(&mut context, 500.0, 500.0, 1.0);
-
-    let container = ContainerBuilder::builder().x(0.0).height(703.0).width(1280.0).color((1.0,1.0,1.0)).opacity(1.0).clip(true).build(&mut context);
-    //let container2 = ContainerBuilder::builder().x(20.0).y(20.0).width(400.0).height(400.0).color((0.0,1.0,1.0)).opacity(0.5).build(&mut context);
-    let label = Label::new(context, 45.0, 45.0, "Test label");
-    context.add_child_to(context.root.unwrap(), container.get_node_uuid());
-    container.add_child(&mut context, slider.get_node_uuid());
-    //container.add_child(&mut context, container2.get_node_uuid());
-    
-    
-    //let scroll_view = ScrollView::new(&mut context, 0.0, 0.0, 0.0, 0.0, 0.5, 300.0, 300.0, (1.0,0.0,1.0), );
-//    scroll_view.add_content(&mut context, image_view.get_node_uuid());
-    //context.add_child_to(context.root.unwrap(), scroll_view.get_node_uuid());
-
-    let button = ButtonPrivate::new(Uuid::new_v4(), &mut context, "Button", 150.0, 5.0, 0.5);
-
-    container.add_child(&mut context,button.get_node_uuid());
-    container.add_child(&mut context,label.get_node_uuid());
-
-    context.cb.add_subscriber(button.this, on_button_pressed);
-    context.cb.add_subscriber(slider.this, on_slider_event);
-
-    core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
-    core_app.visual_nodes.push(Box::new(slider) as Box<dyn VisualNode>);
-//    core_app.visual_nodes.push(Box::new(scroll_view) as Box<dyn VisualNode>);
-
-}
-
-pub fn on_button_pressed(mut cx: &mut Context, core_app: &mut CoreApp, event: Event) {
-    let y = cx.nodes.len() as f32 * 20.0;
-    let button = ToggleButtonPrivate::new(&mut cx, 5.0, y, 1.0);
-    cx.add_child_to(cx.root.unwrap(), button.get_node_uuid());
-    core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
-}
-
-pub fn on_slider_event(mut cx: &mut Context, core_app: &mut CoreApp, event: Event) {
-    cx.dirty = true;
-    let bild = core_app.get_visual_node_from_name("Bild");
-    match event {
-        Event::Scroll(scroll) => {
-            match scroll {
-                Scroll::ImmediateValue(value) => {
-                    web_sys::console::log_1(&"scroll".into());
-                    web_sys::console::log_1(&value.to_string().into());
-                    let node_uuid = bild.unwrap().get_node_uuid();
-                    let node = cx.get_node(node_uuid);
-                    node.unwrap().opacity = value;
-                },
-                _ => ()
-            }
-        },
-        _ => ()
-    }
-}
-*/

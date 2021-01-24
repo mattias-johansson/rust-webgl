@@ -16,7 +16,10 @@ pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_posi
     gl.active_texture(texture_position);
     gl.bind_texture(GL::TEXTURE_2D, texture.as_ref());
 
+    let debug = src.to_owned();
+
     let onload = Closure::wrap(Box::new(move || {
+        web_sys::console::debug_2(&"image loaded".into(), &debug.as_str().into());
 
         gl.active_texture(texture_position);
 
