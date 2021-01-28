@@ -59,7 +59,7 @@ impl Context {
 
     pub fn get_node_unmut(&self, uuid: Uuid) -> Option<&Node> {
         for node in self.nodes.as_slice() {
-            if uuid == node.uuid {
+            if uuid == node.uuid {        
                 return Some(&node);
             }
         }

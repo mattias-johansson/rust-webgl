@@ -38,7 +38,7 @@ impl ScrollViewPrivate {
         ScrollViewPrivate { this: owner, node_uuid, scroll_uuid: scroll_node_uuid, scroll_x: None, scroll_y: None}
     }
 
-    pub fn add_content(&self, cx: &mut Context, child: Uuid) {
+    pub fn setup_scroll(&self, cx: &mut Context, child: Uuid) {
         let content = cx.get_node_unmut(child);
         let width = content.unwrap().width;
         let height = content.unwrap().height;
@@ -74,11 +74,13 @@ impl ScrollViewPrivate {
     }
 
     fn on_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
+        web_sys::console::debug_1(&"on scroll event".into());
         let max_scroll_x = self.get_max_scroll_x(cx); 
         let max_scroll_y = self.get_max_scroll_y(cx); 
         let min_scroll_x = self.get_min_scroll_x(cx); 
         let min_scroll_y = self.get_min_scroll_y(cx); 
         let mut node = cx.get_node(self.scroll_uuid).unwrap();
+        
         if let Some(x) = self.scroll_x {
             let  wanted_scroll = message.x as f32 - x; 
             if wanted_scroll < max_scroll_x && wanted_scroll > min_scroll_x {
@@ -98,6 +100,11 @@ impl ScrollViewPrivate {
             } else {
                 node.translate_y = max_scroll_y;
             }
+        }
+        web_sys::console::debug_4(&"t_x".into(),&node.translate_x.into(),&"t_y".into(),&node.translate_y.into());
+        {
+            let mut dirty = cx.dirty.borrow_mut();
+            *dirty = true;
         }
     }
 
@@ -160,15 +167,17 @@ impl VisualNode for ScrollViewPrivate {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.end_scroll_event(cx, &event);
-                    web_sys::console::log_1(&"Scrollview: Mouse up!".into());
+                    web_sys::console::debug_1(&"Scrollview: Mouse up!".into());
                 } else if event.event == MouseEvent::Down {
                     self.start_scroll_event(cx, &event);
+                    web_sys::console::debug_1(&"crollview: Mouse down!".into());
                 } else if event.event == MouseEvent::Move {
                     self.on_scroll_event(cx, &event);
+                    web_sys::console::debug_1(&"crollview: Mouse move!".into());
                 } 
-                return true;
+//                return true;
             },
-            Event::Message(message) => {
+            Event::Message(_message) => {
             },
             _ => ()
         }

@@ -4,6 +4,7 @@ extern crate serde;
 use crate::controls::color::*;
 use crate::controls::button::*;
 use crate::controls::toggle_button::*;
+use crate::controls::scroll_view::*;
 use crate::controls::image_view::*;
 use crate::controls::label::*;
 use crate::controls::slider::*;
@@ -83,6 +84,20 @@ impl Container {
     pub fn add_label(&self, button: &Label) -> Result<(), JsValue> {
         let json = serde_json::to_string(&button).unwrap();
         let message = MessageType::ObjectCreated(self.this, "label".to_owned(), json);
+        send_message(message);
+        Ok(())
+    }
+
+    pub fn add_scroll_view(&self, button: &ScrollView) -> Result<(), JsValue> {
+        let json = serde_json::to_string(&button).unwrap();
+        let message = MessageType::ObjectCreated(self.this, "scrollview".to_owned(), json);
+        send_message(message);
+        Ok(())
+    }
+
+    pub fn add_container(&self, button: &Container) -> Result<(), JsValue> {
+        let json = serde_json::to_string(&button).unwrap();
+        let message = MessageType::ObjectCreated(self.this, "container".to_owned(), json);
         send_message(message);
         Ok(())
     }

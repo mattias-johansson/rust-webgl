@@ -180,7 +180,7 @@ impl VisualNode for ToggleButtonPrivate {
                         callback(&mut cx);
                     }
                 }
-                return true;
+//                return true;
             },
             Event::Message(message) => {
                 match message {

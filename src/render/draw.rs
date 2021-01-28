@@ -63,7 +63,7 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
 }
 
 pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
-    //    web_sys::console::log_1(&parent.uuid.to_string().into());
+    web_sys::console::log_1(&parent.uuid.to_string().into());
     match cx.node_relations.get(&parent.uuid) {
         Some(children) => {
             for child in children.as_slice() {
@@ -98,6 +98,7 @@ pub fn draw_scene(
     if *cx.dirty.borrow() == false {
         return;
     }
+    
     let uuid = cx.root.unwrap();
     let node = cx.get_node_unmut(uuid);
     let mut collection: Vec<Node> = Vec::new();
@@ -115,7 +116,7 @@ pub fn draw_scene(
                 render_text(&webgl_context, program_color, points, x, y, 1.0, (0.0, 0.0, 0.0));
             } else {
                 if node.end_clip {
-//                    web_sys::console::log_1(&"end stencil".into());
+                    web_sys::console::log_1(&"end stencil".into());
                     end_stencil(&webgl_context);
                 } else { 
                     if node.clip {

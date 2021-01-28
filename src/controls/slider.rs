@@ -136,7 +136,7 @@ impl VisualNode for SliderPrivate {
                 } else if event.event == MouseEvent::Move {
                     self.on_scroll_event(cx, &event);
                 } 
-                return true;
+//                return true;
             },
             Event::Message(message) => {
             },

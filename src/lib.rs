@@ -1,4 +1,5 @@
 extern crate wasm_bindgen;
+use crate::controls::scroll_view::ScrollViewPrivate;
 use crate::controls::slider::SliderPrivate;
 use crate::controls::label::LabelPrivate;
 use crate::controls::image_view::ImageViewPrivate;
@@ -133,10 +134,12 @@ impl Application {
         
         let callbacks = self.context.cb.clone();
         callbacks.trigger_callbacks(&mut self.context, &mut self.core_app);
+        
         self.context.cb.clear_triggered();
 
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
+
         draw_scene(&mut self.context, Rc::clone(&self.gl), &self.program, &self.program_color);
         //panic!("one loop");
     }
@@ -203,8 +206,40 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                     let container = core_app.get_visual_node(parent).unwrap();
                     context.add_child_to(container.get_node_uuid(), button.get_node_uuid());
                     core_app.visual_nodes.push(Box::new(button) as Box<dyn VisualNode>);
-                }     
+                } else if object_type == "container" {
+                    let result = serde_json::from_str(&data);
+                    let object = result.unwrap();
+                    let child = ContainerPrivate::from_public(context, object);
+                    let parent = core_app.get_visual_node(parent).unwrap();
+                    context.add_child_to(parent.get_node_uuid(), child.get_node_uuid());
+                    core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);
+                } else if object_type == "scrollview" {
+                    let result = serde_json::from_str(&data);
+                    let object = result.unwrap();
+                    let child = ScrollViewPrivate::from_public(context, object);
+                    let parent = core_app.get_visual_node(parent).unwrap();
+                    context.add_child_to(parent.get_node_uuid(), child.get_node_uuid());
+                    core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);
+                }
             },
+            MessageType::SetupScrollView(scroll_view, data) => {
+                web_sys::console::debug_1(&"SetupScrollView event".into());
+                let result = serde_json::from_str(&data);
+                let object = result.unwrap();
+                let child = ContainerPrivate::from_public(context, object);
+                let child_uuid = child.get_node_uuid();
+                let parent = core_app.get_visual_node(scroll_view).unwrap();
+//                context.add_child_to(parent.get_node_uuid(), child.get_node_uuid());
+                core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);
+
+                let option_visual_node = core_app.get_visual_node(scroll_view);
+                if let Some(visual_node) = option_visual_node {
+                    if let Some(scroll_view) = visual_node.as_any().downcast_mut::<ScrollViewPrivate>() {
+                        web_sys::console::debug_1(&"scroll_view.setup_scroll".into());
+                        scroll_view.setup_scroll(context, child_uuid);
+                    }
+                }
+            }
             _ => ()
         }
         
@@ -258,6 +293,8 @@ pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>
         }
         None => (),
     }
+    let event = Event::None;
+    events.borrow_mut().set_event(event);   
 }
 
 pub fn get_visual_node(frame: &mut Vec<Box<dyn VisualNode>>, uuid: Uuid) -> Option<&mut Box<dyn VisualNode>> {
@@ -301,7 +338,7 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 let x = event.x;
                 let y = event.y;
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-                    web_sys::console::debug_4(&"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
+//                    web_sys::console::debug_4(&"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
                     handled = visual_node.event_handler(cx, &events.borrow().event);
                 }
             }

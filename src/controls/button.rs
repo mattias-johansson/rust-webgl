@@ -239,7 +239,7 @@ impl VisualNode for ButtonPrivate {
                     self.pressed = true; 
                     self.on_button_pressed(cx);
                 }      
-                return true;
+//                return true;
             },
             Event::Message(message) => {
                 match message {
