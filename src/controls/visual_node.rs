@@ -13,7 +13,6 @@ pub trait VisualNode : VisualNodeClone {
 
     fn get_node_uuid(&self) -> Uuid;
 
-
 }
 
 pub trait VisualNodeClone {

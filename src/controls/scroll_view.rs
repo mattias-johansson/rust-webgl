@@ -1,13 +1,13 @@
-
 use crate::events::mouse::*;
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
 use crate::application::context::*;
 use uuid::Uuid;
 use std::any::Any;
+use serde::*;
 
 #[derive(PartialEq, Clone, Copy)]
-pub struct ScrollView {
+pub struct ScrollViewPrivate {
     this: Uuid,
     node_uuid: Uuid,
     scroll_uuid: Uuid,
@@ -15,27 +15,30 @@ pub struct ScrollView {
     scroll_y: Option<f32>
 }
 
-impl ScrollView {
+impl ScrollViewPrivate {
 
-    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32)) ->  ScrollView {
+    pub fn from_public(cx: &mut Context, public: ScrollView) -> ScrollViewPrivate {
+        ScrollViewPrivate::new(public.this, cx, public.x, public.y, public.translate_x, public.translate_y, public.opacity, public.width, public.height, (public.color.r, public.color.g, public.color.b))
+    }
+
+    pub fn new(owner: Uuid, cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32)) ->  ScrollViewPrivate {
         
-        let owner = Uuid::new_v4();
+        let owner = owner;
 
-        let root_node = ScrollView::new_node(owner, cx, x, y, translate_x, translate_y, opacity, width, height, color, true);
+        let root_node = ScrollViewPrivate::new_node(owner, cx, x, y, translate_x, translate_y, opacity, width, height, color, true);
         let node_uuid = root_node.uuid;
 
-        let scroll_node = ScrollView::new_node(owner, cx, 0.0, 0.0, 0.0, 0.0, opacity, width, height, (1.0,1.0,1.0), false);
+        let scroll_node = ScrollViewPrivate::new_node(owner, cx, 0.0, 0.0, 0.0, 0.0, opacity, width, height, (1.0,1.0,1.0), false);
         let scroll_node_uuid = scroll_node.uuid;
 
         cx.add_child_to(node_uuid, scroll_node_uuid);
         cx.nodes.push(root_node);
         cx.nodes.push(scroll_node);
 
-
-        ScrollView { this: owner, node_uuid, scroll_uuid: scroll_node_uuid, scroll_x: None, scroll_y: None}
+        ScrollViewPrivate { this: owner, node_uuid, scroll_uuid: scroll_node_uuid, scroll_x: None, scroll_y: None}
     }
 
-    pub fn add_content(&self, cx: &mut Context, child: Uuid) {
+    pub fn setup_scroll(&self, cx: &mut Context, child: Uuid) {
         let content = cx.get_node_unmut(child);
         let width = content.unwrap().width;
         let height = content.unwrap().height;
@@ -71,11 +74,13 @@ impl ScrollView {
     }
 
     fn on_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
+        web_sys::console::debug_1(&"on scroll event".into());
         let max_scroll_x = self.get_max_scroll_x(cx); 
         let max_scroll_y = self.get_max_scroll_y(cx); 
         let min_scroll_x = self.get_min_scroll_x(cx); 
         let min_scroll_y = self.get_min_scroll_y(cx); 
         let mut node = cx.get_node(self.scroll_uuid).unwrap();
+        
         if let Some(x) = self.scroll_x {
             let  wanted_scroll = message.x as f32 - x; 
             if wanted_scroll < max_scroll_x && wanted_scroll > min_scroll_x {
@@ -95,6 +100,11 @@ impl ScrollView {
             } else {
                 node.translate_y = max_scroll_y;
             }
+        }
+        web_sys::console::debug_4(&"t_x".into(),&node.translate_x.into(),&"t_y".into(),&node.translate_y.into());
+        {
+            let mut dirty = cx.dirty.borrow_mut();
+            *dirty = true;
         }
     }
 
@@ -123,7 +133,7 @@ impl ScrollView {
         self.scroll_y = None;
     }
 
-    fn new_node(owner: Uuid, cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  Node {
+    fn new_node(owner: Uuid, _cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  Node {
         let x:f32 = x;
         let y:f32 = y;
         let translate_x = translate_x;
@@ -141,7 +151,7 @@ impl ScrollView {
     }
 }
 
-impl VisualNode for ScrollView {
+impl VisualNode for ScrollViewPrivate {
 
     fn get_node_uuid(&self) -> Uuid {
         self.node_uuid
@@ -152,20 +162,22 @@ impl VisualNode for ScrollView {
     }
 
     fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool {
-        web_sys::console::log_1(&"got event".into());
+//        web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.end_scroll_event(cx, &event);
-                    web_sys::console::log_1(&"Mouse up!".into());
+                    web_sys::console::debug_1(&"Scrollview: Mouse up!".into());
                 } else if event.event == MouseEvent::Down {
                     self.start_scroll_event(cx, &event);
+                    web_sys::console::debug_1(&"crollview: Mouse down!".into());
                 } else if event.event == MouseEvent::Move {
                     self.on_scroll_event(cx, &event);
+                    web_sys::console::debug_1(&"crollview: Mouse move!".into());
                 } 
-                return true;
+//                return true;
             },
-            Event::Message(message) => {
+            Event::Message(_message) => {
             },
             _ => ()
         }
@@ -177,3 +189,25 @@ impl VisualNode for ScrollView {
         self.this
     }
 }
+
+
+#[derive(PartialEq, Clone, Copy, Deserialize)]
+pub struct ScrollView {
+    pub this: Uuid,
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub translate_x: f32,
+    pub translate_y: f32,
+    pub opacity: f32,
+    pub color: Color,
+    pub clip: bool,
+}
+
+#[derive(PartialEq, Clone, Copy, Deserialize)]
+pub struct Color {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+} 

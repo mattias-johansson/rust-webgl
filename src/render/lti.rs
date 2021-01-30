@@ -8,7 +8,7 @@ use web_sys::WebGlRenderingContext;
 use web_sys::WebGlRenderingContext as GL;
 
 #[allow(dead_code)]
-pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_position: u32) {
+pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_position: u32, dirty: Rc<RefCell<bool>>) {
     let image = Rc::new(RefCell::new(HtmlImageElement::new().unwrap()));
     let image_clone = Rc::clone(&image);
     let texture = gl.create_texture();
@@ -16,10 +16,10 @@ pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_posi
     gl.active_texture(texture_position);
     gl.bind_texture(GL::TEXTURE_2D, texture.as_ref());
 
-    let color: [u8;4] = [0, 0, 255, 255];
-    let color = Some(&color[1 .. 4]);
+    let debug = src.to_owned();
 
     let onload = Closure::wrap(Box::new(move || {
+        web_sys::console::debug_2(&"image loaded".into(), &debug.as_str().into());
 
         gl.active_texture(texture_position);
 
@@ -41,6 +41,7 @@ pub fn load_texture_image(gl: Rc<WebGlRenderingContext>, src: &str, texture_posi
             &image_clone.borrow(),
         )
         .expect("Texture image 2d");
+        *dirty.borrow_mut() = true;
     }) as Box<dyn Fn()>);
 
     let image = image.borrow_mut();

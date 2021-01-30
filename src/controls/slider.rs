@@ -6,9 +6,10 @@ use uuid::Uuid;
 use std::any::Any;
 use crate::animation::animation::*;
 use crate::animation::ease::*;
+use serde::*;
 
 #[derive(PartialEq, Clone, Copy)]
-pub struct Slider {
+pub struct SliderPrivate {
     pub this: Uuid,
     slider_node_active: Uuid,
     slider_node_inactive: Uuid,
@@ -18,12 +19,17 @@ pub struct Slider {
     off_animation_uuid: Uuid,
 }
 
-impl Slider {
-    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> Slider {
-        let this = Uuid::new_v4();
-        let background_node = Slider::background(cx, this, x, y);
-        let handle_pressed_node = Slider::handle_pressed(cx, this, 0.0, 0.0);
-        let handle_node = Slider::handle_inactive(cx, this, 0.0, 0.0);
+impl SliderPrivate {
+
+    pub fn from_public(cx: &mut Context, public: Slider) -> SliderPrivate {
+        SliderPrivate::new(public.this, cx, public.x, public.y, public.opacity)
+    }
+
+    pub fn new(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> SliderPrivate {
+        
+        let background_node = SliderPrivate::background(cx, this, x, y);
+        let handle_pressed_node = SliderPrivate::handle_pressed(cx, this, 0.0, 0.0);
+        let handle_node = SliderPrivate::handle_inactive(cx, this, 0.0, 0.0);
 
         let background_node_uuid = background_node.uuid;
         let handle_pressed_node_uuid  = handle_pressed_node.uuid;
@@ -54,7 +60,7 @@ impl Slider {
         cx.add_child_to(background_node_uuid, handle_node_uuid);
         cx.add_child_to(background_node_uuid, handle_pressed_node_uuid);
 
-        Slider { this: this, slider_node_active: handle_pressed_node_uuid, slider_node_inactive: handle_node_uuid, background_node: background_node_uuid, start_x : None, on_animation_uuid, off_animation_uuid }
+        SliderPrivate { this: this, slider_node_active: handle_pressed_node_uuid, slider_node_inactive: handle_node_uuid, background_node: background_node_uuid, start_x : None, on_animation_uuid, off_animation_uuid }
     }
 
     fn background(cx: &mut Context, this: Uuid, x: f32, y: f32) -> Node {
@@ -108,7 +114,7 @@ impl Slider {
     
 }
 
-impl VisualNode for Slider {
+impl VisualNode for SliderPrivate {
 
     fn get_node_uuid(&self) -> Uuid {
         self.background_node
@@ -119,18 +125,18 @@ impl VisualNode for Slider {
     }
 
     fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool {
-        web_sys::console::log_1(&"got event".into());
+//        web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.end_scroll_event(cx, &event);
-                    web_sys::console::log_1(&"Mouse up!".into());
+                    web_sys::console::log_1(&"SLIDER: Mouse up!".into());
                 } else if event.event == MouseEvent::Down {
                     self.start_scroll_event(cx, &event);
                 } else if event.event == MouseEvent::Move {
                     self.on_scroll_event(cx, &event);
                 } 
-                return true;
+//                return true;
             },
             Event::Message(message) => {
             },
@@ -143,4 +149,14 @@ impl VisualNode for Slider {
     fn get_uuid(&self) -> uuid::Uuid { 
         self.this
     }
+}
+
+
+#[derive(PartialEq, Clone, Serialize, Deserialize)]
+pub struct Slider {
+    this: Uuid,
+    text: String, 
+    x: f32, 
+    y: f32, 
+    opacity: f32,
 }

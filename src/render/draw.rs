@@ -13,8 +13,6 @@ use std::rc::Rc;
 
 use crate::controls::node::*;
 
-use crate::render::gl_context::*;
-
 pub fn update_animations(dt: f32, cx: &mut Context) {
     for i in 0..cx.animations.len() {
         let animation: &mut Animation = cx.animations.get_mut(i).unwrap();
@@ -27,8 +25,7 @@ pub fn update_animations(dt: f32, cx: &mut Context) {
             }
         } else if animation.state == AnimationState::Ending {
             animation.state = AnimationState::Ended;
-            cx.events
-                .push(Event::Message(AnimationEnded(animation.uuid)));
+            cx.events.push(Event::Message(AnimationEnded(animation.uuid)));
         }
     }
 }
@@ -45,7 +42,11 @@ pub fn update_target_attributes(dt: f32, cx: &mut Context) {
 }
 
 fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
-    web_sys::console::log_1(&"update_animation:".into());
+//    web_sys::console::log_1(&"update_animation:".into());
+    {
+        let mut dirty = cx.dirty.borrow_mut();
+        *dirty = true;
+    }
     let target_node = cx.get_node(animation.target_node);
     if target_node.is_some() {
         let value = animation.get_animated_value(dt);
@@ -62,21 +63,22 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
 }
 
 pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
-    //    web_sys::console::log_1(&parent.uuid.to_string().into());
+    web_sys::console::log_1(&parent.uuid.to_string().into());
     match cx.node_relations.get(&parent.uuid) {
         Some(children) => {
             for child in children.as_slice() {
-                let node = cx.get_node_unmut(*child);
-                let mut node = *node.unwrap();
-                {
-                    node.x = node.x + parent.x;
-                    node.y = node.y + parent.y;
-                    node.translate_x = node.translate_x + parent.translate_x;
-                    node.translate_y = node.translate_y + parent.translate_y;
-                }
-                collection.push(node);
+                if let Some(node) = cx.get_node_unmut(*child) {
+                    let mut node = *node;
+                    {
+                        node.x = node.x + parent.x;
+                        node.y = node.y + parent.y;
+                        node.translate_x = node.translate_x + parent.translate_x;
+                        node.translate_y = node.translate_y + parent.translate_y;
+                    }
+                    collection.push(node);
 
-                travers_tree(&cx, node, collection);
+                    travers_tree(&cx, node, collection);
+                }
             }
         }
         None => (),
@@ -94,31 +96,62 @@ pub fn draw_scene(
     program: &WebGlProgram,
     program_color: &WebGlProgram,
 ) {
+    if *cx.dirty.borrow() == false {
+        return;
+    }
+    
     let uuid = cx.root.unwrap();
-    let node = cx.get_node_unmut(uuid);
     let mut collection: Vec<Node> = Vec::new();
 
-    travers_tree(cx, *node.unwrap(), &mut collection);
-    //TODO, select program based on node type
-    for node in collection.as_slice() {
-        //TODO I think GL can handle this
-        let x = node.x + node.translate_x;
-        let y = node.y + node.translate_y;
-        //Load texture for node
-        if node.texture == None {
-            if node.text {
-                let points = cx.vertices.get(&node.uuid).unwrap().to_vec();
-                render_text(&webgl_context, program_color, points, x, y, 1.0, (0.0, 0.0, 0.0));
-            } else {
-                if node.end_clip {
-//                    web_sys::console::log_1(&"end stencil".into());
-                    end_stencil(&webgl_context);
-                } else { 
-                    if node.clip {
-//                        web_sys::console::log_1(&"start stencil".into());
-                        render_stencil(&webgl_context, program_color, node.width, node.height, x, y);
+    if let Some(node) = cx.get_node_unmut(uuid) {
+        travers_tree(cx, *node, &mut collection);
+        //TODO, select program based on node type
+        for node in collection.as_slice() {
+            //TODO I think GL can handle this
+            let x = node.x + node.translate_x;
+            let y = node.y + node.translate_y;
+            //Load texture for node
+            if node.texture == None {
+                if node.text {
+                    let points = cx.vertices.get(&node.uuid).unwrap().to_vec();
+                    render_text(&webgl_context, program_color, points, x, y, 1.0, (0.0, 0.0, 0.0));
+                } else {
+                    if node.end_clip {
+                        web_sys::console::log_1(&"end stencil".into());
+                        end_stencil(&webgl_context);
+                    } else { 
+                        if node.clip {
+    //                        web_sys::console::log_1(&"start stencil".into());
+                            render_stencil(&webgl_context, program_color, node.width, node.height, x, y);
+                        }
+                        render_bg(
+                            &webgl_context,
+                            program_color,
+                            node.width,
+                            node.height,
+                            x,
+                            y,
+                            node.opacity,
+                            node.color,
+                        );
                     }
-                    render_bg(
+                } 
+            } else {
+                match &node.texture {
+                    Some(texture) => {
+                        let texture_slot = cx.textures.load_texture(Rc::clone(&webgl_context), texture, Rc::clone(&cx.dirty));
+                        render(
+                            &webgl_context,
+                            program,
+                            node.width,
+                            node.height,
+                            x,
+                            y,
+                            node.opacity,
+                            texture_slot,
+                        );
+                    }
+                    None => render_bg(
                         &webgl_context,
                         program_color,
                         node.width,
@@ -127,36 +160,12 @@ pub fn draw_scene(
                         y,
                         node.opacity,
                         node.color,
-                    );
-                }
-            } 
-        } else {
-            match &node.texture {
-                Some(texture) => {
-                    let texture_slot = cx.textures.load_texture(Rc::clone(&webgl_context), texture);
-                    render(
-                        &webgl_context,
-                        program,
-                        node.width,
-                        node.height,
-                        x,
-                        y,
-                        node.opacity,
-                        texture_slot,
-                    );
-                }
-                None => render_bg(
-                    &webgl_context,
-                    program_color,
-                    node.width,
-                    node.height,
-                    x,
-                    y,
-                    node.opacity,
-                    node.color,
-                ),
-            };
-        }
+                    ),
+                };
+            }
+        }   
+        let mut dirty = cx.dirty.borrow_mut();
+        *dirty = false;
     }
 }
 
@@ -210,6 +219,7 @@ fn render(
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
 
+    context.enable(WebGlRenderingContext::BLEND);
     context.blend_func(
         WebGlRenderingContext::SRC_ALPHA,
         WebGlRenderingContext::ONE_MINUS_SRC_ALPHA,
@@ -293,6 +303,7 @@ fn render_bg(
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
 
+    context.enable(WebGlRenderingContext::BLEND);
     context.blend_func(
         WebGlRenderingContext::SRC_ALPHA,
         WebGlRenderingContext::ONE_MINUS_SRC_ALPHA,
@@ -359,6 +370,7 @@ fn render_text(
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
 
+    context.enable(WebGlRenderingContext::BLEND);
     context.blend_func(
         WebGlRenderingContext::SRC_ALPHA,
         WebGlRenderingContext::ONE_MINUS_SRC_ALPHA,

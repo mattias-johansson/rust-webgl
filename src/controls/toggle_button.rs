@@ -4,10 +4,9 @@ use crate::controls::node::*;
 use crate::events::mouse::*;
 use crate::animation::animation::*;
 use crate::animation::ease::*;
-extern crate erased_serde;
 use uuid::Uuid;
 use crate::application::context::*;
-use std::rc::Rc;
+use serde::*;
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum ToggleButtonState {
@@ -30,8 +29,14 @@ pub struct ToggleButtonPrivate {
 }
 
 impl ToggleButtonPrivate {
-    pub fn new(cx: &mut Context, x: f32, y: f32, opacity: f32) -> ToggleButtonPrivate { 
-        let this = Uuid::new_v4();
+
+
+    pub fn from_public(cx: &mut Context, public: ToggleButton) -> ToggleButtonPrivate {
+        ToggleButtonPrivate::new(public.this, cx, public.x, public.y, public.opacity)
+    }
+
+    pub fn new(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> ToggleButtonPrivate { 
+    
         let value = false;
         let background = ToggleButtonPrivate::create_background(this, cx, x, y, opacity);
         let toggle = ToggleButtonPrivate::create_toggle(this,cx, x, y, opacity);
@@ -108,7 +113,7 @@ impl ToggleButtonPrivate {
 
     pub fn on_animation_ended(&mut self, cx: &mut Context) {
 
-        web_sys::console::log_1(&"on_animation_ended".into());
+//        web_sys::console::log_1(&"on_animation_ended".into());
         match self.state {
             ToggleButtonState::Off => (),
             ToggleButtonState::On => (),
@@ -163,7 +168,7 @@ impl VisualNode for ToggleButtonPrivate {
 
     fn event_handler(&mut self, mut cx: &mut Context, message: &Event) -> bool{
 
-        web_sys::console::log_1(&"got event".into());
+//        web_sys::console::log_1(&"got event".into());
         
         match message {
             Event::Mouse(event) => {
@@ -175,7 +180,7 @@ impl VisualNode for ToggleButtonPrivate {
                         callback(&mut cx);
                     }
                 }
-                return true;
+//                return true;
             },
             Event::Message(message) => {
                 match message {
@@ -198,4 +203,13 @@ impl VisualNode for ToggleButtonPrivate {
         self.this
     }
 
+}
+
+#[derive(PartialEq, Clone, Serialize, Deserialize)]
+pub struct ToggleButton {
+    this: Uuid,
+    text: String, 
+    x: f32, 
+    y: f32, 
+    opacity: f32,
 }

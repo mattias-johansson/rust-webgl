@@ -2,56 +2,12 @@
   <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
   </head>
-  <style>
-  #app {
-    width:100%;
-    height:100%;
-    margin:0%;
-    background: #FFF;
-  }
-  #all {
-    background: #AAF;
-  }
-  h2 { 
-    text-align: center;
-    font-weight: lighter;
-  }
-  canvas {
-    background: #FFF;
-  }
-  </style>
-  <body id="app">
-    <canvas id="canvas" width="1280px" height="703px"/>
-    <script src="/webgl.js"> </script>
-
-    <script type=module>
-      // Like with the `--target web` output the exports are immediately
-      // available but they won't work until we initialize the module. Unlike
-      // `--target web`, however, the globals are all stored on a
-      // `wasm_bindgen` global. The global itself is the initialization
-      // function and then the properties of the global are all the exported
-      // functions.
-      //
-      // Note that the name `wasm_bindgen` can be configured with the
-      // `--no-modules-global` CLI flag
-      const { Application } = wasm_bindgen;
-
-      async function run() {
-        await wasm_bindgen('/webgl_bg.wasm');
-
-        const application = new Application()
-            application.start()
-  
-            let time = Date.now();
-            function eventLoop () {
-              const dt = Date.now() - time
-              application.event_loop(dt)
-              window.requestAnimationFrame(eventLoop)
-            }
-            eventLoop ();
-      }
-      console.log("run");
-      run();
-      </script>
-  </body>
+<body>
+  <a href="button.html">button test</a>  <br>
+  <a href="slider.html">slider test</a>  <br>
+  <a href="toggle.html">toggle button test</a> <br>  
+  <a href="image.html">image view test</a> <br>  
+  <a href="label.html">label test</a> <br>  
+  <a href="scroll.html">scroll view test</a> <br>  
+</body>
 </html>

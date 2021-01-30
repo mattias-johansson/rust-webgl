@@ -1,5 +1,3 @@
-
-
 use uuid::Uuid;
 use crate::application::context::*;
 use crate::render::textures::*;
@@ -48,11 +46,13 @@ impl Node {
     }
 
     pub fn create_texture(cx: &mut Context, image: &str) -> Uuid {
+        web_sys::console::debug_1(&"create_texture".into());
         match cx.textures.textures_by_string.get(image) {
             Some(uuid) => { 
                 *uuid 
             },
             None => {
+                web_sys::console::debug_1(&"creating texture:".into());
                 let texture = Texture::new(image.to_string());
                 let uuid = texture.id;
                 cx.textures.textures.insert(uuid, texture);
@@ -73,7 +73,8 @@ impl Node {
     pub fn position(&self) -> (f32, f32, f32, f32) {
         (self.x, self.y, self.x + self.width, self.y + self.height)
     }
-/*
+
+    /*
     pub fn event_handler(&self, mut cx: &mut Context) -> bool {
         match self.callback {
             Some(callback) => {

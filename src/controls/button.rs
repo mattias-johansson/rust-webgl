@@ -2,7 +2,6 @@ use crate::render::word::Word;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use std::rc::Rc;
 use std::any::Any;
 
 use crate::controls::visual_node::*;
@@ -12,9 +11,10 @@ use crate::animation::animation::*;
 use crate::application::context::*;
 use crate::animation::ease::*;
 use uuid::Uuid;
+use serde::*;
+use crate::globals::messaging::*;
 
-
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 enum ButtonState {
     NotPressed,
     Pressed,
@@ -22,9 +22,19 @@ enum ButtonState {
     ToNotPressed,
 }
 
+#[derive(PartialEq, Clone, Serialize, Deserialize)]
+pub struct Button {
+    this: Uuid,
+    text: String, 
+    x: f32, 
+    y: f32, 
+    opacity: f32,
+    state: ButtonState,
+}
+
 //TODO Nedd to rewrite as composite control. Need to have a container node as "node"
 
-#[derive(Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct ButtonPrivate {
     pub this: Uuid,
     node: Uuid,
@@ -35,8 +45,12 @@ pub struct ButtonPrivate {
 }
 
 impl ButtonPrivate {
-    pub fn new(cx: &mut Context, text: &str, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
-        let this = Uuid::new_v4();
+
+    pub fn from_public(cx: &mut Context, public: Button) -> ButtonPrivate {
+        ButtonPrivate::new(public.this, cx, public.text.as_str(), public.x, public.y, public.opacity)
+    }
+
+    pub fn new(this: Uuid, cx: &mut Context, text: &str, x: f32, y: f32, opacity: f32) -> ButtonPrivate { 
         let pressed = false;
 
         let mut node = Node::new(this, x, y, 145.0, 34.0);
@@ -101,7 +115,7 @@ impl ButtonPrivate {
         let width =  145.0;
         let height = 34.0;
         let mut node = Node::new(this, x, y, width, height);
-        node.opacity = 1.0;
+        node.opacity = 0.0;
         node.texture = Some(Node::create_texture(cx, "/assets/button_pressed.png"));
         node
     }
@@ -133,7 +147,7 @@ impl ButtonPrivate {
     }
 
     pub fn on_button_pressed(&mut self, cx: &mut Context) {
-        web_sys::console::log_1(&"set on".into());
+//        web_sys::console::log_1(&"set on".into());
         match self.state {
             ButtonState::NotPressed => self.play_on_animation(cx),
             ButtonState::Pressed => self.play_off_animation(cx),
@@ -143,7 +157,7 @@ impl ButtonPrivate {
     }
 
     pub fn on_animation_ended(&mut self, cx: &mut Context) {
-        web_sys::console::log_1(&"on_animation_ended".into());
+//        web_sys::console::log_1(&"on_animation_ended".into());
         match self.state {
             ButtonState::NotPressed => (),
             ButtonState::Pressed => (),
@@ -154,7 +168,7 @@ impl ButtonPrivate {
     }
 
     pub fn set_on(&mut self, cx: &mut Context) {
-        web_sys::console::log_1(&"set Pressed".into());
+//        web_sys::console::log_1(&"set Pressed".into());
         self.state = ButtonState::Pressed;
         let on_animation = cx.get_animation(self.on_animation_uuid);
         on_animation.unwrap().start_value = 1.0;
@@ -169,7 +183,7 @@ impl ButtonPrivate {
     }
 
     fn set_off(&mut self, cx: &mut Context) {
-        web_sys::console::log_1(&"set NotPressed".into());
+//        web_sys::console::log_1(&"set NotPressed".into());
         self.state = ButtonState::NotPressed;
         let on_animation = cx.get_animation(self.on_animation_uuid);
         on_animation.unwrap().start_value = 0.0;
@@ -183,7 +197,7 @@ impl ButtonPrivate {
     }
 
     fn play_off_animation(&mut self, context: &mut Context) {
-        web_sys::console::log_1(&"play ToNotPressed".into());
+//        web_sys::console::log_1(&"play ToNotPressed".into());
         self.state = ButtonState::ToNotPressed;
         let off_animation = context.get_animation(self.off_animation_uuid);
         off_animation.unwrap().play();
@@ -192,7 +206,7 @@ impl ButtonPrivate {
     }
 
     fn play_on_animation(&mut self, context: &mut Context) {
-        web_sys::console::log_1(&"play ToPressed".into());
+//        web_sys::console::log_1(&"play ToPressed".into());
         self.state = ButtonState::ToPressed;
         let on_animation = context.get_animation(self.on_animation_uuid);
         on_animation.unwrap().play();
@@ -212,18 +226,20 @@ impl VisualNode for ButtonPrivate {
     }
 
     fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool {
-        web_sys::console::log_1(&"got event".into());
+//        web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
+                    web_sys::console::log_1(&"mouse up".into());
                     self.pressed = false;
                     self.on_button_pressed(cx);
                     cx.cb.add_trigged(self.this, Event::None);
-                }else if event.event == MouseEvent::Down {
+                    let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
+                } else if event.event == MouseEvent::Down {
                     self.pressed = true; 
                     self.on_button_pressed(cx);
                 }      
-                return true;
+//                return true;
             },
             Event::Message(message) => {
                 match message {
@@ -234,7 +250,7 @@ impl VisualNode for ButtonPrivate {
             },
             _ => ()
         }
-        web_sys::console::log_1(&"false".into());
+//        web_sys::console::log_1(&"false".into());
         return false;
     }
 

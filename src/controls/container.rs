@@ -1,6 +1,3 @@
-
-use std::rc::Rc;
-use std::rc::Weak;
 use crate::controls::visual_node::VisualNode;
 use crate::controls::node::*;
 use std::any::Any;
@@ -8,15 +5,15 @@ use crate::events::mouse::*;
 use uuid::Uuid;
 
 use crate::application::context::*;
+use serde::*;
 
-
-#[derive(PartialEq, Eq, Clone, Copy)]
-pub struct Container {
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+pub struct ContainerPrivate {
     this: Uuid,
     node: Uuid
 }
 
-impl VisualNode for Container {
+impl VisualNode for ContainerPrivate {
 
     fn get_node_uuid(&self) -> Uuid {
         self.node
@@ -35,9 +32,13 @@ impl VisualNode for Container {
     }
 }
 
-impl Container {
+impl ContainerPrivate {
 
-    pub fn get(&mut self) -> &mut Container {
+    pub fn from_public(cx: &mut Context, public: Container) -> ContainerPrivate {
+        ContainerPrivate::new(public.this, cx, public.x, public.y, public.translate_x, public.translate_y, public.opacity, public.width, public.height, (public.color.r, public.color.g, public.color.b), public.clip)
+    }
+
+    pub fn get(&mut self) -> &mut ContainerPrivate {
         self
     }
 
@@ -45,7 +46,7 @@ impl Container {
         cx.add_child_to(self.node, child);
     }
 
-    pub fn new(cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  Container {
+    pub fn new(this: Uuid, cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32), clip: bool) ->  ContainerPrivate {
         let x:f32 = x;
         let y:f32 = y;
         let translate_x = translate_x;
@@ -58,12 +59,12 @@ impl Container {
         let dirty = true;
         let end_clip = false;
         let uuid = Uuid::new_v4();
-        let owner = Uuid::new_v4();
+        let owner = this;
         let text = false;
         let node = Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty, clip, end_clip, text };
         let node_uuid = node.uuid;
         cx.nodes.push(node);
-        Container { this: owner, node: node_uuid }
+        ContainerPrivate { this: this, node: node_uuid }
     }
 }
 
@@ -94,7 +95,8 @@ impl ContainerBuilder {
         ContainerBuilder { x, y, translate_x, translate_y, opacity, width, height, color, clip}
     }
 
-    pub fn build(&self, cx: &mut Context) -> Container {
+    pub fn build(&self, cx: &mut Context) -> ContainerPrivate {
+        let this = Uuid::new_v4();
         let x:f32 = match self.x {
             Some(x) => x,
             None => 0.0
@@ -128,7 +130,7 @@ impl ContainerBuilder {
             None => (0.0,0.0,0.0)
         };
         let clip = self.clip;
-        Container::new(cx, x, y, translate_x, translate_y, opacity, width, height, color, clip)
+        ContainerPrivate::new(this, cx, x, y, translate_x, translate_y, opacity, width, height, color, clip)
     }
 
     pub fn x(&mut self, x: f32) -> &mut ContainerBuilder {
@@ -176,3 +178,24 @@ impl ContainerBuilder {
         self
     }
 }
+
+#[derive(PartialEq, Clone, Copy, Deserialize)]
+pub struct Container {
+    pub this: Uuid,
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub translate_x: f32,
+    pub translate_y: f32,
+    pub opacity: f32,
+    pub color: Color,
+    pub clip: bool,
+}
+
+#[derive(PartialEq, Clone, Copy, Deserialize)]
+pub struct Color {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+} 
