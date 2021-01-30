@@ -67,17 +67,18 @@ pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
     match cx.node_relations.get(&parent.uuid) {
         Some(children) => {
             for child in children.as_slice() {
-                let node = cx.get_node_unmut(*child);
-                let mut node = *node.unwrap();
-                {
-                    node.x = node.x + parent.x;
-                    node.y = node.y + parent.y;
-                    node.translate_x = node.translate_x + parent.translate_x;
-                    node.translate_y = node.translate_y + parent.translate_y;
-                }
-                collection.push(node);
+                if let Some(node) = cx.get_node_unmut(*child) {
+                    let mut node = *node;
+                    {
+                        node.x = node.x + parent.x;
+                        node.y = node.y + parent.y;
+                        node.translate_x = node.translate_x + parent.translate_x;
+                        node.translate_y = node.translate_y + parent.translate_y;
+                    }
+                    collection.push(node);
 
-                travers_tree(&cx, node, collection);
+                    travers_tree(&cx, node, collection);
+                }
             }
         }
         None => (),
@@ -100,30 +101,57 @@ pub fn draw_scene(
     }
     
     let uuid = cx.root.unwrap();
-    let node = cx.get_node_unmut(uuid);
     let mut collection: Vec<Node> = Vec::new();
 
-    travers_tree(cx, *node.unwrap(), &mut collection);
-    //TODO, select program based on node type
-    for node in collection.as_slice() {
-        //TODO I think GL can handle this
-        let x = node.x + node.translate_x;
-        let y = node.y + node.translate_y;
-        //Load texture for node
-        if node.texture == None {
-            if node.text {
-                let points = cx.vertices.get(&node.uuid).unwrap().to_vec();
-                render_text(&webgl_context, program_color, points, x, y, 1.0, (0.0, 0.0, 0.0));
-            } else {
-                if node.end_clip {
-                    web_sys::console::log_1(&"end stencil".into());
-                    end_stencil(&webgl_context);
-                } else { 
-                    if node.clip {
-//                        web_sys::console::log_1(&"start stencil".into());
-                        render_stencil(&webgl_context, program_color, node.width, node.height, x, y);
+    if let Some(node) = cx.get_node_unmut(uuid) {
+        travers_tree(cx, *node, &mut collection);
+        //TODO, select program based on node type
+        for node in collection.as_slice() {
+            //TODO I think GL can handle this
+            let x = node.x + node.translate_x;
+            let y = node.y + node.translate_y;
+            //Load texture for node
+            if node.texture == None {
+                if node.text {
+                    let points = cx.vertices.get(&node.uuid).unwrap().to_vec();
+                    render_text(&webgl_context, program_color, points, x, y, 1.0, (0.0, 0.0, 0.0));
+                } else {
+                    if node.end_clip {
+                        web_sys::console::log_1(&"end stencil".into());
+                        end_stencil(&webgl_context);
+                    } else { 
+                        if node.clip {
+    //                        web_sys::console::log_1(&"start stencil".into());
+                            render_stencil(&webgl_context, program_color, node.width, node.height, x, y);
+                        }
+                        render_bg(
+                            &webgl_context,
+                            program_color,
+                            node.width,
+                            node.height,
+                            x,
+                            y,
+                            node.opacity,
+                            node.color,
+                        );
                     }
-                    render_bg(
+                } 
+            } else {
+                match &node.texture {
+                    Some(texture) => {
+                        let texture_slot = cx.textures.load_texture(Rc::clone(&webgl_context), texture, Rc::clone(&cx.dirty));
+                        render(
+                            &webgl_context,
+                            program,
+                            node.width,
+                            node.height,
+                            x,
+                            y,
+                            node.opacity,
+                            texture_slot,
+                        );
+                    }
+                    None => render_bg(
                         &webgl_context,
                         program_color,
                         node.width,
@@ -132,40 +160,13 @@ pub fn draw_scene(
                         y,
                         node.opacity,
                         node.color,
-                    );
-                }
-            } 
-        } else {
-            match &node.texture {
-                Some(texture) => {
-                    let texture_slot = cx.textures.load_texture(Rc::clone(&webgl_context), texture, Rc::clone(&cx.dirty));
-                    render(
-                        &webgl_context,
-                        program,
-                        node.width,
-                        node.height,
-                        x,
-                        y,
-                        node.opacity,
-                        texture_slot,
-                    );
-                }
-                None => render_bg(
-                    &webgl_context,
-                    program_color,
-                    node.width,
-                    node.height,
-                    x,
-                    y,
-                    node.opacity,
-                    node.color,
-                ),
-            };
-        }
+                    ),
+                };
+            }
+        }   
+        let mut dirty = cx.dirty.borrow_mut();
+        *dirty = false;
     }
-    
-    let mut dirty = cx.dirty.borrow_mut();
-    *dirty = false;
 }
 
 fn render(

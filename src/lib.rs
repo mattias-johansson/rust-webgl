@@ -1,4 +1,5 @@
 extern crate wasm_bindgen;
+extern crate console_error_panic_hook;
 use crate::controls::scroll_view::ScrollViewPrivate;
 use crate::controls::slider::SliderPrivate;
 use crate::controls::label::LabelPrivate;
@@ -60,7 +61,8 @@ impl Application {
 
     /// Create a new Application
     #[wasm_bindgen(constructor)]
-    pub fn new(worker: &str) -> Application {            
+    pub fn new(worker: &str) -> Application {          
+        console_error_panic_hook::set_once();  
         web_sys::console::log_1(&"Application".into());
 
         let worker = Worker::new(worker).unwrap();
@@ -228,10 +230,7 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                 let object = result.unwrap();
                 let child = ContainerPrivate::from_public(context, object);
                 let child_uuid = child.get_node_uuid();
-                let parent = core_app.get_visual_node(scroll_view).unwrap();
-//                context.add_child_to(parent.get_node_uuid(), child.get_node_uuid());
                 core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);
-
                 let option_visual_node = core_app.get_visual_node(scroll_view);
                 if let Some(visual_node) = option_visual_node {
                     if let Some(scroll_view) = visual_node.as_any().downcast_mut::<ScrollViewPrivate>() {
