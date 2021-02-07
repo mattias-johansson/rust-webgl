@@ -1,16 +1,12 @@
-
-extern crate wasm_bindgen;
-extern crate serde;
-
 use crate::controls::color::*;
 use crate::controls::container::*;
 use crate::globals::messaging::*;
 
 use wasm_bindgen::prelude::*;
-use js_sys::{Function};
 
 use uuid::Uuid;
 use serde::*;
+use uimsg::MessageType;
 
 #[wasm_bindgen]
 #[derive(PartialEq, Clone, Serialize)]

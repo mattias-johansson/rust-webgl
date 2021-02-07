@@ -1,4 +1,3 @@
-extern crate serde;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -12,28 +11,22 @@ use std::collections::HashMap;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
-pub enum MessageType {
-    ObjectCreated(Uuid, String, String),
-    ValueUpdated(Uuid, String, String),
-    SetupScrollView(Uuid, String),
-    AddNode(String),
-    RemoveNode(String),
-    SetRoot(String)
-}
+use uimsg::MessageType;
 
-pub fn send_message(message: MessageType) -> Result<(), JsValue> {
+pub fn send_message(message: MessageType) {
     let global = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
     let json = serde_json::to_string(&message).unwrap();
 
     web_sys::console::log_1(&json.into());
     let json = serde_json::to_string(&message).unwrap();
     
-    global.post_message(&json.into())?;
-    Ok(())
+    match global.post_message(&json.into()) {
+        Ok(()) =>  () ,
+        Err(js_value) =>  { web_sys::console::error_2(&"failed to send message".into(), &js_value); }
+    }
 }
 
-pub fn add_on_message_handler(objects: Rc<RefCell<HashMap<String, HashMap<String, Vec<Function>>>>>) -> Result<(), JsValue> {
+pub fn add_on_message_handler(objects: Rc<RefCell<HashMap<String, HashMap<String, Vec<Function>>>>>) {
     
     web_sys::console::log_1(&"add_on_message_handler".into());
 //    web_sys::console::log_1(&objects.len().to_string().into());
@@ -54,10 +47,12 @@ pub fn add_on_message_handler(objects: Rc<RefCell<HashMap<String, HashMap<String
                             let optional_callbacks = listener.get(&signal);
                             match optional_callbacks {
                                 Some(callbacks) => {
-                                    web_sys::console::debug_2(&"value updated signal5".into(),&callbacks.len().to_string().into());
                                     for callback in callbacks {
                                         let globalic = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
-                                        callback.call1(&JsValue::from(globalic), &JsValue::from(&value));
+                                        match callback.call1(&JsValue::from(globalic), &JsValue::from(&value)) {
+                                            Ok(_js_value) => (),
+                                            Err(js_value) => { web_sys::console::error_2(&"Failed to call listener".into(), &js_value); }
+                                        }
                                     }
                                 },
                                 _ => ()
@@ -74,7 +69,6 @@ pub fn add_on_message_handler(objects: Rc<RefCell<HashMap<String, HashMap<String
     
         global.set_onmessage(Some(handler.as_ref().unchecked_ref()));
         handler.forget();
-    Ok(())
 }
 
 /*

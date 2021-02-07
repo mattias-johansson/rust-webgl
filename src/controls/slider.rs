@@ -27,7 +27,7 @@ impl SliderPrivate {
 
     pub fn new(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> SliderPrivate {
         
-        let background_node = SliderPrivate::background(cx, this, x, y);
+        let background_node = SliderPrivate::background(cx, this, x, y, opacity);
         let handle_pressed_node = SliderPrivate::handle_pressed(cx, this, 0.0, 0.0);
         let handle_node = SliderPrivate::handle_inactive(cx, this, 0.0, 0.0);
 
@@ -63,9 +63,9 @@ impl SliderPrivate {
         SliderPrivate { this: this, slider_node_active: handle_pressed_node_uuid, slider_node_inactive: handle_node_uuid, background_node: background_node_uuid, start_x : None, on_animation_uuid, off_animation_uuid }
     }
 
-    fn background(cx: &mut Context, this: Uuid, x: f32, y: f32) -> Node {
+    fn background(cx: &mut Context, this: Uuid, x: f32, y: f32, opacity: f32) -> Node {
         let mut node = Node::new(this, x, y, 447.0, 60.0);
-        node.opacity = 1.0;
+        node.opacity = opacity;
         node.texture = Some(Node::create_texture(cx, "/assets/slider_track.png"));
         node
     }
@@ -77,7 +77,7 @@ impl SliderPrivate {
         node
     }
     
-    fn handle_inactive(cx: &mut Context, this: Uuid, x: f32, y: f32) -> Node {
+    fn handle_inactive(cx: &mut Context, this: Uuid, _x: f32, _y: f32) -> Node {
         let mut node = Node::new(this, 14.0, 14.0, 30.0, 30.0);
         node.opacity = 1.0;
         node.texture = Some(Node::create_texture(cx, "/assets/handle_inactive.png"));
@@ -106,7 +106,7 @@ impl SliderPrivate {
         }
     }
 
-    fn end_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
+    fn end_scroll_event(&mut self, cx: &mut Context, _message: &Mouse) {
         self.start_x = None;
         let off_animation = cx.get_animation(self.off_animation_uuid);
         off_animation.unwrap().play();
@@ -138,7 +138,7 @@ impl VisualNode for SliderPrivate {
                 } 
 //                return true;
             },
-            Event::Message(message) => {
+            Event::Message(_message) => {
             },
             _ => ()
         }

@@ -6,6 +6,8 @@ use uuid::Uuid;
 use std::any::Any;
 use serde::*;
 
+use uimsg::MessageType;
+
 #[derive(PartialEq, Clone, Copy)]
 pub struct ScrollViewPrivate {
     this: Uuid,
@@ -108,11 +110,11 @@ impl ScrollViewPrivate {
         }
     }
 
-    fn get_max_scroll_x(&self, cx: &Context) -> f32 {
+    fn get_max_scroll_x(&self, _cx: &Context) -> f32 {
         0.0
     } 
 
-    fn get_max_scroll_y(&self, cx: &Context) -> f32 {
+    fn get_max_scroll_y(&self, _cx: &Context) -> f32 {
         0.0
     } 
 
@@ -128,7 +130,7 @@ impl ScrollViewPrivate {
         self_node.unwrap().width - scroll_node.unwrap().width
     } 
 
-    fn end_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
+    fn end_scroll_event(&mut self, _cx: &mut Context, _message: &Mouse) {
         self.scroll_x = None;
         self.scroll_y = None;
     }

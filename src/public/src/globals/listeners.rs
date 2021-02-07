@@ -5,13 +5,17 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 pub struct Listeners {
-    pub objects:  Rc<RefCell<HashMap<String, HashMap<String, Vec<Function>>>>>
+    objects:  Rc<RefCell<HashMap<String, HashMap<String, Vec<Function>>>>>
 }
 
 impl Listeners {
     pub fn new() -> Listeners {
         let objects : Rc<RefCell<HashMap<String, HashMap<String, Vec<Function>>>>> = Rc::new(RefCell::new(HashMap::new()));
         Listeners { objects }
+    }
+
+    pub fn get_listners_ref(&self) -> Rc<RefCell<HashMap<String, HashMap<String, Vec<Function>>>>> {
+        Rc::clone(&self.objects)
     }
 
     pub fn add_listener(&mut self, sender: String, signal: String, callback: Function) {

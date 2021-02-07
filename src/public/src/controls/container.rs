@@ -1,5 +1,3 @@
-extern crate wasm_bindgen;
-extern crate serde;
 
 use crate::controls::color::*;
 use crate::controls::button::*;
@@ -14,6 +12,8 @@ use serde::*;
 use crate::globals::messaging::*;
 
 use uuid::Uuid;
+
+use uimsg::MessageType;
 
 #[wasm_bindgen]
 #[derive(PartialEq, Clone, Serialize)]

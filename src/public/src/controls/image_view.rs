@@ -1,9 +1,4 @@
-
-extern crate wasm_bindgen;
-extern crate serde;
-
 use wasm_bindgen::prelude::*;
-use js_sys::{Function};
 
 use uuid::Uuid;
 use serde::*;

@@ -1,6 +1,5 @@
 
 use crate::get_device_pixel_ratio;
-use web_sys::{Window};
 
 use makepad_ttf_parser::*;
 use makepad_font::*;

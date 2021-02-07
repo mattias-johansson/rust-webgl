@@ -21,7 +21,6 @@ pub struct ToggleButtonPrivate {
     this: Uuid,
     background_uuid: Uuid,
     toggle_uuid: Uuid,
-    value: bool,
     on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
     state: ToggleButtonState, 
@@ -37,9 +36,8 @@ impl ToggleButtonPrivate {
 
     pub fn new(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> ToggleButtonPrivate { 
     
-        let value = false;
         let background = ToggleButtonPrivate::create_background(this, cx, x, y, opacity);
-        let toggle = ToggleButtonPrivate::create_toggle(this,cx, x, y, opacity);
+        let toggle = ToggleButtonPrivate::create_toggle(this,cx);
         let state = ToggleButtonState::Off;
 
         let mut on_animation = Animation::new(toggle.uuid, Attribute::X);
@@ -64,7 +62,7 @@ impl ToggleButtonPrivate {
 
         let callback = Option::None;
 
-        let toggle_button_private = ToggleButtonPrivate { this, background_uuid, toggle_uuid, value, on_animation_uuid, off_animation_uuid, state, callback }; 
+        let toggle_button_private = ToggleButtonPrivate { this, background_uuid, toggle_uuid, on_animation_uuid, off_animation_uuid, state, callback }; 
 
         cx.nodes.push(background);
         cx.nodes.push(toggle);
@@ -78,27 +76,19 @@ impl ToggleButtonPrivate {
         let width = 107.0;
         let height = 36.0;
         let mut node = Node::new(this, x, y, width, height);
+        node.opacity = opacity;
         node.texture = Some(Node::create_texture(cx, "/assets/bg.png"));
         node
     }
 
-    fn create_toggle(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
+    fn create_toggle(this: Uuid, cx: &mut Context) -> Node {
         let width = 30.0;
         let height = 30.0;
         let x = 3.0;
         let y = 3.0;
         let mut node = Node::new(this, x, y, width, height);
-        node.opacity = opacity;
         node.texture = Some(Node::create_texture(cx, "/assets/grey.png"));
         node
-    }
-
-    pub fn to_toggle_button_private(s: &dyn Any) -> Option<&ToggleButtonPrivate>{
-        if let Some(toggle_button) = s.downcast_ref::<ToggleButtonPrivate>() {
-            Some(&toggle_button)
-        } else {
-            None
-        }
     }
 
     pub fn on_button_pressed(&mut self, cx: &mut Context) {
@@ -112,14 +102,11 @@ impl ToggleButtonPrivate {
     }
 
     pub fn on_animation_ended(&mut self, cx: &mut Context) {
-
-//        web_sys::console::log_1(&"on_animation_ended".into());
         match self.state {
             ToggleButtonState::Off => (),
             ToggleButtonState::On => (),
             ToggleButtonState::ToOff => self.set_off(cx),
-            ToggleButtonState::ToOn => self.set_on(cx),
-             _ => ()
+            ToggleButtonState::ToOn => self.set_on(cx)
         }
     }
     

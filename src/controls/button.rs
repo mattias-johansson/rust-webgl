@@ -1,7 +1,4 @@
 use crate::render::word::Word;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
-
 use std::any::Any;
 
 use crate::controls::visual_node::*;
@@ -12,7 +9,8 @@ use crate::application::context::*;
 use crate::animation::ease::*;
 use uuid::Uuid;
 use serde::*;
-use crate::globals::messaging::*;
+
+use uimsg::MessageType;
 
 #[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 enum ButtonState {
@@ -31,8 +29,6 @@ pub struct Button {
     opacity: f32,
     state: ButtonState,
 }
-
-//TODO Nedd to rewrite as composite control. Need to have a container node as "node"
 
 #[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct ButtonPrivate {
@@ -54,18 +50,18 @@ impl ButtonPrivate {
         let pressed = false;
 
         let mut node = Node::new(this, x, y, 145.0, 34.0);
-        node.opacity = 0.0;
+        node.opacity = opacity;
         let node_uuid_parent = node.uuid;
         cx.nodes.push(node);
 
-        let node = ButtonPrivate::create(this, cx, 0.0, 0.0, opacity);
+        let node = ButtonPrivate::create(this, cx, 0.0, 0.0);
         let node_uuid = node.uuid;
         cx.nodes.push(node);
         cx.add_child_to(node_uuid_parent, node_uuid);
 
         let state = ButtonState::NotPressed; 
         
-        let node_pressed = ButtonPrivate::create_pressed(this, cx, 0.0, 0.0, opacity);
+        let node_pressed = ButtonPrivate::create_pressed(this, cx, 0.0, 0.0);
         let node_pressed_uuid = node_pressed.uuid;
         cx.nodes.push(node_pressed);
         cx.add_child_to(node_uuid_parent, node_pressed_uuid);
@@ -94,15 +90,7 @@ impl ButtonPrivate {
         ButtonPrivate { this, node: node_uuid_parent, pressed, state, on_animation_uuid, off_animation_uuid } 
     }
 
-    pub fn to_button_private(s: &dyn Any) -> Option<&ButtonPrivate>{
-        if let Some(button) = s.downcast_ref::<ButtonPrivate>() {
-            Some(&button)
-        } else {
-            None
-        }
-    }
-
-    pub fn create(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
+    pub fn create(this: Uuid, cx: &mut Context, x: f32, y: f32) -> Node {
         let width =  145.0;
         let height = 34.0;
         let mut node = Node::new(this, x, y, width, height);
@@ -111,7 +99,7 @@ impl ButtonPrivate {
         node
     }
 
-    pub fn create_pressed(this: Uuid, cx: &mut Context, x: f32, y: f32, opacity: f32) -> Node {
+    pub fn create_pressed(this: Uuid, cx: &mut Context, x: f32, y: f32) -> Node {
         let width =  145.0;
         let height = 34.0;
         let mut node = Node::new(this, x, y, width, height);
@@ -162,8 +150,7 @@ impl ButtonPrivate {
             ButtonState::NotPressed => (),
             ButtonState::Pressed => (),
             ButtonState::ToNotPressed  => self.set_off(cx),
-            ButtonState::ToPressed  => self.set_on(cx),
-             _ => ()
+            ButtonState::ToPressed  => self.set_on(cx)
         }
     }
 
@@ -257,10 +244,4 @@ impl VisualNode for ButtonPrivate {
     fn get_uuid(&self) -> uuid::Uuid { 
         self.this
     }
-}
-
-fn calculate_hash<T: Hash>(t: &T) -> u64 {
-    let mut s = DefaultHasher::new();
-    t.hash(&mut s);
-    s.finish()
 }

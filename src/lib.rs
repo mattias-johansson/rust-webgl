@@ -1,5 +1,4 @@
-extern crate wasm_bindgen;
-extern crate console_error_panic_hook;
+
 use crate::controls::scroll_view::ScrollViewPrivate;
 use crate::controls::slider::SliderPrivate;
 use crate::controls::label::LabelPrivate;
@@ -33,7 +32,8 @@ use crate::events::handler::*;
 use crate::render::draw::*;
 use crate::render::gl_context::*;
 use crate::web::events::*;
-use crate::globals::messaging::*;
+
+use uimsg::MessageType;
 
 mod application;
 mod animation;

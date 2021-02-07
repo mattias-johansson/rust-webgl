@@ -1,23 +1,17 @@
-extern crate wasm_bindgen;
-extern crate serde;
 use crate::controls::control::Control;
 
 use wasm_bindgen::prelude::*;
-use js_sys::{Function};
 use uuid::Uuid;
 use serde::*;
 
+
+#[allow(dead_code)]
 #[derive(PartialEq, Eq, Clone, Copy, Serialize)]
 enum ButtonState {
     NotPressed,
     Pressed,
     ToPressed,
     ToNotPressed,
-}
-
-pub struct ButtonSignal {
-    this: Uuid,
-    onClicked: Option<Function>
 }
 
 #[wasm_bindgen]

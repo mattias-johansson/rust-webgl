@@ -1,25 +1,10 @@
-
-extern crate serde;
-
 use wasm_bindgen::prelude::*;
 use web_sys::{Worker};
-    
-use serde::*;
-use uuid::Uuid;
+
+use uimsg::MessageType;
 
 pub struct Messaging {
     pub worker: Worker
-}
-
-
-#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
-pub enum MessageType {
-    ObjectCreated(Uuid, String, String),
-    ValueUpdated(Uuid, String, String),
-    SetupScrollView(Uuid, String),
-    AddNode(String),
-    RemoveNode(String),
-    SetRoot(String)
 }
 
 impl Messaging {

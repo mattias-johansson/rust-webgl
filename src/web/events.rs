@@ -150,12 +150,14 @@ pub fn add_on_message_handler(
       
         let handler = move |event: web_sys::MessageEvent| {
             let data = event.data();  
-                events.borrow_mut().add_event(data.as_string().unwrap()); 
-        
+                match events.try_borrow_mut() {
+                    Ok(mut mut_events) => { mut_events.add_event(data.as_string().unwrap()); },
+                    Err(err) => { web_sys::console::error_2(&"Cannot borrow events as mut".into(), &err.to_string().into()); }
+                }
             };
-        
+
             let handler = Closure::wrap(Box::new(handler) as Box<dyn FnMut(_)>);
-        
+
             worker.set_onmessage(Some(handler.as_ref().unchecked_ref()));
             handler.forget();
         Ok(())

@@ -21,7 +21,7 @@ impl VisualNode for Page {
         self
     }
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool{
+    fn event_handler(&mut self, _cx: &mut Context, _message: &Event) -> bool{
         return false;
     }
 
@@ -31,10 +31,6 @@ impl VisualNode for Page {
 }
 
 impl Page {
-
-    pub fn get(&mut self) -> &mut Page {
-        self
-    }
     
     pub fn new(cx: &mut Context) ->  Page {
         let x:f32 = 0.0;

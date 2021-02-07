@@ -1,22 +1,16 @@
-extern crate serde;
 mod controls;
 mod globals;
 
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::{DedicatedWorkerGlobalScope};
 use js_sys::{Function};
 
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::rc::Rc;
 
 use self::controls::container::*;
 use self::controls::button::*;
 use self::globals::messaging::*;
 use self::globals::listeners::*;
-use serde::*;
-use uuid::Uuid;
+
+use uimsg::MessageType;
 
 /// Used to run the application from the web
 #[wasm_bindgen]
@@ -30,7 +24,7 @@ impl Application {
     pub fn new() -> Application {   
         web_sys::console::log_1(&"new application".into());
         let listeners = Listeners::new();
-        add_on_message_handler(Rc::clone(&listeners.objects));
+        add_on_message_handler(listeners.get_listners_ref());
         Application { listeners }
     }
 

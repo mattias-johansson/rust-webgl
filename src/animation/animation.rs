@@ -65,7 +65,7 @@ impl Animation {
     pub fn get_animated_value(&self,  time: f32) -> f32 {
         let time = (time - self.start_time) / self.duration;
         let ease = self.easing.map((time) as f32);
-        let mut x = 0.0;
+        let x;
         if self.end_value > self.start_value {
             let start = self.start_value;
             let end = self.end_value;
@@ -75,10 +75,6 @@ impl Animation {
             let end = self.end_value;
             x = start + (ease * (end - start));
         }
-
-//        web_sys::console::log_1(&"animation value".into());
-//        web_sys::console::log_1(&x.into());
-
         x
     } 
 }

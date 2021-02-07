@@ -24,7 +24,7 @@ impl LabelPrivate {
         LabelPrivate::new(public.this, cx, public.x, public.y, public.translate_x, public.translate_y, public.opacity, public.width, public.height, public.text.as_str())
     }
 
-    pub fn new(this: Uuid, cx: &mut Context, x: f32, y: f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, text: &str) -> LabelPrivate {
+    pub fn new(this: Uuid, cx: &mut Context, x: f32, y: f32, _translate_x:f32, _translate_y:f32, _opacity:f32, width:f32, height:f32, text: &str) -> LabelPrivate {
         let node = Node::new(this, x, y, width, height);
         let node_uuid_parent = node.uuid;
         cx.nodes.push(node);
@@ -59,7 +59,7 @@ impl VisualNode for LabelPrivate {
         self
     }
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool{
+    fn event_handler(&mut self, _cx: &mut Context, _message: &Event) -> bool{
         return false;
     }
 
