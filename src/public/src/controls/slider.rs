@@ -1,18 +1,7 @@
+use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 
-use uuid::Uuid;
-use serde::*;
-
-#[wasm_bindgen]
-#[derive(PartialEq, Clone, Serialize, Deserialize)]
-pub struct Slider {
-    this: Uuid,
-    text: String, 
-    x: f32, 
-    y: f32, 
-    opacity: f32,
-}
-
+use uimsg::Slider;
 
 #[wasm_bindgen]
 pub struct SliderBuilder {
@@ -52,7 +41,7 @@ impl SliderBuilder {
             Some(text) => text.to_string(),
             None => "".to_owned()
         };
-        Slider { this, text, x, y, opacity }
+        Slider::new(this, x, y, opacity, text)
     }
 
     pub fn x(mut self, x: f32) -> SliderBuilder {

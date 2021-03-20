@@ -2,34 +2,9 @@ use crate::controls::control::Control;
 
 use wasm_bindgen::prelude::*;
 use uuid::Uuid;
-use serde::*;
 
-
-#[allow(dead_code)]
-#[derive(PartialEq, Eq, Clone, Copy, Serialize)]
-enum ButtonState {
-    NotPressed,
-    Pressed,
-    ToPressed,
-    ToNotPressed,
-}
-
-#[wasm_bindgen]
-#[derive(PartialEq, Clone, Serialize)]
-pub struct Button {
-    this: Uuid,
-    text: String, 
-    x: f32, 
-    y: f32, 
-    opacity: f32,
-    state: ButtonState
-}
-
-impl Button {
-    pub fn get_uuid(&self) -> String {
-        self.this.to_string()
-    }
-}
+use uimsg::Button;
+use uimsg::ButtonState;
 
 impl Control for Button {
     fn get_type() -> String {
@@ -76,7 +51,7 @@ impl ButtonBuilder {
             None => "".to_owned()
         };
         let state = ButtonState::NotPressed;
-        Button { this, x, y, opacity, text, state }
+        Button::new(this, x, y, opacity, text, state)
     }
 
     pub fn x(mut self, x: f32) -> ButtonBuilder {

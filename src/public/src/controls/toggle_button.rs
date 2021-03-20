@@ -1,28 +1,8 @@
 use wasm_bindgen::prelude::*;
 
 use uuid::Uuid;
-use serde::*;
-
-#[wasm_bindgen]
-#[derive(PartialEq, Clone, Serialize)]
-pub struct ToggleButton {
-    this: Uuid,
-    text: String, 
-    x: f32, 
-    y: f32, 
-    opacity: f32,
-    state: ToggleButtonState
-}
-
-#[allow(dead_code)]
-#[derive(PartialEq, Eq, Clone, Copy, Serialize)]
-enum ToggleButtonState {
-    On,
-    Off,
-    ToOn,
-    ToOff,
-}
-
+use uimsg::ToggleButtonState;
+use uimsg::ToggleButton;
 
 #[wasm_bindgen]
 pub struct ToggleButtonBuilder {
@@ -63,7 +43,7 @@ impl ToggleButtonBuilder {
             None => "".to_owned()
         };
         let state = ToggleButtonState::Off;
-        ToggleButton { this, x, y, opacity, text, state }
+        ToggleButton::new(this, x, y, opacity, text, state)
     }
 
     pub fn x(mut self, x: f32) -> ToggleButtonBuilder {

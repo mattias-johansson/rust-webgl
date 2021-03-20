@@ -7,6 +7,7 @@ use std::any::Any;
 use crate::animation::animation::*;
 use crate::animation::ease::*;
 use serde::*;
+use std::rc::Rc;
 
 #[derive(PartialEq, Clone, Copy)]
 pub struct SliderPrivate {
@@ -65,29 +66,29 @@ impl SliderPrivate {
 
     fn background(cx: &mut Context, this: Uuid, x: f32, y: f32, opacity: f32) -> Node {
         let mut node = Node::new(this, x, y, 447.0, 60.0);
-        node.opacity = opacity;
-        node.texture = Some(Node::create_texture(cx, "/assets/slider_track.png"));
+        node.set_opacity(cx, opacity);
+        node.set_texture(cx, Some(Node::create_texture(cx, "/assets/slider_track.png")));
         node
     }
 
     fn handle_pressed(cx: &mut Context, this: Uuid, x: f32, y: f32) -> Node {
         let mut node = Node::new(this, x, y, 60.0, 60.0);
-        node.opacity = 0.0;
-        node.texture = Some(Node::create_texture(cx, "/assets/handle_pressed.png"));
+        node.set_opacity(cx, 0.0);
+        node.set_texture(cx, Some(Node::create_texture(cx, "/assets/handle_pressed.png")));
         node
     }
     
     fn handle_inactive(cx: &mut Context, this: Uuid, _x: f32, _y: f32) -> Node {
         let mut node = Node::new(this, 14.0, 14.0, 30.0, 30.0);
-        node.opacity = 1.0;
-        node.texture = Some(Node::create_texture(cx, "/assets/handle_inactive.png"));
+        node.set_opacity(cx, 1.0);
+        node.set_texture(cx, Some(Node::create_texture(cx, "/assets/handle_inactive.png")));
         node
     }
 
     fn start_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
 
         let node = cx.get_node(self.slider_node_active).unwrap();
-        self.start_x = Some(message.x as f32 - node.translate_x);
+        self.start_x = Some(message.x as f32 - node.translate_x());
         let on_animation = cx.get_animation(self.on_animation_uuid);
         on_animation.unwrap().play();
     }
@@ -96,13 +97,20 @@ impl SliderPrivate {
         if self.start_x.is_some() {
             let position = message.x as f32 - self.start_x.unwrap();
             let node_bg = cx.get_node_unmut(self.background_node).unwrap();
-            let max_slider = node_bg.width;
+            let max_slider = node_bg.width();
+            let dirty = Rc::clone(&cx.dirty);
+            let dirty2 = Rc::clone(&dirty);
             let node = cx.get_node(self.slider_node_active).unwrap();
-            node.translate_x = position;
+            node.set_translate_x(dirty, position);
             let node = cx.get_node(self.slider_node_inactive).unwrap();
-            node.translate_x = position;
+            node.set_translate_x(dirty2, position);
             let percent = position / max_slider;
             cx.cb.add_trigged(self.this, Event::Scroll(Scroll::ImmediateValue(percent)));
+            {
+                let mut dirty = cx.dirty.borrow_mut();
+                *dirty = true;
+            }
+            web_sys::console::log_1(&"on scroll".into());
         }
     }
 

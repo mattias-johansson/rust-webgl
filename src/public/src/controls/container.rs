@@ -1,34 +1,8 @@
 
-use crate::controls::color::*;
-use crate::controls::button::*;
-use crate::controls::toggle_button::*;
-use crate::controls::scroll_view::*;
-use crate::controls::image_view::*;
-use crate::controls::label::*;
-use crate::controls::slider::*;
-use crate::controls::control::Control;
+use uimsg::Color;
 use wasm_bindgen::prelude::*;
-use serde::*;
-use crate::globals::messaging::*;
 
-use uuid::Uuid;
-
-use uimsg::MessageType;
-
-#[wasm_bindgen]
-#[derive(PartialEq, Clone, Serialize)]
-pub struct Container {
-    this: Uuid,
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
-    translate_x: f32,
-    translate_y: f32,
-    opacity: f32,
-    color: Color,
-    clip: bool,
-}
+use uimsg::Container;
 
 #[wasm_bindgen]
 pub struct ContainerBuilder {
@@ -41,76 +15,6 @@ pub struct ContainerBuilder {
     opacity: Option<f32>,
     color: Option<Color>,
     clip: bool,
-}
-
-#[wasm_bindgen]
-impl Container {
-/*
-    pub fn add<T>(&self, object: &T) -> Result<(), JsValue> where T: Control{
-        let json = serde_json::to_string(&object).unwrap();
-        let message = MessageType::ObjectCreated(self.this, object.get_type(), json);
-        send_message(message);
-        Ok(())
-    }
-*/
-    pub fn add_button(&self, button: &Button) -> Result<(), JsValue> {
-        let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::ObjectCreated(self.this, "button".to_owned(), json);
-        send_message(message);
-        Ok(())
-    }
-
-    pub fn add_toggle_button(&self, button: &ToggleButton) -> Result<(), JsValue> {
-        let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::ObjectCreated(self.this, "togglebutton".to_owned(), json);
-        send_message(message);
-        Ok(())
-    }
-
-    pub fn add_slider(&self, button: &Slider) -> Result<(), JsValue> {
-        let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::ObjectCreated(self.this, "slider".to_owned(), json);
-        send_message(message);
-        Ok(())
-    }
-
-    pub fn add_image_view(&self, button: &ImageView) -> Result<(), JsValue> {
-        let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::ObjectCreated(self.this, "imageview".to_owned(), json);
-        send_message(message);
-        Ok(())
-    }
-
-    pub fn add_label(&self, button: &Label) -> Result<(), JsValue> {
-        let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::ObjectCreated(self.this, "label".to_owned(), json);
-        send_message(message);
-        Ok(())
-    }
-
-    pub fn add_scroll_view(&self, button: &ScrollView) -> Result<(), JsValue> {
-        let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::ObjectCreated(self.this, "scrollview".to_owned(), json);
-        send_message(message);
-        Ok(())
-    }
-
-    pub fn add_container(&self, button: &Container) -> Result<(), JsValue> {
-        let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::ObjectCreated(self.this, "container".to_owned(), json);
-        send_message(message);
-        Ok(())
-    }
-
-    pub fn get_uuid(&self) -> String {
-        self.this.to_string()
-    }
-}
-
-impl Control for Container {
-    fn get_type() -> String {
-        "container".to_owned()
-    }
 }
 
 #[wasm_bindgen]
@@ -131,7 +35,6 @@ impl ContainerBuilder {
    }
 
    pub fn build(&self) -> Container {
-       let this = Uuid::new_v4();
        let x:f32 = match self.x {
            Some(x) => x,
            None => 0.0
@@ -165,7 +68,7 @@ impl ContainerBuilder {
            None => (Color {r: 0.0, g: 0.0, b: 0.0})
        };
        let clip = self.clip;
-       Container{ this, x, y, translate_x, translate_y, opacity, width, height, color, clip }
+       Container::new(x, y, translate_x, translate_y, opacity, width, height, color, clip)
    }
 
    pub fn x(mut self, x: f32) -> ContainerBuilder {

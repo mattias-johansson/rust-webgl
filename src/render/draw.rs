@@ -52,12 +52,13 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
         let value = animation.get_animated_value(dt);
         match animation.target_attribute {
             Attribute::X => {
-                target_node.unwrap().translate_x = value;
-            }
+                let dirty = Rc::clone(&cx.dirty);
+                target_node.unwrap().set_translate_x(dirty, value);
+            },
             Attribute::Y => {
-                target_node.unwrap().translate_y = value;
-            }
-            Attribute::OPACITY => target_node.unwrap().opacity = value,
+                target_node.unwrap().set_translate_y(cx, value);
+            },
+            Attribute::OPACITY => target_node.unwrap().set_opacity(cx,value),
         }
     }
 }
@@ -70,10 +71,11 @@ pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
                 if let Some(node) = cx.get_node_unmut(*child) {
                     let mut node = *node;
                     {
-                        node.x = node.x + parent.x;
-                        node.y = node.y + parent.y;
-                        node.translate_x = node.translate_x + parent.translate_x;
-                        node.translate_y = node.translate_y + parent.translate_y;
+                        let dirty = Rc::clone(&cx.dirty);
+                        node.set_x(cx,node.x() + parent.x());
+                        node.set_y(cx, node.y() + parent.y());
+                        node.set_translate_x(dirty, node.translate_x() + parent.translate_x());
+                        node.set_translate_y(cx, node.translate_y() + parent.translate_y());
                     }
                     collection.push(node);
 
@@ -108,10 +110,10 @@ pub fn draw_scene(
         //TODO, select program based on node type
         for node in collection.as_slice() {
             //TODO I think GL can handle this
-            let x = node.x + node.translate_x;
-            let y = node.y + node.translate_y;
+            let x = node.x() + node.translate_x();
+            let y = node.y() + node.translate_y();
             //Load texture for node
-            if node.texture == None {
+            if node.texture() == None {
                 if node.text {
                     let points = cx.vertices.get(&node.uuid).unwrap().to_vec();
                     render_text(&webgl_context, program_color, points, x, y, 1.0, (0.0, 0.0, 0.0));
@@ -122,44 +124,44 @@ pub fn draw_scene(
                     } else { 
                         if node.clip {
     //                        web_sys::console::log_1(&"start stencil".into());
-                            render_stencil(&webgl_context, program_color, node.width, node.height, x, y);
+                            render_stencil(&webgl_context, program_color, node.width(), node.height(), x, y);
                         }
                         render_bg(
                             &webgl_context,
                             program_color,
-                            node.width,
-                            node.height,
+                            node.width(),
+                            node.height(),
                             x,
                             y,
-                            node.opacity,
-                            node.color,
+                            node.opacity(),
+                            node.color(),
                         );
                     }
                 } 
             } else {
-                match &node.texture {
+                match &node.texture() {
                     Some(texture) => {
                         let texture_slot = cx.textures.load_texture(Rc::clone(&webgl_context), texture, Rc::clone(&cx.dirty));
                         render(
                             &webgl_context,
                             program,
-                            node.width,
-                            node.height,
+                            node.width(),
+                            node.height(),
                             x,
                             y,
-                            node.opacity,
+                            node.opacity(),
                             texture_slot,
                         );
                     }
                     None => render_bg(
                         &webgl_context,
                         program_color,
-                        node.width,
-                        node.height,
+                        node.width(),
+                        node.height(),
                         x,
                         y,
-                        node.opacity,
-                        node.color,
+                        node.opacity(),
+                        node.color(),
                     ),
                 };
             }

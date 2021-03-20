@@ -1,38 +1,8 @@
-use crate::controls::color::*;
-use crate::controls::container::*;
-use crate::globals::messaging::*;
 
 use wasm_bindgen::prelude::*;
 
-use uuid::Uuid;
-use serde::*;
-use uimsg::MessageType;
-
-#[wasm_bindgen]
-#[derive(PartialEq, Clone, Serialize)]
-pub struct ScrollView {
-    this: Uuid,
-    x: f32,
-    y: f32,
-    translate_x: f32,
-    translate_y: f32,
-    opacity: f32,
-    width: f32,
-    height: f32,
-    color: Color,
-    clip: bool,
-}
-
-#[wasm_bindgen]
-impl ScrollView {
-
-    pub fn set_content(&self, button: &Container) -> Result<(), JsValue> {
-        let json = serde_json::to_string(&button).unwrap();
-        let message = MessageType::SetupScrollView(self.this, json);
-        send_message(message);
-        Ok(())
-    }
-}
+use uimsg::ScrollView;
+use uimsg::Color;
 
 #[wasm_bindgen]
 pub struct ScrollViewBuilder {
@@ -65,7 +35,6 @@ impl ScrollViewBuilder {
    }
 
    pub fn build(&self) -> ScrollView {
-       let this = Uuid::new_v4();
        let x:f32 = match self.x {
            Some(x) => x,
            None => 0.0
@@ -99,7 +68,7 @@ impl ScrollViewBuilder {
            None => (Color {r: 0.0, g: 0.0, b: 0.0})
        };
        let clip = self.clip;
-       ScrollView { this, x, y, translate_x, translate_y, opacity, width, height, color, clip }
+       ScrollView::new(x, y, translate_x, translate_y, opacity, width, height, color, clip)
    }
 
    pub fn x(mut self, x: f32) -> ScrollViewBuilder {

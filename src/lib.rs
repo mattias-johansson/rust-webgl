@@ -279,10 +279,10 @@ pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>
                 let optional_visual_node = get_visual_node(this_frame, node_owner);
                 match optional_visual_node {
                     Some(mut visual_node) => {
-                        let x = node.x + parent.x + node.translate_x + parent.translate_x;
-                        let y = node.y + parent.y + node.translate_y + parent.translate_y;
-                        let x1 = x + node.width;
-                        let y1 = y + node.height;
+                        let x = node.x() + parent.x() + node.translate_x() + parent.translate_x();
+                        let y = node.y() + parent.y() + node.translate_y() + parent.translate_y();
+                        let x1 = x + node.width();
+                        let y1 = y + node.height();
                         send_event(Rc::clone(&events), cx, (x, y, x1, y1), &mut visual_node);
                     },
                     _ => ()

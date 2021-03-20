@@ -1,22 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 use uuid::Uuid;
-use serde::*;
-
-#[wasm_bindgen]
-#[derive(PartialEq, Clone, Serialize)]
-pub struct Label {
-    this: Uuid,
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
-    translate_x: f32,
-    translate_y: f32,
-    opacity: f32,
-    text: String,
-}
-
+use uimsg::Label;
 
 #[wasm_bindgen]
 pub struct LabelBuilder {
@@ -81,7 +66,7 @@ impl LabelBuilder {
             Some(text) => text.to_string(),
             None => "".to_owned()
         };
-        Label { this, x, y, width, height, translate_x, translate_y, opacity, text }
+        Label::new(this, x, y, width, height, translate_x, translate_y, opacity, text)
     }
 
     pub fn x(mut self, x: f32) -> LabelBuilder {

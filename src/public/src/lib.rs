@@ -1,16 +1,17 @@
 mod controls;
 mod globals;
 
+use uimsg::send_message;
 use wasm_bindgen::prelude::*;
 use js_sys::{Function};
 
-
-use self::controls::container::*;
-use self::controls::button::*;
 use self::globals::messaging::*;
 use self::globals::listeners::*;
 
 use uimsg::MessageType;
+
+use uimsg::Button;
+use uimsg::Container;
 
 /// Used to run the application from the web
 #[wasm_bindgen]
