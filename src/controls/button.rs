@@ -35,7 +35,7 @@ impl ButtonPrivate {
         let pressed = false;
 
         let mut node = Node::new(this, x, y, 145.0, 34.0);
-        node.set_opacity(cx, opacity);
+        node.set_opacity(opacity);
         let node_uuid_parent = node.uuid;
         cx.nodes.push(node);
 
@@ -79,8 +79,8 @@ impl ButtonPrivate {
         let width =  145.0;
         let height = 34.0;
         let mut node = Node::new(this, x, y, width, height);
-        node.set_opacity(cx, 1.0);
-        node.set_texture(cx, Some(Node::create_texture(cx, "/assets/button.png")));
+        node.set_opacity(1.0);
+        node.set_texture(Some(Node::create_texture(cx, "/assets/button.png")));
         node
     }
 
@@ -88,8 +88,8 @@ impl ButtonPrivate {
         let width =  145.0;
         let height = 34.0;
         let mut node = Node::new(this, x, y, width, height);
-        node.set_opacity(cx, 0.0);
-        node.set_texture(cx, Some(Node::create_texture(cx, "/assets/button_pressed.png")));
+        node.set_opacity(0.0);
+        node.set_texture(Some(Node::create_texture(cx, "/assets/button_pressed.png")));
         node
     }
 
@@ -113,8 +113,8 @@ impl ButtonPrivate {
             cx.nodes.push(node);
             cx.add_child_to(node_uuid_parent, node_uuid);
         }
-        node.set_x(cx, (145.0 - advance) / 2.0);
-        node.set_y(cx,10.0);
+        node.set_x((145.0 - advance) / 2.0);
+        node.set_y(10.0);
         cx.nodes.push(node);
         node_uuid_parent
     }

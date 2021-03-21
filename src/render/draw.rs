@@ -52,13 +52,12 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
         let value = animation.get_animated_value(dt);
         match animation.target_attribute {
             Attribute::X => {
-                let dirty = Rc::clone(&cx.dirty);
-                target_node.unwrap().set_translate_x(dirty, value);
+                target_node.unwrap().set_translate_x(value);
             },
             Attribute::Y => {
-                target_node.unwrap().set_translate_y(cx, value);
+                target_node.unwrap().set_translate_y(value);
             },
-            Attribute::OPACITY => target_node.unwrap().set_opacity(cx,value),
+            Attribute::OPACITY => target_node.unwrap().set_opacity(value),
         }
     }
 }
@@ -71,11 +70,11 @@ pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
                 if let Some(node) = cx.get_node_unmut(*child) {
                     let mut node = *node;
                     {
-                        let dirty = Rc::clone(&cx.dirty);
-                        node.set_x(cx,node.x() + parent.x());
-                        node.set_y(cx, node.y() + parent.y());
-                        node.set_translate_x(dirty, node.translate_x() + parent.translate_x());
-                        node.set_translate_y(cx, node.translate_y() + parent.translate_y());
+                        
+                        node.set_x(node.x() + parent.x());
+                        node.set_y(node.y() + parent.y());
+                        node.set_translate_x(node.translate_x() + parent.translate_x());
+                        node.set_translate_y(node.translate_y() + parent.translate_y());
                     }
                     collection.push(node);
 

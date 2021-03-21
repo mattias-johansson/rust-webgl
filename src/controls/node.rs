@@ -22,10 +22,30 @@ pub struct Node {
     pub clip: bool,
     pub end_clip: bool,
     pub text: bool,
-//    pub callback: Option<fn(&mut Context) -> bool >,
 }
 
 impl Node {
+
+
+    pub fn create(owner: Uuid, uuid: Uuid , x: f32, y: f32, width: f32, height: f32, translate_x: f32, translate_y:f32, opacity:f32, texture: Option<Uuid>, color: (f32,f32,f32), dirty: bool, clip: bool, end_clip: bool, text: bool) -> Node {
+        Node { 
+            owner: owner,
+            uuid: uuid, //Uuid::new_v4(), 
+            x: x, 
+            y: y, 
+            width: width, 
+            height: height, 
+            translate_x: translate_x, 
+            translate_y: translate_y, 
+            opacity: opacity, 
+            texture: texture,
+            color: color,
+            dirty: dirty,
+            clip: clip,
+            end_clip: end_clip,
+            text: text,
+         }
+    }
 
     pub fn new(owner: Uuid, x: f32, y: f32, width: f32, height: f32) -> Node {
         Node { 
@@ -126,52 +146,36 @@ impl Node {
         self.y
     }
 
-    pub fn set_x(&mut self, cx: &Context,  x: f32) {
+    pub fn set_x(&mut self, x: f32) {
         self.x = x;
-        let mut dirty = cx.dirty.borrow_mut();
-        *dirty = true;
     }
     
-    pub fn set_y(&mut self, cx: &Context,  y: f32) {
+    pub fn set_y(&mut self, y: f32) {
         self.y = y;
-        let mut dirty = cx.dirty.borrow_mut();
-        *dirty = true;
     }
 
-    pub fn set_translate_x(&mut self, dirty: Rc<RefCell<bool>>,  translate_x: f32) {
+    pub fn set_translate_x(&mut self, translate_x: f32) {
         self.translate_x = translate_x;
-        let mut dirty = dirty.borrow_mut();
-        *dirty = true;
     }
     
-    pub fn set_translate_y(&mut self, cx: &Context,  translate_y: f32) {
+    pub fn set_translate_y(&mut self, translate_y: f32) {
         self.translate_y = translate_y;
-        let mut dirty = cx.dirty.borrow_mut();
-        *dirty = true;
     }
 
-    pub fn set_height(&mut self, cx: &Context,  height: f32) {
+    pub fn set_height(&mut self, height: f32) {
         self.height = height;
-        let mut dirty = cx.dirty.borrow_mut();
-        *dirty = true;
     }
     
-    pub fn set_width(&mut self, cx: &Context,  width: f32) {
+    pub fn set_width(&mut self, width: f32) {
         self.width = width;
-        let mut dirty = cx.dirty.borrow_mut();
-        *dirty = true;
     }
 
-    pub fn set_opacity(&mut self, cx: &Context, opacity: f32) {
+    pub fn set_opacity(&mut self, opacity: f32) {
         self.opacity = opacity;
-        let mut dirty = cx.dirty.borrow_mut();
-        *dirty = true;
     }
 
     /// Set the node's texture.
-    pub fn set_texture(&mut self, cx: &Context, texture: Option<Uuid>) {
+    pub fn set_texture(&mut self, texture: Option<Uuid>) {
         self.texture = texture;
-        let mut dirty = cx.dirty.borrow_mut();
-        *dirty = true;
     }
 }

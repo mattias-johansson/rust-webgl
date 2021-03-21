@@ -45,8 +45,8 @@ impl ScrollViewPrivate {
         let height = content.unwrap().height();
 
         let scrolling = cx.get_node(self.scroll_uuid).unwrap();
-        scrolling.set_width(cx, width);
-        scrolling.set_height(cx, height);
+        scrolling.set_width(width);
+        scrolling.set_height(height);
 
         cx.add_child_to(self.scroll_uuid, child);
     }
@@ -67,23 +67,23 @@ impl ScrollViewPrivate {
         
         if let Some(x) = self.scroll_x {
             let  wanted_scroll = message.x as f32 - x; 
-            let dirty = Rc::clone(&cx.dirty);
+            
             if wanted_scroll < max_scroll_x && wanted_scroll > min_scroll_x {
-                node.set_translate_x(dirty, wanted_scroll);
+                node.set_translate_x(wanted_scroll);
             } else if wanted_scroll < min_scroll_x {
-                node.set_translate_x(dirty, min_scroll_x);
+                node.set_translate_x(min_scroll_x);
             } else {
-                node.set_translate_x(dirty, max_scroll_x);
+                node.set_translate_x(max_scroll_x);
             }
         }
         if let Some(y) = self.scroll_y {
             let  wanted_scroll = message.y as f32 - y; 
             if wanted_scroll < max_scroll_y && wanted_scroll > min_scroll_y { 
-                node.set_translate_y(cx, wanted_scroll);
+                node.set_translate_y(wanted_scroll);
             } else if wanted_scroll < min_scroll_y {
-                node.set_translate_y(cx, min_scroll_y);
+                node.set_translate_y(min_scroll_y);
             } else {
-                node.set_translate_y(cx, max_scroll_y);
+                node.set_translate_y(max_scroll_y);
             }
         }
 //        web_sys::console::debug_4(&"t_x".into(),&node.translate_x.into(),&"t_y".into(),&node.translate_y.into());
@@ -132,7 +132,7 @@ impl ScrollViewPrivate {
         let end_clip = false;
         let uuid = Uuid::new_v4();
         let text = false;
-        Node { owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty, clip, end_clip, text }
+        Node::create(owner, uuid, x, y, width, height, translate_x, translate_y, opacity, texture, color, dirty, clip, end_clip, text)
     }
 }
 

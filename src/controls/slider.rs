@@ -66,22 +66,22 @@ impl SliderPrivate {
 
     fn background(cx: &mut Context, this: Uuid, x: f32, y: f32, opacity: f32) -> Node {
         let mut node = Node::new(this, x, y, 447.0, 60.0);
-        node.set_opacity(cx, opacity);
-        node.set_texture(cx, Some(Node::create_texture(cx, "/assets/slider_track.png")));
+        node.set_opacity(opacity);
+        node.set_texture(Some(Node::create_texture(cx, "/assets/slider_track.png")));
         node
     }
 
     fn handle_pressed(cx: &mut Context, this: Uuid, x: f32, y: f32) -> Node {
         let mut node = Node::new(this, x, y, 60.0, 60.0);
-        node.set_opacity(cx, 0.0);
-        node.set_texture(cx, Some(Node::create_texture(cx, "/assets/handle_pressed.png")));
+        node.set_opacity(0.0);
+        node.set_texture(Some(Node::create_texture(cx, "/assets/handle_pressed.png")));
         node
     }
     
     fn handle_inactive(cx: &mut Context, this: Uuid, _x: f32, _y: f32) -> Node {
         let mut node = Node::new(this, 14.0, 14.0, 30.0, 30.0);
-        node.set_opacity(cx, 1.0);
-        node.set_texture(cx, Some(Node::create_texture(cx, "/assets/handle_inactive.png")));
+        node.set_opacity(1.0);
+        node.set_texture(Some(Node::create_texture(cx, "/assets/handle_inactive.png")));
         node
     }
 
@@ -98,12 +98,10 @@ impl SliderPrivate {
             let position = message.x as f32 - self.start_x.unwrap();
             let node_bg = cx.get_node_unmut(self.background_node).unwrap();
             let max_slider = node_bg.width();
-            let dirty = Rc::clone(&cx.dirty);
-            let dirty2 = Rc::clone(&dirty);
             let node = cx.get_node(self.slider_node_active).unwrap();
-            node.set_translate_x(dirty, position);
+            node.set_translate_x(position);
             let node = cx.get_node(self.slider_node_inactive).unwrap();
-            node.set_translate_x(dirty2, position);
+            node.set_translate_x(position);
             let percent = position / max_slider;
             cx.cb.add_trigged(self.this, Event::Scroll(Scroll::ImmediateValue(percent)));
             {
