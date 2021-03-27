@@ -10,8 +10,8 @@ crate-type = ["cdylib"]
 [dependencies]
 uimsg = { path="./src/uimsg", version="0.1.0" }
 webgl-api = { path="./src/public", version="0.1.0" }
-js-sys = "0.3.46"
-wasm-bindgen = "0.2.70"
+js-sys = "0.3.49"
+wasm-bindgen = "0.2.72"
 wasm-bindgen-futures = "0.4.19"
 nalgebra = "0.18.0"
 nalgebra-glm = "=0.4.0"
@@ -29,7 +29,7 @@ makepad-path = "0.1.0"
 console_error_panic_hook = "0.1.6"
 
 [dependencies.web-sys]
-version = "0.3.46"
+version = "0.3.49"
 features = [
   'CssStyleDeclaration',
   'Document',

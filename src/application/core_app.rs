@@ -20,6 +20,15 @@ impl CoreApp {
         None
     }
 
+    pub fn get_visual_node_un_mut(&self, uuid: Uuid) -> Option<&Box<dyn VisualNode>> {
+        for visual_node in &self.visual_nodes {
+            if uuid == visual_node.get_uuid() {
+                return Some(&visual_node);
+            }
+        }
+        None
+    }
+
     pub fn get_visual_node_from_name(&mut self, name: &str) -> Option<&mut Box<dyn VisualNode>> {
         let thing = self.names.get(name);
         let uuid : Uuid = *thing.unwrap_or(&Uuid::new_v4());

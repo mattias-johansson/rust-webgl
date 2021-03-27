@@ -63,7 +63,7 @@ fn update_target_attribute(dt: f32, cx: &mut Context, animation: &Animation) {
 }
 
 pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
-    web_sys::console::log_1(&parent.uuid.to_string().into());
+//    web_sys::console::log_1(&parent.uuid.to_string().into());
     match cx.node_relations.get(&parent.uuid) {
         Some(children) => {
             for child in children.as_slice() {

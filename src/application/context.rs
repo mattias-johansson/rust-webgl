@@ -102,12 +102,23 @@ impl Context {
     }
 
     pub fn remove_child_from(&mut self, parent: Uuid, to_remove: Uuid) {
-        let mut dirty = self.dirty.borrow_mut();
-        *dirty = true;
         let mut children : Option<&mut Vec<Uuid>> = self.node_relations.get_mut(&parent);
         match &mut children {
             Some(children) => {
-                children.retain(|&x| x != to_remove);
+                let before = children.len();
+                children.retain(|&x| { 
+                    web_sys::console::log_2(&"x:".into(), &x.to_string().into());
+                    web_sys::console::log_2(&"to_remove:".into(), &to_remove.to_string().into());
+                    x != to_remove
+        
+                });
+                let after = children.len();
+                let mut dirty = self.dirty.borrow_mut();
+                *dirty = true;
+                let number = before - after;
+                web_sys::console::log_2(&"before:".into(), &before.to_string().into());
+                web_sys::console::log_2(&"after:".into(), &after.to_string().into());
+                web_sys::console::log_2(&"childen removed:".into(), &number.to_string().into());
             },
             None => ()
         }

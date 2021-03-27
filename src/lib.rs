@@ -66,7 +66,7 @@ impl Application {
         web_sys::console::log_1(&"Application".into());
 
         let worker = Worker::new(worker).unwrap();
-        let _ = worker.post_message(&"startup".into());
+//        let _ = worker.post_message(&"startup".into());
 
         let application_events = ApplicationEvents::new();
         let application_events = Rc::new(RefCell::new(application_events));
@@ -238,6 +238,13 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                         scroll_view.setup_scroll(context, child_uuid);
                     }
                 }
+            },
+            MessageType::ObjectRemoved(parent, child) => {
+                web_sys::console::debug_1(&"Remove object".into());
+
+                let parent = core_app.get_visual_node_un_mut(parent).unwrap();
+                let child = core_app.get_visual_node_un_mut(child).unwrap();
+                context.remove_child_from(parent.get_node_uuid(), child.get_node_uuid());
             }
             _ => ()
         }

@@ -22,7 +22,8 @@ pub struct Application {
 #[wasm_bindgen]
 impl Application {
     #[wasm_bindgen(constructor)]
-    pub fn new() -> Application {   
+    pub fn new() -> Application {       
+        console_error_panic_hook::set_once();  
         web_sys::console::log_1(&"new application".into());
         let listeners = Listeners::new();
         add_on_message_handler(listeners.get_listners_ref());
@@ -37,7 +38,9 @@ impl Application {
     }
 
     pub fn add_listener(&mut self, sender: &Button, signal:String, callback: Function ) -> Result<(), JsValue> {
+        web_sys::console::log_1(&"ADDING LISTERNER".into());
         self.listeners.add_listener(sender.get_uuid(), signal, callback);
+        web_sys::console::log_1(&"ADDED LISTENER".into());
         Ok(())
     }
 

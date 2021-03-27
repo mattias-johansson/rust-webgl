@@ -116,6 +116,10 @@ impl ToggleButtonPrivate {
         let texture = Some(Node::create_texture(cx, "/assets/blue.png"));
         let node = cx.get_node(self.toggle_uuid).unwrap();
         node.set_texture(texture);
+                {
+            let mut dirty = cx.dirty.borrow_mut();
+            *dirty = true;
+        }
     }
 
     fn set_off(&mut self, cx: &mut Context) {
@@ -124,6 +128,10 @@ impl ToggleButtonPrivate {
         let texture = Some(Node::create_texture(cx, "/assets/grey.png"));
         let node = cx.get_node(self.toggle_uuid).unwrap();
         node.set_texture(texture);
+        {
+            let mut dirty = cx.dirty.borrow_mut();
+            *dirty = true;
+        }
     }
 
     fn play_off_animation(&mut self, context: &mut Context) {

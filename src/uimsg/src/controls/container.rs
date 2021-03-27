@@ -94,6 +94,12 @@ impl Container {
         Ok(())
     }
 
+    pub fn remove_container(&self, button: &Container) -> Result<(), JsValue> {
+        let message = MessageType::ObjectRemoved(self.this, button.this);
+        send_message(message);
+        Ok(())
+    }
+
     pub fn get_uuid(&self) -> String {
         self.this.to_string()
     }
