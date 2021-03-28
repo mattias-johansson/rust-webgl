@@ -245,12 +245,21 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                 let parent = core_app.get_visual_node_un_mut(parent).unwrap();
                 let child = core_app.get_visual_node_un_mut(child).unwrap();
                 context.remove_child_from(parent.get_node_uuid(), child.get_node_uuid());
+            },
+            MessageType::ValueUpdated(this, object_type, json) => {
+                web_sys::console::debug_1(&"Remove object".into());
+                if object_type == "label" {
+                    web_sys::console::debug_1(&"Remove object".into());
+                    let result = serde_json::from_str(&json);
+                    let object = result.unwrap();
+                    let new_label = LabelPrivate::from_public(context, object);
+                    let old_label = core_app.get_visual_node(this).unwrap().as_any().downcast_mut::<LabelPrivate>().unwrap();
+                    old_label.text(context, new_label.text);
+                }
             }
             _ => ()
-        }
-        
+        }   
     }
-
 } 
 
 pub fn send_events_from_context(context: &mut Context, events: &Vec<Event>, this_frame: &mut Vec<Box<dyn VisualNode>>) {

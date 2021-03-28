@@ -105,20 +105,21 @@ impl Context {
         let mut children : Option<&mut Vec<Uuid>> = self.node_relations.get_mut(&parent);
         match &mut children {
             Some(children) => {
-                let before = children.len();
-                children.retain(|&x| { 
-                    web_sys::console::log_2(&"x:".into(), &x.to_string().into());
-                    web_sys::console::log_2(&"to_remove:".into(), &to_remove.to_string().into());
-                    x != to_remove
-        
-                });
-                let after = children.len();
+                children.retain(|&x| x != to_remove);
                 let mut dirty = self.dirty.borrow_mut();
                 *dirty = true;
-                let number = before - after;
-                web_sys::console::log_2(&"before:".into(), &before.to_string().into());
-                web_sys::console::log_2(&"after:".into(), &after.to_string().into());
-                web_sys::console::log_2(&"childen removed:".into(), &number.to_string().into());
+            },
+            None => ()
+        }
+    }
+
+    pub fn remove_all_child_from(&mut self, parent: Uuid) {
+        let mut children : Option<&mut Vec<Uuid>> = self.node_relations.get_mut(&parent);
+        match &mut children {
+            Some(children) => {
+                children.clear();
+                let mut dirty = self.dirty.borrow_mut();
+                *dirty = true;
             },
             None => ()
         }
@@ -138,7 +139,6 @@ impl Callbacks {
     }
 
     pub fn add_trigged(&mut self, source: Uuid, event: Event) {
-        web_sys::console::log_1(&"added !!!!!!!!!!!!!!!!!!!!".into());
         self.triggered_callbacks.push((source, event));
     }
 
@@ -147,7 +147,6 @@ impl Callbacks {
     }
 
     pub fn add_subscriber(&mut self, source: Uuid, target: fn(&mut Context, &mut CoreApp, Event)) {
-        web_sys::console::log_1(&"add_subscriber".into());
         let mut callbacks = self.subscribers.get_mut(&source);
         match &mut callbacks {
             Some(cb) => {

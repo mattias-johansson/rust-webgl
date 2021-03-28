@@ -18,4 +18,7 @@ impl Slider {
     pub fn new(this:Uuid, x:f32, y:f32, opacity:f32, text:String) -> Slider {
         Slider { this, x, y, opacity, text }
     }
+    pub fn get_uuid(&self) -> String {
+        self.this.to_string()
+    }
 }

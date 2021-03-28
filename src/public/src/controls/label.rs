@@ -33,7 +33,6 @@ impl LabelBuilder {
     }
 
     pub fn build(&mut self) -> Label {
-        let this = Uuid::new_v4();
         let x:f32 = match self.x {
             Some(x) => x,
             None => 0.0
@@ -66,7 +65,7 @@ impl LabelBuilder {
             Some(text) => text.to_string(),
             None => "".to_owned()
         };
-        Label::new(this, x, y, width, height, translate_x, translate_y, opacity, text)
+        Label::new(x, y, width, height, translate_x, translate_y, opacity, text)
     }
 
     pub fn x(mut self, x: f32) -> LabelBuilder {

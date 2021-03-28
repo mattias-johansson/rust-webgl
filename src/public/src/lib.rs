@@ -1,6 +1,7 @@
 mod controls;
 mod globals;
 
+use uimsg::Slider;
 use uimsg::send_message;
 use wasm_bindgen::prelude::*;
 use js_sys::{Function};
@@ -38,9 +39,12 @@ impl Application {
     }
 
     pub fn add_listener(&mut self, sender: &Button, signal:String, callback: Function ) -> Result<(), JsValue> {
-        web_sys::console::log_1(&"ADDING LISTERNER".into());
         self.listeners.add_listener(sender.get_uuid(), signal, callback);
-        web_sys::console::log_1(&"ADDED LISTENER".into());
+        Ok(())
+    }
+
+    pub fn add_slider_listener(&mut self, sender: &Slider, signal:String, callback: Function ) -> Result<(), JsValue> {
+        self.listeners.add_listener(sender.get_uuid(), signal, callback);
         Ok(())
     }
 

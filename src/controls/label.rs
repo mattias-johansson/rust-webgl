@@ -47,6 +47,32 @@ impl LabelPrivate {
         LabelPrivate { this, node: node_uuid_parent, word, text }
     }
 
+    pub fn text(&mut self, cx: &mut Context, text: String) {
+        let parent_y;
+        let parent_uuid;
+        {
+            parent_uuid = cx.get_node_unmut(self.node).unwrap().uuid;
+            parent_y = cx.get_node_unmut(self.node).unwrap().y();
+        }
+        cx.remove_all_child_from(parent_uuid);
+        self.word.create_char_points_for_text(&text);
+        let mut char_iter = text.chars();
+        let mut advance: f32 = 0.0;
+        while let Some(c) = char_iter.next() {
+            let mut node = Node::new(self.this, advance, parent_y, 100.0, 100.0);
+            node.text = true;
+            let node_uuid = node.uuid;
+            cx.vertices.insert(node.uuid, self.word.get_char_points_for_char(&(c as usize)).unwrap().to_vec());
+            advance = advance + (self.word.get_advance_for_char(c as usize) * 0.009);   
+//            web_sys::console::log_1(&advance.to_string().into());         
+            cx.nodes.push(node);
+            cx.add_child_to(parent_uuid, node_uuid);
+
+        }
+        let mut dirty = cx.dirty.borrow_mut();
+        *dirty = true;
+    }
+
 }
 
 impl VisualNode for LabelPrivate {
