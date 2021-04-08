@@ -120,3 +120,60 @@ pub fn create_webgl_program_color(gl: &WebGlRenderingContext) -> WebGlProgram {
 
     program
 } 
+
+pub fn create_webgl_program_nine(gl: &WebGlRenderingContext) -> WebGlProgram {
+    let vert_shader = compile_shader(
+        &gl,
+        WebGlRenderingContext::VERTEX_SHADER,
+        r#"
+        precision mediump float;
+        attribute vec4 vertexData;
+        varying vec2 texCoords;
+
+        varying vec2 size;
+        varying mediump vec2 scale;
+        const float QUAD_SIZE = 2.0;
+
+
+        
+        uniform float transparency;
+        uniform mat4 model;
+        uniform mat4 view;
+        uniform mat4 perspective;
+    
+        void main() {
+            vec2 max_size = scale * QUAD_SIZE;
+            vec4 edges = vec4( 0.45, 0.45, 0.45, 0.45, );
+            vec4 uv_edges = ( 0.45 / QUAD_SIZE );
+            
+            float r_edge = max_size.x - edges.y;
+            float t_edge = max_size.y - edges.z
+            
+            if( size.x <= edges.w ) uv.x = uv_edges.w * ( size.x / edges.w );
+        }
+    "#,
+    )
+    .unwrap();
+    
+    let frag_shader = compile_shader(
+        &gl,
+        WebGlRenderingContext::FRAGMENT_SHADER,
+        r#"
+        precision mediump float;
+        varying vec2 texCoords;
+        uniform float transparency;
+        uniform sampler2D texture;
+    
+        void main() {
+            gl_FragColor = texture2D( texture, texCoords ); 
+            gl_FragColor.rgb *= gl_FragColor.a;
+            gl_FragColor.w = transparency * gl_FragColor.a;
+        }
+        "#,
+    )
+    .unwrap();
+    
+    let program = link_program(&gl, &vert_shader, &frag_shader).unwrap();
+
+    program
+}

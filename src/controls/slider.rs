@@ -110,7 +110,6 @@ impl SliderPrivate {
                 let mut dirty = cx.dirty.borrow_mut();
                 *dirty = true;
             }
-            web_sys::console::log_1(&"on scroll".into());
         }
     }
 
@@ -132,16 +131,15 @@ impl VisualNode for SliderPrivate {
         self
     }
 
-    fn event_handler(&mut self, cx: &mut Context, message: &Event) -> bool {
+    fn event_handler(&mut self, cx: &mut Context, message: &Event, target: Uuid) -> bool {
 //        web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.end_scroll_event(cx, &event);
-                    web_sys::console::log_1(&"SLIDER: Mouse up!".into());
                 } else if event.event == MouseEvent::Down {
                     self.start_scroll_event(cx, &event);
-                } else if event.event == MouseEvent::Move {
+                } else if event.event == MouseEvent::Move && target == self.background_node {
                     self.on_scroll_event(cx, &event);
                 } 
 //                return true;
@@ -150,7 +148,6 @@ impl VisualNode for SliderPrivate {
             },
             _ => ()
         }
-        web_sys::console::log_1(&"false".into());
         return false;
     }
 

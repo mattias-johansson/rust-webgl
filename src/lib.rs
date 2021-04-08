@@ -54,6 +54,7 @@ pub struct Application {
     application_events: Rc<RefCell<ApplicationEvents>>,
     context: Context,
     core_app: CoreApp,
+    node_relations: HashMap<Uuid, Vec<Uuid>>,
 }
 
 #[wasm_bindgen]
@@ -87,6 +88,7 @@ impl Application {
         
         let core_app = CoreApp { visual_nodes : vec![] , names : HashMap::default()};
 
+        let node_relations = HashMap::default();
         Application {
             page,
             gl,
@@ -96,6 +98,7 @@ impl Application {
             application_events,
             context,
             core_app,
+            node_relations,
         }
     }
 
@@ -132,7 +135,7 @@ impl Application {
         handle_application_events(&mut self.context, &mut self.core_app, Rc::clone(&self.application_events));
 
         // Handle Mouse and Touch events (Currently only one at per frame)
-        new_send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes);  // Touch events
+        new_send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes, &mut self.node_relations);  // Touch events
         
         let callbacks = self.context.cb.clone();
         callbacks.trigger_callbacks(&mut self.context, &mut self.core_app);
@@ -158,9 +161,9 @@ pub fn object_creator<R, T>(cx: &mut Context, public:R) ->  T
 pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, app_events: Rc<RefCell<ApplicationEvents>>) {
     let mut events = app_events.borrow_mut();
     if &events.events.len() > &0 {
-    web_sys::console::log_1(&"has events".into());
+//    web_sys::console::log_1(&"has events".into());
         let string = &events.events.pop().unwrap();
-        web_sys::console::log_1(&string.into());
+//        web_sys::console::log_1(&string.into());
         let result = serde_json::from_str(string);
         let message : MessageType = result.unwrap();
         match message {
@@ -247,13 +250,13 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                 context.remove_child_from(parent.get_node_uuid(), child.get_node_uuid());
             },
             MessageType::ValueUpdated(this, object_type, json) => {
-                web_sys::console::debug_1(&"Remove object".into());
+//                web_sys::console::debug_1(&"ValueUpdated".into());
                 if object_type == "label" {
-                    web_sys::console::debug_1(&"Remove object".into());
                     let result = serde_json::from_str(&json);
                     let object = result.unwrap();
                     let new_label = LabelPrivate::from_public(context, object);
                     let old_label = core_app.get_visual_node(this).unwrap().as_any().downcast_mut::<LabelPrivate>().unwrap();
+
                     old_label.text(context, new_label.text);
                 }
             }
@@ -266,12 +269,12 @@ pub fn send_events_from_context(context: &mut Context, events: &Vec<Event>, this
     for event in events {
         for vn in 0..this_frame.len() {
             web_sys::console::debug_1(&"sending animation event:".into());
-            this_frame.get_mut(vn).unwrap().event_handler(context, &event);
+            this_frame.get_mut(vn).unwrap().event_handler(context, &event, Uuid::new_v4());
         }
     }
 }
 
-pub fn new_send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
+pub fn new_send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>, node_relations: &mut HashMap<Uuid, Vec<Uuid>>) {
     let event = events.borrow().event;
     if event == Event::None {
         return
@@ -279,15 +282,15 @@ pub fn new_send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this
     let uuid = context.root.unwrap();
     let node = context.get_node_unmut(uuid);
     let node = *node.unwrap();
-
-    travers_tree(context, node, events, this_frame);
+    node_relations.clone_from(&context.node_relations);
+    travers_tree(context, node, events, this_frame, node_relations);
 
 }
 
-pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
-    let thing = cx.node_relations.clone();
-    match thing.get(&parent.uuid) {
+pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>, node_relations: &HashMap<Uuid, Vec<Uuid>>) {
+    match node_relations.get(&parent.uuid) {
         Some(children) => {
+//            web_sys::console::debug_2(&"children: ".into(), &children.len().to_string().into());
             for child in children.iter().rev() {
                 let node = cx.get_node_unmut(*child);
                 let node = *node.unwrap();
@@ -299,11 +302,11 @@ pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>
                         let y = node.y() + parent.y() + node.translate_y() + parent.translate_y();
                         let x1 = x + node.width();
                         let y1 = y + node.height();
-                        send_event(Rc::clone(&events), cx, (x, y, x1, y1), &mut visual_node);
+                        send_event(*child, Rc::clone(&events), cx, (x, y, x1, y1), &mut visual_node);
                     },
                     _ => ()
                 }
-                travers_tree(cx, node, Rc::clone(&events), this_frame);
+                travers_tree(cx, node, Rc::clone(&events), this_frame, node_relations);
             }
         }
         None => (),
@@ -321,7 +324,7 @@ pub fn get_visual_node(frame: &mut Vec<Box<dyn VisualNode>>, uuid: Uuid) -> Opti
     }
     None
 }
-
+/*
 pub fn send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
 
     let event = events.borrow().event;
@@ -342,8 +345,8 @@ pub fn send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_fra
     let event = Event::None;
     events.borrow_mut().set_event(event);   
 }
-
-pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32, f32, f32), visual_node: &mut Box<dyn VisualNode>) {
+*/
+pub fn send_event(target: Uuid, events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32, f32, f32), visual_node: &mut Box<dyn VisualNode>) {
     let mut handled = false;
     {
         let event = &events.borrow().event;
@@ -353,8 +356,8 @@ pub fn send_event(events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32,
                 let x = event.x;
                 let y = event.y;
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-//                    web_sys::console::debug_4(&"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
-                    handled = visual_node.event_handler(cx, &events.borrow().event);
+//                    web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
+                    handled = visual_node.event_handler(cx, &events.borrow().event, target);
                 }
             }
         },

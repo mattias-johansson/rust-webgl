@@ -18,13 +18,13 @@ pub fn add_on_message_handler(objects: Rc<RefCell<HashMap<String, HashMap<String
 
     let global = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
     let handler = move |event: web_sys::MessageEvent| {
-        web_sys::console::log_1(&"message".into());
+//        web_sys::console::log_1(&"message".into());
         let data = event.data().as_string().unwrap();  
         let result = serde_json::from_str(&data);
         let message : MessageType = result.unwrap();
         match message {
             MessageType::ValueUpdated(uuid, signal, value) => {
-                web_sys::console::log_1(&"value updated signal".into());
+  //              web_sys::console::log_1(&"value updated signal".into());
                 let mut clone_callbacks = vec![];
                 {
                     let objects = objects.borrow();

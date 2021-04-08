@@ -14,7 +14,6 @@ use serde::*;
 pub struct LabelPrivate {
     this: Uuid,
     pub node: Uuid,
-    pub word: Word,
     pub text: String,
 }
 
@@ -29,22 +28,21 @@ impl LabelPrivate {
         let node_uuid_parent = node.uuid;
         cx.nodes.push(node);
         let text = String::from(text);
-        let mut word = Word::default();
-        word.create_char_points_for_text(&text);
+        cx.word.create_char_points_for_text(&text);
         let mut char_iter = text.chars();
         let mut advance: f32 = 0.0;
         while let Some(c) = char_iter.next() {
             let mut node = Node::new(this, advance, y, 100.0, 100.0);
             node.text = true;
             let node_uuid = node.uuid;
-            cx.vertices.insert(node.uuid, word.get_char_points_for_char(&(c as usize)).unwrap().to_vec());
-            advance = advance + (word.get_advance_for_char(c as usize) * 0.009);   
+            cx.vertices.insert(node.uuid, cx.word.get_char_points_for_char(&(c as usize)).unwrap().to_vec());
+            advance = advance + (cx.word.get_advance_for_char(c as usize) * 0.009);   
 //            web_sys::console::log_1(&advance.to_string().into());         
             cx.nodes.push(node);
             cx.add_child_to(node_uuid_parent, node_uuid);
 
         }
-        LabelPrivate { this, node: node_uuid_parent, word, text }
+        LabelPrivate { this, node: node_uuid_parent, text }
     }
 
     pub fn text(&mut self, cx: &mut Context, text: String) {
@@ -55,15 +53,15 @@ impl LabelPrivate {
             parent_y = cx.get_node_unmut(self.node).unwrap().y();
         }
         cx.remove_all_child_from(parent_uuid);
-        self.word.create_char_points_for_text(&text);
+        cx.word.create_char_points_for_text(&text);
         let mut char_iter = text.chars();
         let mut advance: f32 = 0.0;
         while let Some(c) = char_iter.next() {
             let mut node = Node::new(self.this, advance, parent_y, 100.0, 100.0);
             node.text = true;
             let node_uuid = node.uuid;
-            cx.vertices.insert(node.uuid, self.word.get_char_points_for_char(&(c as usize)).unwrap().to_vec());
-            advance = advance + (self.word.get_advance_for_char(c as usize) * 0.009);   
+            cx.vertices.insert(node.uuid, cx.word.get_char_points_for_char(&(c as usize)).unwrap().to_vec());
+            advance = advance + (cx.word.get_advance_for_char(c as usize) * 0.009);   
 //            web_sys::console::log_1(&advance.to_string().into());         
             cx.nodes.push(node);
             cx.add_child_to(parent_uuid, node_uuid);
@@ -85,7 +83,7 @@ impl VisualNode for LabelPrivate {
         self
     }
 
-    fn event_handler(&mut self, _cx: &mut Context, _message: &Event) -> bool{
+    fn event_handler(&mut self, _cx: &mut Context, _message: &Event, _target: Uuid) -> bool{
         return false;
     }
 

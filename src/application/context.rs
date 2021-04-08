@@ -26,6 +26,7 @@ pub struct Context {
     pub vertices: HashMap<Uuid, Vec<f32>>,
     pub dirty: Rc<RefCell<bool>>,
     pub messaging: Messaging,
+    pub word: Word,
 
 }
 
@@ -43,8 +44,8 @@ impl Context {
         let vertices = HashMap::default();
         let dirty = Rc::new(RefCell::new(false));
         let messaging = Messaging { worker };
-        
-        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb, fonts, vertices, dirty, messaging }
+        let word = Word::default();
+        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb, fonts, vertices, dirty, messaging, word }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {
@@ -91,7 +92,9 @@ impl Context {
         let mut children : Option<&mut Vec<Uuid>> = self.node_relations.get_mut(&parent);
         match &mut children {
             Some(children) => {
-                children.push(child);
+                if !children.contains(&child) {
+                    children.push(child);
+                }
             },
             None => {
                 let mut children = Vec::new();

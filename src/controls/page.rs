@@ -21,7 +21,7 @@ impl VisualNode for Page {
         self
     }
 
-    fn event_handler(&mut self, _cx: &mut Context, _message: &Event) -> bool{
+    fn event_handler(&mut self, _cx: &mut Context, _message: &Event, _target: Uuid) -> bool{
         return false;
     }
 

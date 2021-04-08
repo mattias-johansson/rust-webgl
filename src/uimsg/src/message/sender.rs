@@ -6,7 +6,7 @@ pub fn send_message(message: MessageType) {
     let global = js_sys::global().unchecked_into::<DedicatedWorkerGlobalScope>();
     let json = serde_json::to_string(&message).unwrap();
 
-    web_sys::console::log_1(&json.into());
+//    web_sys::console::log_1(&json.into());
     let json = serde_json::to_string(&message).unwrap();
     
     match global.post_message(&json.into()) {

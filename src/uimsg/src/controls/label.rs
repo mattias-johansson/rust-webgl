@@ -29,6 +29,7 @@ impl Label {
     pub fn text(&mut self, text: String) {
         self.text = text;
         let json = serde_json::to_string(&self).unwrap();
+//        web_sys::console::debug_2(&"Worker.text ".into(), &(self.text).to_string().into());
         let message = MessageType::ValueUpdated(self.this, "label".to_owned(), json);
         send_message(message);
     }

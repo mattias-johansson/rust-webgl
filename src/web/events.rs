@@ -55,12 +55,14 @@ pub fn attach_mouse_move_handler(
     canvas: &web_sys::HtmlCanvasElement,
     events: Rc<RefCell<Handler>>,) -> Result<(), JsValue> {
     let handler = move |event: web_sys::MouseEvent| {
-        event.prevent_default();
-        let x = event.client_x() as u16;
-        let y = event.client_y() as u16;        
-        let mouse_event = Event::Mouse(Mouse::new(x, y, MouseEvent::Move));
+        if event.movement_x() != 0 && event.movement_y() != 0 {
+            event.prevent_default();
+            let x = event.client_x() as u16;
+            let y = event.client_y() as u16;        
+            let mouse_event = Event::Mouse(Mouse::new(x, y, MouseEvent::Move));
 
-        events.borrow_mut().set_event(mouse_event);
+            events.borrow_mut().set_event(mouse_event);
+        }
     };
 
     let handler = Closure::wrap(Box::new(handler) as Box<dyn FnMut(_)>);
@@ -148,10 +150,16 @@ pub fn add_on_message_handler(
     worker: &Worker,
     events: Rc<RefCell<ApplicationEvents>>) -> Result<(), JsValue> {
       
+//        web_sys::console::debug_1(&"pub fn add_on_message_handler".into());
         let handler = move |event: web_sys::MessageEvent| {
             let data = event.data();  
+            let event_id = event.last_event_id();
                 match events.try_borrow_mut() {
-                    Ok(mut mut_events) => { mut_events.add_event(data.as_string().unwrap()); },
+                    Ok(mut mut_events) => { 
+                        mut_events.add_event(data.as_string().unwrap()); 
+//                        web_sys::console::debug_2(&"message_data".into(), &data.as_string().unwrap().into());
+//                        web_sys::console::debug_2(&"message_event_id".into(), &event_id.into());
+                    },
                     Err(err) => { web_sys::console::error_2(&"Cannot borrow events as mut".into(), &err.to_string().into()); }
                 }
             };

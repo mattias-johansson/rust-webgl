@@ -15,7 +15,6 @@ use std::collections::HashMap;
 pub struct Word {
 
     pub font : Font,
-    pub chars: Vec<usize>,
     pub char_points: HashMap<usize, Vec<f32>>
 }
 
@@ -24,9 +23,8 @@ impl Word {
     pub fn default() -> Word {
         static FONT: &'static [u8] = include_bytes!("../../assets/LiberationMono-Regular.ttf");
         let f : Result<Font> = parse_ttf(FONT);
-        let chars = vec![];
         let char_points = HashMap::default();
-        Word { font : f.unwrap(), chars, char_points }
+        Word { font : f.unwrap(), char_points }
     }
 
     pub fn create_char_points_for_text(&mut self, text: &str) {
@@ -34,8 +32,10 @@ impl Word {
         let mut char_iter = text.chars();
         while let Some(c) = char_iter.next() {
             chars.push(c as usize);
-            let points = self.get_char_points(c as usize);
-            self.char_points.insert(c as usize, points);
+            if !self.char_points.contains_key(&(c as usize)) {
+                let points = self.get_char_points(c as usize);
+                self.char_points.insert(c as usize, points);    
+            }
         }
     }
 

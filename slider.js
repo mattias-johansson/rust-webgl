@@ -11,7 +11,7 @@ async function run() {
 }
 
 log = function(value) {
-  console.log("WORKER: on click! " + value);
+//  console.log("WORKER: on click! " + value);
   app.label.text(value);
 };
 

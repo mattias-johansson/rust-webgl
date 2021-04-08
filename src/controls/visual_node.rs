@@ -5,7 +5,7 @@ use crate::events::mouse::*;
 
 pub trait VisualNode : VisualNodeClone {
 
-    fn event_handler(&mut self, cx: &mut Context, event: &Event) -> bool;
+    fn event_handler(&mut self, cx: &mut Context, event: &Event, target: Uuid) -> bool;
 
     fn as_any(&mut self) -> &mut dyn Any;
 
