@@ -26,7 +26,7 @@ impl Label {
         Label { this, x, y, width, height, translate_x, translate_y, opacity, text }
      }
 
-    pub fn text(&mut self, text: String) {
+     pub fn text(&mut self, text: String) {
         self.text = text;
         let json = serde_json::to_string(&self).unwrap();
 //        web_sys::console::debug_2(&"Worker.text ".into(), &(self.text).to_string().into());

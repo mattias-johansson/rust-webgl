@@ -45,7 +45,7 @@ impl LabelPrivate {
         LabelPrivate { this, node: node_uuid_parent, text }
     }
 
-    pub fn text(&mut self, cx: &mut Context, text: String) {
+    pub fn text(&mut self, cx: &mut Context, text: &str) {
         let parent_y;
         let parent_uuid;
         {

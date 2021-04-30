@@ -70,14 +70,12 @@ pub fn travers_tree(cx: &Context, parent: Node, collection: &mut Vec<Node>) {
                 if let Some(node) = cx.get_node_unmut(*child) {
                     let mut node = *node;
                     {
-                        
                         node.set_x(node.x() + parent.x());
                         node.set_y(node.y() + parent.y());
                         node.set_translate_x(node.translate_x() + parent.translate_x());
                         node.set_translate_y(node.translate_y() + parent.translate_y());
                     }
                     collection.push(node);
-
                     travers_tree(&cx, node, collection);
                 }
             }
@@ -96,13 +94,13 @@ pub fn draw_scene(
     webgl_context: Rc<WebGlRenderingContext>,
     program: &WebGlProgram,
     program_color: &WebGlProgram,
+    mut collection: &mut Vec<Node>,
 ) {
     if *cx.dirty.borrow() == false {
         return;
     }
     
     let uuid = cx.root.unwrap();
-    let mut collection: Vec<Node> = Vec::new();
 
     if let Some(node) = cx.get_node_unmut(uuid) {
         travers_tree(cx, *node, &mut collection);

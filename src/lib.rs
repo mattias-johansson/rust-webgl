@@ -55,6 +55,7 @@ pub struct Application {
     context: Context,
     core_app: CoreApp,
     node_relations: HashMap<Uuid, Vec<Uuid>>,
+    collection: Vec<Node>,
 }
 
 #[wasm_bindgen]
@@ -89,6 +90,8 @@ impl Application {
         let core_app = CoreApp { visual_nodes : vec![] , names : HashMap::default()};
 
         let node_relations = HashMap::default();
+        let collection = Vec::new();
+
         Application {
             page,
             gl,
@@ -99,6 +102,7 @@ impl Application {
             context,
             core_app,
             node_relations,
+            collection,
         }
     }
 
@@ -145,7 +149,8 @@ impl Application {
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
 
-        draw_scene(&mut self.context, Rc::clone(&self.gl), &self.program, &self.program_color);
+        draw_scene(&mut self.context, Rc::clone(&self.gl), &self.program, &self.program_color, &mut self.collection);
+        self.collection.clear();
         //panic!("one loop");
     }
 }
@@ -256,8 +261,7 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                     let object = result.unwrap();
                     let new_label = LabelPrivate::from_public(context, object);
                     let old_label = core_app.get_visual_node(this).unwrap().as_any().downcast_mut::<LabelPrivate>().unwrap();
-
-                    old_label.text(context, new_label.text);
+                    old_label.text(context, &new_label.text);
                 }
             }
             _ => ()
