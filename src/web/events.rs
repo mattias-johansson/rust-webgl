@@ -55,7 +55,8 @@ pub fn attach_mouse_move_handler(
     canvas: &web_sys::HtmlCanvasElement,
     events: Rc<RefCell<Handler>>,) -> Result<(), JsValue> {
     let handler = move |event: web_sys::MouseEvent| {
-        if event.movement_x() != 0 && event.movement_y() != 0 {
+        if event.movement_x() != 0 || event.movement_y() != 0 {
+            //web_sys::console::log_1(&"mouse_move_handler".into());
             event.prevent_default();
             let x = event.client_x() as u16;
             let y = event.client_y() as u16;        
