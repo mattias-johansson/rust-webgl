@@ -165,7 +165,7 @@ pub fn object_creator<R, T>(cx: &mut Context, public:R) ->  T
 */
 pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, app_events: Rc<RefCell<ApplicationEvents>>) {
     let mut events = app_events.borrow_mut();
-    if &events.events.len() > &0 {
+    while &events.events.len() > &0 {
 //    web_sys::console::log_1(&"has events".into());
         let string = &events.events.pop().unwrap();
 //        web_sys::console::log_1(&string.into());
@@ -255,13 +255,18 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                 context.remove_child_from(parent.get_node_uuid(), child.get_node_uuid());
             },
             MessageType::ValueUpdated(this, object_type, json) => {
-//                web_sys::console::debug_1(&"ValueUpdated".into());
                 if object_type == "label" {
                     let result = serde_json::from_str(&json);
                     let object = result.unwrap();
                     let new_label = LabelPrivate::from_public(context, object);
                     let old_label = core_app.get_visual_node(this).unwrap().as_any().downcast_mut::<LabelPrivate>().unwrap();
                     old_label.text(context, &new_label.text);
+                } else if object_type == "opacity" {
+                    let result = serde_json::from_str(&json);
+                    let object = result.unwrap();
+                    let new_label = ImageViewPrivate::from_public(context, object);
+                    let old_label = core_app.get_visual_node(this).unwrap().as_any().downcast_mut::<ImageViewPrivate>().unwrap();
+                    old_label.set_opacity(context, new_label.opacity(context));
                 }
             }
             _ => ()

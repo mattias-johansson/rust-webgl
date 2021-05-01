@@ -65,8 +65,7 @@ impl ImageViewBuilder {
             Some(texture) => texture.to_string(),
             None => "None".to_owned() //TODO mandatory!
         };
-        let this = Uuid::new_v4();
-        ImageView::new(this, x, y, width, height, translate_x, translate_y, opacity, image)
+        ImageView::new(x, y, width, height, translate_x, translate_y, opacity, image)
     }
 
     pub fn x(mut self, x: f32) -> ImageViewBuilder {

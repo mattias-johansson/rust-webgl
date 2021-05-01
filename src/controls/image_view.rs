@@ -58,6 +58,16 @@ impl ImageViewPrivate {
         cx.nodes.push(node);
         ImageViewPrivate { this: owner, node: node_uuid }
     }
+
+    pub fn set_opacity(self, cx: &mut Context, opacity: f32) {
+        let node = cx.get_node(self.node).unwrap();
+        node.set_opacity(opacity);
+    }
+
+    pub fn opacity(self, cx: &Context) -> f32 {
+        let node = cx.get_node_unmut(self.node).unwrap();
+        node.opacity()
+    }
 }
 
 #[derive(PartialEq, Clone, Deserialize)]
