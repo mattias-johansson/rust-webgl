@@ -13,7 +13,11 @@ async function run() {
 log = function(value) {
 //  console.log("WORKER: on click! " + value);
   app.label.text(value);
-  app.imageView.opacity(value);
+  app.imageView.set_opacity(value);
+  app.imageView.set_x(value * 400);
+  app.imageView.set_y(value * 400);
+  app.imageView.set_width(700 - value * 400);
+  app.imageView.set_height(700 - value * 400);
 };
 
 run();
@@ -29,7 +33,7 @@ class App {
     this.imageView = new ImageViewBuilder().x(10.0).y(100.0).width(700.0).height(700.0).image("IMG_20160408_164451.jpg").opacity(0.0).build();
     let button = new SliderBuilder().x(10.0).y(10.0).text("Knapp").build();
     this.container.add_slider(button);
-    this.label = new LabelBuilder().x(10.0).y(35.0).text("0").build();
+    this.label = new LabelBuilder().x(10.0).y(35.0).opacity(0.0).text("0").build();
     this.container.add_label(this.label);
     this.container.add_image_view(this.imageView);
     Application.set_root(this.container);

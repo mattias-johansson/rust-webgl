@@ -8,7 +8,6 @@ use std::any::Any;
 use crate::animation::animation::*;
 use crate::animation::ease::*;
 use serde::*;
-use std::rc::Rc;
 
 #[derive(PartialEq, Clone, Copy)]
 pub struct SliderPrivate {

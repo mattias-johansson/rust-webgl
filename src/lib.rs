@@ -262,11 +262,33 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                     let old_label = core_app.get_visual_node(this).unwrap().as_any().downcast_mut::<LabelPrivate>().unwrap();
                     old_label.text(context, &new_label.text);
                 } else if object_type == "opacity" {
-                    let result = serde_json::from_str(&json);
-                    let object = result.unwrap();
-                    let new_label = ImageViewPrivate::from_public(context, object);
-                    let old_label = core_app.get_visual_node(this).unwrap().as_any().downcast_mut::<ImageViewPrivate>().unwrap();
-                    old_label.set_opacity(context, new_label.opacity(context));
+                    let node_uuid = core_app.get_visual_node(this).unwrap().get_node_uuid();
+                    let node = context.get_node(node_uuid).unwrap();
+                    node.set_opacity(json.parse::<f32>().unwrap());
+                } else if object_type == "x" {
+                    let node_uuid = core_app.get_visual_node(this).unwrap().get_node_uuid();
+                    let node = context.get_node(node_uuid).unwrap();
+                    node.set_x(json.parse::<f32>().unwrap());
+                } else if object_type == "y" {
+                    let node_uuid = core_app.get_visual_node(this).unwrap().get_node_uuid();
+                    let node = context.get_node(node_uuid).unwrap();
+                    node.set_y(json.parse::<f32>().unwrap());
+                } else if object_type == "width" {
+                    let node_uuid = core_app.get_visual_node(this).unwrap().get_node_uuid();
+                    let node = context.get_node(node_uuid).unwrap();
+                    node.set_width(json.parse::<f32>().unwrap());
+                } else if object_type == "height" {
+                    let node_uuid = core_app.get_visual_node(this).unwrap().get_node_uuid();
+                    let node = context.get_node(node_uuid).unwrap();
+                    node.set_height(json.parse::<f32>().unwrap());
+                } else if object_type == "translate_x" {
+                    let node_uuid = core_app.get_visual_node(this).unwrap().get_node_uuid();
+                    let node = context.get_node(node_uuid).unwrap();
+                    node.set_translate_x(json.parse::<f32>().unwrap());
+                } else if object_type == "translate_y" {
+                    let node_uuid = core_app.get_visual_node(this).unwrap().get_node_uuid();
+                    let node = context.get_node(node_uuid).unwrap();
+                    node.set_translate_y(json.parse::<f32>().unwrap());
                 }
             }
             _ => ()

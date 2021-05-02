@@ -3,7 +3,8 @@ use wasm_bindgen::prelude::*;
 use serde::*;
 use uuid::Uuid;
 
-
+use crate::send_message;
+use crate::MessageType;
 
 #[wasm_bindgen]
 #[derive(PartialEq, Clone, Serialize, Deserialize)]
@@ -51,5 +52,26 @@ impl Button {
     pub fn state(&self) -> ButtonState {
         self.state
     }
+
+
+    pub fn set_x(&mut self, x: f32) {
+        self.x = x;
+        let message = MessageType::ValueUpdated(self.this, "x".to_owned(), x.to_string());
+        send_message(message);
+    }
+
+    pub fn set_y(&mut self, y: f32) {
+        self.y = y;
+        let message = MessageType::ValueUpdated(self.this, "y".to_owned(), y.to_string());
+        send_message(message);
+    }
+
+
+    pub fn set_opacity(&mut self, opacity: f32) {
+        self.opacity = opacity;
+        let message = MessageType::ValueUpdated(self.this, "opacity".to_owned(), opacity.to_string());
+        send_message(message);
+    }
+ 
 
 }
