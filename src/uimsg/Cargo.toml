@@ -1,6 +1,6 @@
 [package]
 name = "uimsg"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Mattias"]
 edition = "2018"
 

@@ -4,6 +4,7 @@ use crate::controls::slider::SliderPrivate;
 use crate::controls::label::LabelPrivate;
 use crate::controls::image_view::ImageViewPrivate;
 use crate::controls::toggle_button::ToggleButtonPrivate;
+use crate::controls::list_view::ListViewPrivate;
 use uuid::Uuid;
 use crate::controls::node::Node;
 use crate::events::application_events::ApplicationEvents;
@@ -63,10 +64,12 @@ impl Application {
 
     /// Create a new Application
     #[wasm_bindgen(constructor)]
-    pub fn new(worker: &str) -> Application {          
-        console_error_panic_hook::set_once();  
-        web_sys::console::log_1(&"Application".into());
+    pub fn new(worker: &str) -> Application {
 
+        #[cfg(debug_assertions)]
+        console_error_panic_hook::set_once();  
+
+        web_sys::console::log_1(&"Application".into());
         let worker = Worker::new(worker).unwrap();
 //        let _ = worker.post_message(&"startup".into());
 
@@ -141,11 +144,6 @@ impl Application {
         // Handle Mouse and Touch events (Currently only one at per frame)
         new_send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes, &mut self.node_relations);  // Touch events
         
-        let callbacks = self.context.cb.clone();
-        callbacks.trigger_callbacks(&mut self.context, &mut self.core_app);
-        
-        self.context.cb.clear_triggered();
-
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
 
@@ -227,6 +225,13 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                     let result = serde_json::from_str(&data);
                     let object = result.unwrap();
                     let child = ScrollViewPrivate::from_public(context, object);
+                    let parent = core_app.get_visual_node(parent).unwrap();
+                    context.add_child_to(parent.get_node_uuid(), child.get_node_uuid());
+                    core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);
+                } else if object_type == "listview" {
+                    let result = serde_json::from_str(&data);
+                    let object = result.unwrap();
+                    let child = ListViewPrivate::from_public(context, object);
                     let parent = core_app.get_visual_node(parent).unwrap();
                     context.add_child_to(parent.get_node_uuid(), child.get_node_uuid());
                     core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);

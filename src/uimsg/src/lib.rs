@@ -12,4 +12,5 @@ pub use controls::slider::Slider;
 pub use controls::scroll_view::ScrollView;
 pub use controls::label::Label;
 pub use controls::color::Color;
+pub use controls::list_view::ListView;
 pub use message::sender::*;

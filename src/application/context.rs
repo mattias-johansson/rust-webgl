@@ -1,5 +1,5 @@
+use crate::controls::list_view::ListTraitHolder;
 use crate::render::word::Word;
-use crate::application::core_app::CoreApp;
 use crate::animation::animation::Animation;
 use crate::controls::node::*;
 use crate::events::mouse::*;
@@ -21,12 +21,12 @@ pub struct Context {
     pub textures: Textures,
     pub root: Option<Uuid>,
     pub callbacks: HashMap<Uuid, Box<dyn FnMut(&mut Context) >>,
-    pub cb: Callbacks,
     pub fonts: Word,
     pub vertices: HashMap<Uuid, Vec<f32>>,
     pub dirty: Rc<RefCell<bool>>,
     pub messaging: Messaging,
     pub word: Word,
+    pub list_traits: HashMap<Uuid, ListTraitHolder>,
 
 }
 
@@ -39,13 +39,13 @@ impl Context {
         let textures = Textures::new();
         let root: Option<Uuid> = None;
         let callbacks = HashMap::default();
-        let cb = Callbacks::new();
         let fonts = Word::default();
         let vertices = HashMap::default();
         let dirty = Rc::new(RefCell::new(false));
         let messaging = Messaging { worker };
         let word = Word::default();
-        Context { nodes, node_relations, animations, events, textures, root, callbacks, cb, fonts, vertices, dirty, messaging, word }
+        let list_traits = HashMap::default();
+        Context { nodes, node_relations, animations, events, textures, root, callbacks, fonts, vertices, dirty, messaging, word, list_traits }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {
@@ -125,59 +125,6 @@ impl Context {
                 *dirty = true;
             },
             None => ()
-        }
-    }
-}
-
-
-#[derive(Clone)]
-pub struct Callbacks {
-    triggered_callbacks : Vec<(Uuid, Event)>,
-    subscribers: HashMap<Uuid, Vec<fn(&mut Context, &mut CoreApp, Event)>>
-}
-
-impl Callbacks {
-    pub fn new() -> Callbacks {
-        Callbacks { triggered_callbacks: vec![], subscribers: HashMap::default() }
-    }
-
-    pub fn add_trigged(&mut self, source: Uuid, event: Event) {
-        self.triggered_callbacks.push((source, event));
-    }
-
-    pub fn clear_triggered(&mut self) {
-        self.triggered_callbacks.clear();
-    }
-
-    pub fn add_subscriber(&mut self, source: Uuid, target: fn(&mut Context, &mut CoreApp, Event)) {
-        let mut callbacks = self.subscribers.get_mut(&source);
-        match &mut callbacks {
-            Some(cb) => {
-                cb.push(target);
-            },
-            None => {
-                let mut callbacks = vec![];
-                callbacks.push(target);
-                self.subscribers.insert(source, callbacks);
-
-            }
-        }
-    }
-
-    pub fn trigger_callbacks(&self, cx: &mut Context, core_app: &mut CoreApp) {
-        for triggerd in &self.triggered_callbacks {
-            let targets = self.subscribers.get(&triggerd.0);
-            match targets {
-                Some(targets) => {
-                    for target in targets {
-                        (target)(cx, core_app, triggerd.1);
-                        web_sys::console::log_1(&"triggered".into());
-
-                    }
-                },
-                None => {
-                }
-            }
         }
     }
 }

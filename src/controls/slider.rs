@@ -103,7 +103,6 @@ impl SliderPrivate {
             let node = cx.get_node(self.slider_node_inactive).unwrap();
             node.set_translate_x(position);
             let percent = position / max_slider;
-            cx.cb.add_trigged(self.this, Event::Scroll(Scroll::ImmediateValue(percent)));
             let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "ImmediateValue".to_owned(), percent.to_string().to_owned()));
             {
                 let mut dirty = cx.dirty.borrow_mut();

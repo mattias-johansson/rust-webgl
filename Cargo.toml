@@ -8,7 +8,7 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
-uimsg = { path="./src/uimsg", version="0.1.0" }
+uimsg = { path="./src/uimsg", version="0.1.1" }
 webgl-api = { path="./src/public", version="0.1.0" }
 js-sys = "0.3.49"
 wasm-bindgen = "0.2.72"

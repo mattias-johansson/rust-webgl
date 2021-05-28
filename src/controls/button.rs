@@ -205,7 +205,6 @@ impl VisualNode for ButtonPrivate {
                     web_sys::console::log_1(&"mouse up".into());
                     self.pressed = false;
                     self.on_button_pressed(cx);
-                    cx.cb.add_trigged(self.this, Event::None);
                     let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
                 } else if event.event == MouseEvent::Down {
                     self.pressed = true; 
