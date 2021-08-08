@@ -40,36 +40,44 @@ pub trait ListDataModel {
 
 impl ListViewPrivate {
     pub fn from_public(cx: &mut Context, public: ListView) -> ListViewPrivate {
-        ListViewPrivate::new(public.this, cx, public.x, public.y, public.translate_x, public.translate_y, public.opacity, public.width, public.height, (0.0, 0.0, 0.0))
+        ListViewPrivate::new(public.this, cx, public.x, public.y, public.translate_x, public.translate_y, public.opacity, public.width, public.height, (1.0, 1.0, 1.0))
     }
 
     pub fn new(owner: Uuid, cx: &mut Context, x:f32, y:f32, translate_x:f32, translate_y:f32, opacity:f32, width:f32, height:f32, color:(f32,f32,f32)) ->  ListViewPrivate {
         
         let owner = owner;
 
-        let root_node = ListViewPrivate::new_node(owner, cx, x, y, translate_x, translate_y, opacity, width, height, color, true);
+        let root_node = ListViewPrivate::new_node(owner, cx, 0.0, 0.0, 0.0, 0.0, 1.0, 300.0, 300.0, color, true);
         let node_uuid = root_node.uuid;
 
-        let scroll_node = ListViewPrivate::new_node(owner, cx, 0.0, 0.0, 0.0, 0.0, opacity, width, height, (1.0,1.0,1.0), false);
+        let scroll_node = ListViewPrivate::new_node(owner, cx, 0.0, 0.0, 0.0, 0.0, 1.0, 100.0, 100.0, color, false);
         let scroll_node_uuid = scroll_node.uuid;
 
         cx.add_child_to(node_uuid, scroll_node_uuid);
         cx.nodes.push(root_node);
         cx.nodes.push(scroll_node);
 
+        web_sys::console::debug_1(&"new scroll event".into());
         ListViewPrivate { this: owner, node_uuid, scroll_uuid: scroll_node_uuid, scroll_x: None, scroll_y: None}
     }
 
-    pub fn setup_scroll(&self, cx: &mut Context, child: Uuid) {
-        let content = cx.get_node_unmut(child);
-        let width = content.unwrap().width();
-        let height = content.unwrap().height();
+    pub fn setup_list(&self, cx: &mut Context) {
 
+        web_sys::console::debug_1(&"setup_scroll 1".into());
+        let item1 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item1");
+        cx.add_child_to(self.scroll_uuid, item1.get_node_uuid());
+ 
+        let item2 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item2");
+        cx.add_child_to(self.scroll_uuid, item2.get_node_uuid());
+ 
+        let item3 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 40.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item3");
+        cx.add_child_to(self.scroll_uuid, item3.get_node_uuid());
+        
         let scrolling = cx.get_node(self.scroll_uuid).unwrap();
-        scrolling.set_width(width);
-        scrolling.set_height(height);
+//        scrolling.set_width(100.0);
+        scrolling.set_height(300.0);
 
-        cx.add_child_to(self.scroll_uuid, child);
+        web_sys::console::debug_1(&"setup_scroll 2".into());
     }
 
     fn start_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {

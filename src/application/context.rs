@@ -27,7 +27,6 @@ pub struct Context {
     pub messaging: Messaging,
     pub word: Word,
     pub list_traits: HashMap<Uuid, ListTraitHolder>,
-
 }
 
 impl Context {

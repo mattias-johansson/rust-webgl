@@ -26,6 +26,8 @@ use crate::controls::visual_node::VisualNode;
 
 use web_sys::{WebGlProgram, WebGlRenderingContext, Worker};
 
+use serde_json::{Value, Map};
+
 use crate::controls::container::*;
 use crate::controls::button::*;
 
@@ -229,6 +231,7 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                     context.add_child_to(parent.get_node_uuid(), child.get_node_uuid());
                     core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);
                 } else if object_type == "listview" {
+                    web_sys::console::debug_1(&"Got ListView message".into());
                     let result = serde_json::from_str(&data);
                     let object = result.unwrap();
                     let child = ListViewPrivate::from_public(context, object);
@@ -249,6 +252,24 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
                     if let Some(scroll_view) = visual_node.as_any().downcast_mut::<ScrollViewPrivate>() {
                         web_sys::console::debug_1(&"scroll_view.setup_scroll".into());
                         scroll_view.setup_scroll(context, child_uuid);
+                    }
+                }
+            },
+            MessageType::SetupListView(list_view, data) => {
+                web_sys::console::debug_1(&"SetupListlView event".into());
+                web_sys::console::debug_1(&data.clone().into());
+            //    let result: Value = serde_json::from_str(&data).unwrap();
+               // let obj: Map<String, Value> = result.as_object().unwrap().clone();
+//                let object = result.unwrap();
+//                let child = ContainerPrivate::from_public(context, object);
+//                let child_uuid = child.get_node_uuid();
+//                core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);
+                let option_visual_node = core_app.get_visual_node(list_view);
+                if let Some(visual_node) = option_visual_node {
+                    web_sys::console::debug_1(&"Some(visual_node)".into());
+                    if let Some(list_view) = visual_node.as_any().downcast_mut::<ListViewPrivate>() {
+                        web_sys::console::debug_1(&"list_view.setup_list".into());
+                        list_view.setup_list(context);
                     }
                 }
             },

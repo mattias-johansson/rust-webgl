@@ -8,6 +8,7 @@ use crate::ToggleButton;
 use crate::Label;
 use crate::ImageView;
 use crate::ScrollView;
+use crate::ListView;
 use crate::Slider;
 use crate::Color;
 
@@ -83,6 +84,13 @@ impl Container {
     pub fn add_scroll_view(&self, button: &ScrollView) -> Result<(), JsValue> {
         let json = serde_json::to_string(&button).unwrap();
         let message = MessageType::ObjectCreated(self.this, "scrollview".to_owned(), json);
+        send_message(message);
+        Ok(())
+    }
+
+    pub fn add_list_view(&self, button: &ListView) -> Result<(), JsValue> {
+        let json = serde_json::to_string(&button).unwrap();
+        let message = MessageType::ObjectCreated(self.this, "listview".to_owned(), json);
         send_message(message);
         Ok(())
     }

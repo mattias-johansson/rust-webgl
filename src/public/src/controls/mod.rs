@@ -6,3 +6,4 @@ pub mod image_view;
 pub mod label;
 pub mod slider;
 pub mod scroll_view;
+pub mod list_view;

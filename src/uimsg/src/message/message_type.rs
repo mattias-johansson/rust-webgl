@@ -8,6 +8,7 @@ pub enum MessageType {
     ObjectRemoved(Uuid, Uuid),
     ValueUpdated(Uuid, String, String),
     SetupScrollView(Uuid, String),
+    SetupListView(Uuid, String),
     AddNode(String),
     RemoveNode(String),
     SetRoot(String)
