@@ -72,10 +72,19 @@ impl ListViewPrivate {
  
         let item3 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 40.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item3");
         cx.add_child_to(self.scroll_uuid, item3.get_node_uuid());
+
+        let item4 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 60.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item4");
+        cx.add_child_to(self.scroll_uuid, item4.get_node_uuid());
+ 
+        let item5 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 80.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item5");
+        cx.add_child_to(self.scroll_uuid, item5.get_node_uuid());
+ 
+        let item6 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item6");
+        cx.add_child_to(self.scroll_uuid, item6.get_node_uuid());
         
         let scrolling = cx.get_node(self.scroll_uuid).unwrap();
-//        scrolling.set_width(100.0);
-        scrolling.set_height(300.0);
+        scrolling.set_width(300.0);
+//        scrolling.set_height(300.0);
 
         web_sys::console::debug_1(&"setup_scroll 2".into());
     }
@@ -87,16 +96,15 @@ impl ListViewPrivate {
     }
 
     fn on_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
-        web_sys::console::debug_1(&"on scroll event".into());
-        let max_scroll_x = self.get_max_scroll_x(cx); 
-        let max_scroll_y = self.get_max_scroll_y(cx); 
-        let min_scroll_x = self.get_min_scroll_x(cx); 
-        let min_scroll_y = self.get_min_scroll_y(cx); 
+//        web_sys::console::debug_1(&"on scroll event".into());
+        let min_scroll_x = self.get_max_scroll_x(cx); 
+        let min_scroll_y = self.get_max_scroll_y(cx); 
+        let max_scroll_x = self.get_min_scroll_x(cx); 
+        let max_scroll_y = self.get_min_scroll_y(cx); 
         let node = cx.get_node(self.scroll_uuid).unwrap();
         
         if let Some(x) = self.scroll_x {
             let  wanted_scroll = message.x as f32 - x; 
-            
             if wanted_scroll < max_scroll_x && wanted_scroll > min_scroll_x {
                 node.set_translate_x(wanted_scroll);
             } else if wanted_scroll < min_scroll_x {
@@ -115,7 +123,7 @@ impl ListViewPrivate {
                 node.set_translate_y(max_scroll_y);
             }
         }
-    //        web_sys::console::debug_4(&"t_x".into(),&node.translate_x.into(),&"t_y".into(),&node.translate_y.into());
+            web_sys::console::debug_4(&"t_x".into(),&node.translate_x().into(),&"t_y".into(),&node.translate_y().into());
         {
             let mut dirty = cx.dirty.borrow_mut();
             *dirty = true;
@@ -181,13 +189,13 @@ impl VisualNode for ListViewPrivate {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
                     self.end_scroll_event(cx, &event);
-                    web_sys::console::debug_1(&"Scrollview: Mouse up!".into());
+                    web_sys::console::debug_1(&"Listview: Mouse up!".into());
                 } else if event.event == MouseEvent::Down {
                     self.start_scroll_event(cx, &event);
-                    web_sys::console::debug_1(&"crollview: Mouse down!".into());
+                    web_sys::console::debug_1(&"Listview: Mouse down!".into());
                 } else if event.event == MouseEvent::Move {
                     self.on_scroll_event(cx, &event);
-                    web_sys::console::debug_1(&"crollview: Mouse move!".into());
+//                    web_sys::console::debug_1(&"Listview: Mouse move!".into());
                 } 
             },
             Event::Message(_message) => {

@@ -116,7 +116,7 @@ pub fn draw_scene(
                     render_text(&webgl_context, program_color, points, x, y, 1.0, (0.0, 0.0, 0.0));
                 } else {
                     if node.end_clip {
-                        web_sys::console::log_1(&"end stencil".into());
+//                        web_sys::console::log_1(&"end stencil".into());
                         end_stencil(&webgl_context);
                     } else { 
                         if node.clip {
