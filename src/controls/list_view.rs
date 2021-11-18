@@ -13,7 +13,7 @@ use serde::*;
 pub struct ListViewPrivate {
     pub this: Uuid,
     node_uuid: Uuid,
-    scroll_uuid: Uuid,
+    pub scroll_uuid: Uuid,
     scroll_x: Option<f32>,
     scroll_y: Option<f32>,
 }
@@ -64,23 +64,6 @@ impl ListViewPrivate {
     pub fn setup_list(&self, cx: &mut Context) {
 
         web_sys::console::debug_1(&"setup_scroll 1".into());
-        let item1 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item1");
-        cx.add_child_to(self.scroll_uuid, item1.get_node_uuid());
- 
-        let item2 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 20.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item2");
-        cx.add_child_to(self.scroll_uuid, item2.get_node_uuid());
- 
-        let item3 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 40.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item3");
-        cx.add_child_to(self.scroll_uuid, item3.get_node_uuid());
-
-        let item4 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 60.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item4");
-        cx.add_child_to(self.scroll_uuid, item4.get_node_uuid());
- 
-        let item5 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 80.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item5");
-        cx.add_child_to(self.scroll_uuid, item5.get_node_uuid());
- 
-        let item6 = LabelPrivate::new(Uuid::new_v4(), cx, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0,  &"item6");
-        cx.add_child_to(self.scroll_uuid, item6.get_node_uuid());
         
         let scrolling = cx.get_node(self.scroll_uuid).unwrap();
         scrolling.set_width(300.0);
@@ -97,10 +80,10 @@ impl ListViewPrivate {
 
     fn on_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
 //        web_sys::console::debug_1(&"on scroll event".into());
-        let min_scroll_x = self.get_max_scroll_x(cx); 
-        let min_scroll_y = self.get_max_scroll_y(cx); 
-        let max_scroll_x = self.get_min_scroll_x(cx); 
-        let max_scroll_y = self.get_min_scroll_y(cx); 
+        let min_scroll_x = -self.get_min_scroll_x(cx); 
+        let min_scroll_y = -self.get_min_scroll_y(cx); 
+        let max_scroll_x = self.get_max_scroll_x(cx); 
+        let max_scroll_y = self.get_max_scroll_y(cx); 
         let node = cx.get_node(self.scroll_uuid).unwrap();
         
         if let Some(x) = self.scroll_x {
@@ -123,7 +106,7 @@ impl ListViewPrivate {
                 node.set_translate_y(max_scroll_y);
             }
         }
-            web_sys::console::debug_4(&"t_x".into(),&node.translate_x().into(),&"t_y".into(),&node.translate_y().into());
+//            web_sys::console::debug_4(&"t_x".into(),&node.translate_x().into(),&"t_y".into(),&node.translate_y().into());
         {
             let mut dirty = cx.dirty.borrow_mut();
             *dirty = true;
@@ -202,7 +185,7 @@ impl VisualNode for ListViewPrivate {
             },
             _ => ()
         }
-        web_sys::console::log_1(&"false".into());
+//        web_sys::console::log_1(&"false".into());
         return false;
     }
 

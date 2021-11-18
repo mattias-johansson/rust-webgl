@@ -96,6 +96,7 @@ impl Context {
                 }
             },
             None => {
+                web_sys::console::log_1(&"New vec".into());
                 let mut children = Vec::new();
                 children.push(child);
                 self.node_relations.insert(parent, children);

@@ -29,7 +29,36 @@ class App {
     Application.set_root(this.container);
     console.log("WORKER: add");  
 
-    setTimeout(() => { listView.set_content("[{'label': 'item 1'}, {'label': 'item 2'}, {'label': 'item 3'}]"); }, 2000);
+    setTimeout(() => { listView.set_content("[" +
+    "{\"label\": \"Adam\"}," +
+    "{\"label\": \"Bertil\"}," +
+    "{\"label\": \"Cesar\"}," +
+    "{\"label\": \"David\"}," +
+    "{\"label\": \"Erik\"}," +
+    "{\"label\": \"Filip\"}," +
+    "{\"label\": \"Gustav\"}," +
+    "{\"label\": \"Filip\"}," +
+    "{\"label\": \"Ivar\"}," +
+    "{\"label\": \"Johan\"}," +
+    "{\"label\": \"Karl\"}," +
+    "{\"label\": \"Ludvig\"}," +
+    "{\"label\": \"Martin\"}," +
+    "{\"label\": \"Niklas\"}," +
+    "{\"label\": \"Olof\"}," +
+    "{\"label\": \"Petter\"}," +
+    "{\"label\": \"Qvintus\"}," +
+    "{\"label\": \"Rudolf\"}," +
+    "{\"label\": \"Sigurd\"}," +
+    "{\"label\": \"Tore\"}," +
+    "{\"label\": \"Urban\"}," +
+    "{\"label\": \"Viktor\"}," +
+    "{\"label\": \"Wilhelm\"}," +
+    "{\"label\": \"Xerxes\"}," +
+    "{\"label\": \"Yngve\"}," +
+    "{\"label\": \"Zäta\"}," +
+    "{\"label\": \"Åke\"}," +
+    "{\"label\": \"Ärlig\"}," +
+    "{\"label\": \"Östen\"}]"); }, 2000);
   }
 
 }

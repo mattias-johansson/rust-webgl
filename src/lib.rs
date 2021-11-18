@@ -258,18 +258,31 @@ pub fn handle_application_events(context: &mut Context, core_app: &mut CoreApp, 
             MessageType::SetupListView(list_view, data) => {
                 web_sys::console::debug_1(&"SetupListlView event".into());
                 web_sys::console::debug_1(&data.clone().into());
-            //    let result: Value = serde_json::from_str(&data).unwrap();
-               // let obj: Map<String, Value> = result.as_object().unwrap().clone();
-//                let object = result.unwrap();
-//                let child = ContainerPrivate::from_public(context, object);
-//                let child_uuid = child.get_node_uuid();
-//                core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);
+                let result: Vec<Map<String, Value>> = serde_json::from_str(&data).unwrap();
+                let mut i = 0.0;
+                for value in result {
+                    let item: Map<String, Value> = value;
+                    for (key, value) in item {
+                        web_sys::console::debug_2(&key.into(), &value.as_str().unwrap().into());
+                        let child = LabelPrivate::new(Uuid::new_v4(), context, 0.0, i, 0.0, 0.0, 0.0, 0.0, 0.0, &value.as_str().unwrap());
+                        i=i+10.0;
+                        let child_uuid = child.get_node_uuid();
+                        core_app.visual_nodes.push(Box::new(child) as Box<dyn VisualNode>);
+                        let option_visual_node = core_app.get_visual_node(list_view);
+                        if let Some(visual_node) = option_visual_node {
+                            web_sys::console::debug_1(&"Some(visual_node)".into());
+                            if let Some(list_view) = visual_node.as_any().downcast_mut::<ListViewPrivate>() {
+                                web_sys::console::debug_1(&"list_view.setup_list".into());
+                                context.add_child_to(list_view.scroll_uuid, child_uuid);   
+                            }
+                        }
+                    }
+                }
                 let option_visual_node = core_app.get_visual_node(list_view);
                 if let Some(visual_node) = option_visual_node {
-                    web_sys::console::debug_1(&"Some(visual_node)".into());
                     if let Some(list_view) = visual_node.as_any().downcast_mut::<ListViewPrivate>() {
-                        web_sys::console::debug_1(&"list_view.setup_list".into());
                         list_view.setup_list(context);
+
                     }
                 }
             },
@@ -332,44 +345,48 @@ pub fn send_events_from_context(context: &mut Context, events: &Vec<Event>, this
 }
 
 pub fn new_send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>, node_relations: &mut HashMap<Uuid, Vec<Uuid>>) {
-    let event = events.borrow().event;
-    if event == Event::None {
-        return
+    {    let event = events.borrow().event;
+        if event == Event::None {
+            return
+        }
     }
     let uuid = context.root.unwrap();
     let node = context.get_node_unmut(uuid);
     let node = *node.unwrap();
     node_relations.clone_from(&context.node_relations);
-    travers_tree(context, node, events, this_frame, node_relations);
-
+    travers_tree(context, node, Rc::clone(&events), this_frame, node_relations);
+    let event = Event::None;
+    events.borrow_mut().set_event(event);   
 }
 
 pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>, node_relations: &HashMap<Uuid, Vec<Uuid>>) {
     match node_relations.get(&parent.uuid) {
         Some(children) => {
-//            web_sys::console::debug_2(&"children: ".into(), &children.len().to_string().into());
+            web_sys::console::debug_2(&"children: ".into(), &children.len().to_string().into());
             for child in children.iter().rev() {
                 let node = cx.get_node_unmut(*child);
                 let node = *node.unwrap();
                 let node_owner = node.owner;
+                //Does not get a visual node back
                 let optional_visual_node = get_visual_node(this_frame, node_owner);
                 match optional_visual_node {
                     Some(mut visual_node) => {
+                        web_sys::console::debug_2(&"YES visual for node_owner: ".into(), &node_owner.to_string().into());
                         let x = node.x() + parent.x() + node.translate_x() + parent.translate_x();
                         let y = node.y() + parent.y() + node.translate_y() + parent.translate_y();
                         let x1 = x + node.width();
                         let y1 = y + node.height();
                         send_event(*child, Rc::clone(&events), cx, (x, y, x1, y1), &mut visual_node);
                     },
-                    _ => ()
+                    _ => {
+                        web_sys::console::debug_2(&"NO visual for node_owner: ".into(), &node_owner.to_string().into());
+                    }
                 }
                 travers_tree(cx, node, Rc::clone(&events), this_frame, node_relations);
             }
         }
         None => (),
     }
-    let event = Event::None;
-    events.borrow_mut().set_event(event);   
 }
 
 pub fn get_visual_node(frame: &mut Vec<Box<dyn VisualNode>>, uuid: Uuid) -> Option<&mut Box<dyn VisualNode>> {
@@ -412,17 +429,27 @@ pub fn send_event(target: Uuid, events: Rc<RefCell<Handler>>, cx: &mut Context, 
                 if event.event != MouseEvent::None {
                 let x = event.x;
                 let y = event.y;
+                web_sys::console::debug_4(&"x1".into(), &xy.0.to_string().into(), &"x2".into(), &xy.2.to_string().into());
+                web_sys::console::debug_4(&"y1".into(), &xy.1.to_string().into(), &"y2".into(), &xy.3.to_string().into());
+                web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
                 if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
 //                    web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
                     handled = visual_node.event_handler(cx, &events.borrow().event, target);
                 }
+            } else {
+                web_sys::console::debug_1(&"DID NOT SEND".into());
             }
         },
-        _ => ()
+        Event::None => {
+            web_sys::console::debug_1(&"None event".into());
+        },
+        _ => {
+                web_sys::console::debug_1(&"FAILED".into());
+            }
         }
     }
     if handled {
-        web_sys::console::log_1(&"handled".into());
+        web_sys::console::debug_1(&"handled".into());
         let event = Event::None;
         events.borrow_mut().set_event(event);
     }
