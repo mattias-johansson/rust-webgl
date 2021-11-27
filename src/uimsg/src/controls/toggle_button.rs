@@ -31,6 +31,10 @@ impl ToggleButton {
         ToggleButton { this, x, y, opacity, text, state }
     }
 
+    pub fn get_uuid(&self) -> String {
+        self.this.to_string()
+    }
+    
     pub fn set_x(&mut self, x: f32) {
         self.x = x;
         let message = MessageType::ValueUpdated(self.this, "x".to_owned(), x.to_string());

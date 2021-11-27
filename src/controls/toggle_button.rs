@@ -1,3 +1,4 @@
+use uimsg::MessageType;
 use std::any::Any;
 use crate::controls::visual_node::*;
 use crate::controls::node::*;
@@ -120,6 +121,7 @@ impl ToggleButtonPrivate {
             let mut dirty = cx.dirty.borrow_mut();
             *dirty = true;
         }
+        let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "checked".to_owned(), "true".to_owned()));
     }
 
     fn set_off(&mut self, cx: &mut Context) {
@@ -132,6 +134,7 @@ impl ToggleButtonPrivate {
             let mut dirty = cx.dirty.borrow_mut();
             *dirty = true;
         }
+        let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "checked".to_owned(), "false".to_owned()));
     }
 
     fn play_off_animation(&mut self, context: &mut Context) {

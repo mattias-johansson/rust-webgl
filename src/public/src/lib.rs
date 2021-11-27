@@ -12,6 +12,7 @@ use self::globals::listeners::*;
 use uimsg::MessageType;
 
 use uimsg::Button;
+use uimsg::ToggleButton;
 use uimsg::Container;
 
 /// Used to run the application from the web
@@ -41,6 +42,11 @@ impl Application {
     }
 
     pub fn add_listener(&mut self, sender: &Button, signal:String, callback: Function ) -> Result<(), JsValue> {
+        self.listeners.add_listener(sender.get_uuid(), signal, callback);
+        Ok(())
+    }
+
+    pub fn add_tb_listener(&mut self, sender: &ToggleButton, signal:String, callback: Function ) -> Result<(), JsValue> {
         self.listeners.add_listener(sender.get_uuid(), signal, callback);
         Ok(())
     }
