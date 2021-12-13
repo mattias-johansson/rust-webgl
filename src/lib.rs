@@ -144,7 +144,7 @@ impl Application {
         handle_application_events(&mut self.context, &mut self.core_app, Rc::clone(&self.application_events));
 
         // Handle Mouse and Touch events (Currently only one at per frame)
-        new_send_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes, &mut self.node_relations);  // Touch events
+        new_send_mouse_events(&mut self.context, Rc::clone(&self.events), &mut self.core_app.visual_nodes, &mut self.node_relations);  // Touch events
         
         update_animations(dt, &mut self.context);
         update_target_attributes(dt, &mut self.context);
@@ -344,7 +344,7 @@ pub fn send_events_from_context(context: &mut Context, events: &Vec<Event>, this
     }
 }
 
-pub fn new_send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>, node_relations: &mut HashMap<Uuid, Vec<Uuid>>) {
+pub fn new_send_mouse_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>, node_relations: &mut HashMap<Uuid, Vec<Uuid>>) {
     {    let event = events.borrow().event;
         if event == Event::None {
             return
@@ -354,12 +354,41 @@ pub fn new_send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this
     let node = context.get_node_unmut(uuid);
     let node = *node.unwrap();
     node_relations.clone_from(&context.node_relations);
-    travers_tree(context, node, Rc::clone(&events), this_frame, node_relations);
-    let event = Event::None;
-    events.borrow_mut().set_event(event);   
+    {
+        let event = &events.borrow().event;
+        let mut matched_nodes : Vec<Uuid> = vec![]; 
+        match event {
+            Event::Mouse(event) => {
+                if event.event != MouseEvent::None {
+                    web_sys::console::debug_4(&"event_x".into(), &event.x.to_string().into(), &"event_y".into(), &event.y.to_string().into());
+                    matched_nodes = travers_tree(context, node, *event, this_frame, node_relations);
+                    web_sys::console::debug_2(&"matched_nodes:".into(), &matched_nodes.len().to_string().into());
+                }
+            },
+            _ => {
+                web_sys::console::debug_1(&"FAILED".into());
+            }
+        }
+        for node in matched_nodes {
+            web_sys::console::debug_1(&"node".into());
+            let opt_visual_node = get_visual_node(this_frame, node);
+            match opt_visual_node {
+                Some(visual_node) => {
+                    web_sys::console::debug_1(&"node".into());
+                    web_sys::console::debug_1(&visual_node.get_uuid().to_string().into());
+                    visual_node.event_handler(context, &events.borrow().event, node);
+                },
+                _ => ()
+            }
+        }
+    
+    }
+    let new_event = Event::None;
+    events.borrow_mut().set_event(new_event);   
 }
 
-pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>, node_relations: &HashMap<Uuid, Vec<Uuid>>) {
+pub fn travers_tree(cx: &mut Context, parent: Node, event: Mouse, this_frame: &mut Vec<Box<dyn VisualNode>>, node_relations: &HashMap<Uuid, Vec<Uuid>>) -> Vec<Uuid> {
+    let mut matched : Vec<Uuid> = vec![];
     match node_relations.get(&parent.uuid) {
         Some(children) => {
             web_sys::console::debug_2(&"children: ".into(), &children.len().to_string().into());
@@ -367,26 +396,43 @@ pub fn travers_tree(cx: &mut Context, parent: Node, events: Rc<RefCell<Handler>>
                 let node = cx.get_node_unmut(*child);
                 let node = *node.unwrap();
                 let node_owner = node.owner;
-                //Does not get a visual node back
                 let optional_visual_node = get_visual_node(this_frame, node_owner);
                 match optional_visual_node {
                     Some(mut visual_node) => {
-                        web_sys::console::debug_2(&"YES visual for node_owner: ".into(), &node_owner.to_string().into());
+//                        web_sys::console::debug_2(&"YES visual for node_owner: ".into(), &node_owner.to_string().into());
                         let x = node.x() + parent.x() + node.translate_x() + parent.translate_x();
                         let y = node.y() + parent.y() + node.translate_y() + parent.translate_y();
                         let x1 = x + node.width();
                         let y1 = y + node.height();
-                        send_event(*child, Rc::clone(&events), cx, (x, y, x1, y1), &mut visual_node);
+
+                        let event_x = event.x;
+                        let event_y = event.y;
+                        web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x1".into(), &x1.to_string().into(), &"x".into(), &x.to_string().into());
+                        web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"y1".into(), &y1.to_string().into(), &"y".into(), &y.to_string().into());
+                        if x1 > event_x as f32 && x < event_x as f32 && y1 > event_y as f32 && y < event_y as f32 {
+                            //send_event(*child, Rc::clone(&events), cx, (x, y, x1, y1), &mut visual_node);
+                            web_sys::console::debug_2(&"target: ".into(), &node_owner.to_string().into());
+                            matched.push(visual_node.get_uuid());
+                        }
+                        let mut new_node = node;
+                        {
+                            new_node.set_x(node.x() + parent.x());
+                            new_node.set_y(node.y() + parent.y());
+                            new_node.set_translate_x(node.translate_x() + parent.translate_x());
+                            new_node.set_translate_y(node.translate_y() + parent.translate_y());
+                        }
+                        let mut ret_val = travers_tree(cx, new_node, event, this_frame, node_relations);
+                        matched.append(&mut ret_val);
                     },
                     _ => {
-                        web_sys::console::debug_2(&"NO visual for node_owner: ".into(), &node_owner.to_string().into());
+//                        web_sys::console::debug_2(&"NO visual for node_owner: ".into(), &node_owner.to_string().into());
                     }
                 }
-                travers_tree(cx, node, Rc::clone(&events), this_frame, node_relations);
             }
         }
         None => (),
     }
+    matched
 }
 
 pub fn get_visual_node(frame: &mut Vec<Box<dyn VisualNode>>, uuid: Uuid) -> Option<&mut Box<dyn VisualNode>> {
@@ -398,28 +444,7 @@ pub fn get_visual_node(frame: &mut Vec<Box<dyn VisualNode>>, uuid: Uuid) -> Opti
     }
     None
 }
-/*
-pub fn send_events(context: &mut Context, events: Rc<RefCell<Handler>>, this_frame: &mut Vec<Box<dyn VisualNode>>) {
-
-    let event = events.borrow().event;
-    if event == Event::None {
-        return
-    }
-
-    for vn in (0..this_frame.len()).rev() {
-        let mut visual_node = this_frame.get_mut(vn).unwrap();
-        let root_node_uuid = visual_node.get_node_uuid();
-        let node = context.get_node_unmut(root_node_uuid).unwrap();
-        let position = node.position();
-        web_sys::console::debug_2(&"sending to visual_node ".into(), &node.owner.to_string().into());
-        
-        send_event(Rc::clone(&events), context, position, &mut visual_node)
-    }
-
-    let event = Event::None;
-    events.borrow_mut().set_event(event);   
-}
-*/
+ 
 pub fn send_event(target: Uuid, events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32, f32, f32), visual_node: &mut Box<dyn VisualNode>) {
     let mut handled = false;
     {
@@ -427,23 +452,18 @@ pub fn send_event(target: Uuid, events: Rc<RefCell<Handler>>, cx: &mut Context, 
         match event {
             Event::Mouse(event) => {
                 if event.event != MouseEvent::None {
-                let x = event.x;
-                let y = event.y;
-                web_sys::console::debug_4(&"x1".into(), &xy.0.to_string().into(), &"x2".into(), &xy.2.to_string().into());
-                web_sys::console::debug_4(&"y1".into(), &xy.1.to_string().into(), &"y2".into(), &xy.3.to_string().into());
-                web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
-                if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-//                    web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
-                    handled = visual_node.event_handler(cx, &events.borrow().event, target);
+                    let x = event.x;
+                    let y = event.y;
+                    //web_sys::console::debug_4(&"x1".into(), &xy.0.to_string().into(), &"x2".into(), &xy.2.to_string().into());
+                    //web_sys::console::debug_4(&"y1".into(), &xy.1.to_string().into(), &"y2".into(), &xy.3.to_string().into());
+                    //web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
+                    if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
+                        //web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
+                        handled = visual_node.event_handler(cx, &events.borrow().event, target);
+                    }
                 }
-            } else {
-                web_sys::console::debug_1(&"DID NOT SEND".into());
-            }
-        },
-        Event::None => {
-            web_sys::console::debug_1(&"None event".into());
-        },
-        _ => {
+            },
+            _ => {
                 web_sys::console::debug_1(&"FAILED".into());
             }
         }
