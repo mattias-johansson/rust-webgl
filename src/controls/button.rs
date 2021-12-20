@@ -198,28 +198,33 @@ impl VisualNode for ButtonPrivate {
     }
 
     fn event_handler(&mut self, cx: &mut Context, message: &Event, target: Uuid) -> bool {
-//        web_sys::console::log_1(&"got event".into());
-        match message {
-            Event::Mouse(event) => {
-                if event.event == MouseEvent::Up {
-                    web_sys::console::log_1(&"mouse up".into());
-                    self.pressed = false;
-                    self.on_button_pressed(cx);
-                    let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
-                } else if event.event == MouseEvent::Down {
-                    self.pressed = true; 
-                    self.on_button_pressed(cx);
-                }      
-//                return true;
-            },
-            Event::Message(message) => {
-                match message {
-                    Message::AnimationEnded(_uuid) => self.on_animation_ended(cx),
-                    //TODO Two animations are ending. Handle that
-                    _ => ()
-                }
-            },
-            _ => ()
+
+    //        web_sys::console::log_1(&target.to_string().into());
+    //        web_sys::console::log_1(&self.this.to_string().into());
+        if target == self.this {
+    //        web_sys::console::log_1(&"got event".into());
+            match message {
+                Event::Mouse(event) => {
+                    if event.event == MouseEvent::Up {
+                        web_sys::console::log_1(&"mouse up".into());
+                        self.pressed = false;
+                        self.on_button_pressed(cx);
+                        let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
+                    } else if event.event == MouseEvent::Down {
+                        self.pressed = true; 
+                        self.on_button_pressed(cx);
+                    }      
+    //                return true;
+                },
+                Event::Message(message) => {
+                    match message {
+                        Message::AnimationEnded(_uuid) => self.on_animation_ended(cx),
+                        //TODO Two animations are ending. Handle that
+                        _ => ()
+                    }
+                },
+                _ => ()
+            }
         }
 //        web_sys::console::log_1(&"false".into());
         return false;

@@ -20,7 +20,7 @@ closeDialog = function(value) {
 }
 
 openDialog = function(value) {
-    console.log("WORKER: openDialog! " + value);
+  console.log("WORKER: openDialog! " + value);
   let color = new Color();
   color.r = 0.8;
   color.g = 0.8;
