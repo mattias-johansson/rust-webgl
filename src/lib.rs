@@ -412,12 +412,27 @@ pub fn travers_tree(cx: &mut Context, parent: Node, event: Mouse, this_frame: &m
 
                         let event_x = event.x;
                         let event_y = event.y;
-//                        web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x1".into(), &x1.to_string().into(), &"x".into(), &x.to_string().into());
+                        let previous_event_x = event_x - event.movement_x;
+                        let previous_event_y = event_y - event.movement_y;
 //                        web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"y1".into(), &y1.to_string().into(), &"y".into(), &y.to_string().into());
-                        if x1 > event_x as f32 && x < event_x as f32 && y1 > event_y as f32 && y < event_y as f32 {
+                        if x1 >= event_x as f32 && x <= event_x as f32 && y1 >= event_y as f32 && y <= event_y as f32 {
                             //send_event(*child, Rc::clone(&events), cx, (x, y, x1, y1), &mut visual_node);
 //                            web_sys::console::debug_2(&"target: ".into(), &node_owner.to_string().into());
                             matched.push(visual_node.get_uuid());
+//                            web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"event_x: ".into(), &event_x.to_string().into(), &"event_y: ".into(), &event_y.to_string().into());
+//                            web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"previous_event_x: ".into(), &previous_event_x.to_string().into(), &"previous_event_y: ".into(), &previous_event_y.to_string().into());
+                            if !(x1 >= previous_event_x as f32 && x <= previous_event_x as f32 && y1 >= previous_event_y as f32 && y <= previous_event_y as f32) {
+                                web_sys::console::debug_2(&"Mouse IN for: ".into(), &node_owner.to_string().into());
+//                                web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"event_x: ".into(), &event_x.to_string().into(), &"event_y: ".into(), &event_y.to_string().into());
+//                                web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"previous_event_x: ".into(), &previous_event_x.to_string().into(), &"previous_event_y: ".into(), &previous_event_y.to_string().into());
+                            }
+                        } else {
+                            if x1 >= previous_event_x as f32 && x <= previous_event_x as f32 && y1 >= previous_event_y as f32 && y <= previous_event_y as f32 {
+                                web_sys::console::debug_2(&"Mouse OUT for: ".into(), &node_owner.to_string().into());
+//                                web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"event_x: ".into(), &event_x.to_string().into(), &"event_y: ".into(), &event_y.to_string().into());
+//                                web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"previous_event_x: ".into(), &previous_event_x.to_string().into(), &"previous_event_y: ".into(), &previous_event_y.to_string().into());
+
+                            }
                         }
                         let mut new_node = node;
                         {
@@ -448,36 +463,6 @@ pub fn get_visual_node(frame: &mut Vec<Box<dyn VisualNode>>, uuid: Uuid) -> Opti
         }
     }
     None
-}
- 
-pub fn send_event(target: Uuid, events: Rc<RefCell<Handler>>, cx: &mut Context, xy: (f32, f32, f32, f32), visual_node: &mut Box<dyn VisualNode>) {
-    let mut handled = false;
-    {
-        let event = &events.borrow().event;
-        match event {
-            Event::Mouse(event) => {
-                if event.event != MouseEvent::None {
-                    let x = event.x;
-                    let y = event.y;
-                    //web_sys::console::debug_4(&"x1".into(), &xy.0.to_string().into(), &"x2".into(), &xy.2.to_string().into());
-                    //web_sys::console::debug_4(&"y1".into(), &xy.1.to_string().into(), &"y2".into(), &xy.3.to_string().into());
-                    //web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
-                    if xy.0 < x as f32 && xy.2 > x as f32 && xy.1 < y as f32 && xy.3 > y as f32 {
-                        //web_sys::console::debug_5(&visual_node.get_uuid().to_string().into(), &"x".into(), &x.to_string().into(), &"y".into(), &y.to_string().into());
-                        handled = visual_node.event_handler(cx, &events.borrow().event, target);
-                    }
-                }
-            },
-            _ => {
-                web_sys::console::debug_1(&"FAILED".into());
-            }
-        }
-    }
-    if handled {
-        web_sys::console::debug_1(&"handled".into());
-        let event = Event::None;
-        events.borrow_mut().set_event(event);
-    }
 }
 
 pub fn get_canvas_size() -> (u32, u32) { 

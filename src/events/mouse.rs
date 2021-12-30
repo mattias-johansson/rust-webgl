@@ -14,18 +14,29 @@ pub enum MouseEvent {
     None,
     Up,
     Down,
-    Move
+    Move,
+    In,
+    Out
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Mouse {
-    pub x: u16,
-    pub y: u16,
+    pub x: i32,
+    pub y: i32,
+    pub movement_x: i32,
+    pub movement_y: i32,
     pub event: MouseEvent,
 }
 
 impl Mouse {
-    pub fn new(x: u16, y: u16, event: MouseEvent ) -> Mouse { Mouse {x, y, event} }
+    
+    pub fn new(x: i32, y: i32, event: MouseEvent ) -> Mouse {
+        let movement_x = 0;
+        let movement_y = 0;
+        Mouse {x, y, movement_x, movement_y, event} 
+    }
+
+    pub fn new_2(x: i32, y: i32, movement_x: i32, movement_y: i32, event: MouseEvent ) -> Mouse { Mouse {x, y, movement_x, movement_y, event} }
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
