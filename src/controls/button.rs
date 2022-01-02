@@ -122,10 +122,24 @@ impl ButtonPrivate {
     pub fn on_button_pressed(&mut self, cx: &mut Context) {
         web_sys::console::log_1(&"set on".into());
         match self.state {
-            ButtonState::NotPressed => self.play_on_animation(cx),
-            ButtonState::Pressed => self.play_off_animation(cx),
-            ButtonState::ToNotPressed => (),
-            ButtonState::ToPressed => (),
+            ButtonState::NotPressed => 
+            {
+                web_sys::console::log_1(&"ButtonState::NotPressed".into());
+                self.play_on_animation(cx)
+            },
+            ButtonState::Pressed => 
+            {
+                web_sys::console::log_1(&"ButtonState::Pressed".into());
+                self.play_off_animation(cx)
+            },
+            ButtonState::ToNotPressed => 
+            {
+                web_sys::console::log_1(&"ButtonState::ToNotPressed".into());
+            },
+            ButtonState::ToPressed => 
+            {
+                web_sys::console::log_1(&"ButtonState::ToPressed".into());
+            },
         }
     }
 
@@ -201,31 +215,34 @@ impl VisualNode for ButtonPrivate {
 
     //        web_sys::console::log_1(&target.to_string().into());
     //        web_sys::console::log_1(&self.this.to_string().into());
-        if target == self.this {
+
     //        web_sys::console::log_1(&"got event".into());
             match message {
                 Event::Mouse(event) => {
-                    if event.event == MouseEvent::Up {
-                        web_sys::console::log_1(&"mouse up".into());
-                        self.pressed = false;
-                        self.on_button_pressed(cx);
-                        let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
-                    } else if event.event == MouseEvent::Down {
-                        self.pressed = true; 
-                        self.on_button_pressed(cx);
-                    } else if event.event == MouseEvent::In {
-                        web_sys::console::log_1(&"mouse in".into());
-                    } else if event.event == MouseEvent::Out {
-                        web_sys::console::log_1(&"mouse out".into());
-                        if self.pressed == true {
-                            web_sys::console::log_1(&"mouse cancel".into());
+                    if target == self.this {
+                        if event.event == MouseEvent::Up {
+                            web_sys::console::log_1(&"mouse up".into());
                             self.pressed = false;
                             self.on_button_pressed(cx);
+                            let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
+                        } else if event.event == MouseEvent::Down {
+                            self.pressed = true; 
+                            self.on_button_pressed(cx);
+                        } else if event.event == MouseEvent::In {
+                            web_sys::console::log_1(&"mouse in".into());
+                        } else if event.event == MouseEvent::Out {
+                            web_sys::console::log_1(&"mouse out".into());
+                            if self.pressed == true {
+                                web_sys::console::log_1(&"mouse cancel".into());
+                                self.pressed = false;
+                                self.on_button_pressed(cx);
+                            }
                         }
                     }
     //                return true;
                 },
                 Event::Message(message) => {
+                    web_sys::console::log_1(&"message".into());
                     match message {
                         Message::AnimationEnded(_uuid) => self.on_animation_ended(cx),
                         //TODO Two animations are ending. Handle that
@@ -234,7 +251,7 @@ impl VisualNode for ButtonPrivate {
                 },
                 _ => ()
             }
-        }
+        
 //        web_sys::console::log_1(&"false".into());
         return false;
     }
