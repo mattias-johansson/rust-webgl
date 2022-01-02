@@ -212,10 +212,8 @@ impl VisualNode for ButtonPrivate {
     }
 
     fn event_handler(&mut self, cx: &mut Context, message: &Event, target: Uuid) -> bool {
-
     //        web_sys::console::log_1(&target.to_string().into());
     //        web_sys::console::log_1(&self.this.to_string().into());
-
     //        web_sys::console::log_1(&"got event".into());
             match message {
                 Event::Mouse(event) => {

@@ -15,9 +15,12 @@ log = function(value) {
 };
 
 addButton = function(value) {
-  console.log("WORKER: addButton! " + value);
-  let button = new ButtonBuilder().x(150.0).y(30.0).text("New button").build();
-  app.container.add_button(button);
+  if(!app.hasButton) {
+    console.log("WORKER: addButton! " + value);
+    let button = new ButtonBuilder().x(150.0).y(30.0).text("New button").build();
+    app.container.add_button(button);
+    app.hasButton = true;
+  }
 }
 
 run();
@@ -36,6 +39,7 @@ class App {
     this.application.add_listener(button, "onClicked", log);
     this.application.add_listener(button, "onClicked", addButton);  
     console.log("WORKER: add");  
+    this.hasButton = false;
   }
 
 
