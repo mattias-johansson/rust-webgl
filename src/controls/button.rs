@@ -21,7 +21,6 @@ pub struct ButtonPrivate {
     node: Uuid,
     pressed: bool,
     state: ButtonState,
-    on_animation_uuid: Uuid,
     off_animation_uuid: Uuid,
 }
 
@@ -54,25 +53,17 @@ impl ButtonPrivate {
         let node_uuid = ButtonPrivate::create_text(cx, text, 0.0, 0.0);
         cx.add_child_to(node_uuid_parent, node_uuid);
 
-        let mut on_animation = Animation::new(node_uuid, Attribute::OPACITY);
-        on_animation.duration = 100.0;
-        on_animation.start_value = 0.0;
-        on_animation.end_value = 1.0;
-        on_animation.easing = Ease::Lin;
-
         let mut off_animation = Animation::new(node_pressed.uuid, Attribute::OPACITY);
         off_animation.duration = 100.0;
-        off_animation.start_value = 1.0;
-        off_animation.end_value = 0.0;
+        off_animation.start_value = 0.0;
+        off_animation.end_value = 1.0;
         off_animation.easing = Ease::Lin;
 
-        let on_animation_uuid = on_animation.uuid;
         let off_animation_uuid = off_animation.uuid;
-
-        cx.animations.push(on_animation);
         cx.animations.push(off_animation);
 
-        ButtonPrivate { this, node: node_uuid_parent, pressed, state, on_animation_uuid, off_animation_uuid } 
+
+        ButtonPrivate { this, node: node_uuid_parent, pressed, state, off_animation_uuid } 
     }
 
     pub fn create(this: Uuid, cx: &mut Context, x: f32, y: f32) -> Node {
@@ -135,10 +126,14 @@ impl ButtonPrivate {
             ButtonState::ToNotPressed => 
             {
                 web_sys::console::log_1(&"ButtonState::ToNotPressed".into());
+                self.set_off(cx);
+                self.play_on_animation(cx);
             },
             ButtonState::ToPressed => 
             {
                 web_sys::console::log_1(&"ButtonState::ToPressed".into());
+                self.set_on(cx);
+                self.play_off_animation(cx);
             },
         }
     }
@@ -156,30 +151,19 @@ impl ButtonPrivate {
     pub fn set_on(&mut self, cx: &mut Context) {
         web_sys::console::log_1(&"set Pressed".into());
         self.state = ButtonState::Pressed;
-        let on_animation = cx.get_animation(self.on_animation_uuid);
-        on_animation.unwrap().start_value = 1.0;
-        let on_animation = cx.get_animation(self.on_animation_uuid);
-        on_animation.unwrap().end_value = 0.0;
-
         let off_animation = cx.get_animation(self.off_animation_uuid);
-        off_animation.unwrap().start_value = 0.0;
+        off_animation.unwrap().start_value = 1.0;
         let off_animation = cx.get_animation(self.off_animation_uuid);
-        off_animation.unwrap().end_value = 1.0;
-
+        off_animation.unwrap().end_value = 0.0;
     }
 
     fn set_off(&mut self, cx: &mut Context) {
         web_sys::console::log_1(&"set NotPressed".into());
         self.state = ButtonState::NotPressed;
-        let on_animation = cx.get_animation(self.on_animation_uuid);
-        on_animation.unwrap().start_value = 0.0;
-        let on_animation = cx.get_animation(self.on_animation_uuid);
-        on_animation.unwrap().end_value = 1.0;
-
         let off_animation = cx.get_animation(self.off_animation_uuid);
-        off_animation.unwrap().start_value = 1.0;
+        off_animation.unwrap().start_value = 0.0;
         let off_animation = cx.get_animation(self.off_animation_uuid);
-        off_animation.unwrap().end_value = 0.0;
+        off_animation.unwrap().end_value = 1.0;
     }
 
     fn play_off_animation(&mut self, context: &mut Context) {
@@ -187,15 +171,11 @@ impl ButtonPrivate {
         self.state = ButtonState::ToNotPressed;
         let off_animation = context.get_animation(self.off_animation_uuid);
         off_animation.unwrap().play();
-        let on_animation = context.get_animation(self.on_animation_uuid);
-        on_animation.unwrap().play();
     }
 
     fn play_on_animation(&mut self, context: &mut Context) {
         web_sys::console::log_1(&"play ToPressed".into());
         self.state = ButtonState::ToPressed;
-        let on_animation = context.get_animation(self.on_animation_uuid);
-        on_animation.unwrap().play();
         let off_animation = context.get_animation(self.off_animation_uuid);
         off_animation.unwrap().play();
     }
@@ -220,9 +200,11 @@ impl VisualNode for ButtonPrivate {
                     if target == self.this {
                         if event.event == MouseEvent::Up {
                             web_sys::console::log_1(&"mouse up".into());
-                            self.pressed = false;
-                            self.on_button_pressed(cx);
-                            let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
+                            if self.pressed == true {
+                                self.pressed = false;
+                                self.on_button_pressed(cx);
+                                let _  = cx.messaging.send_message(MessageType::ValueUpdated(self.this, "onClicked".to_owned(), "true".to_owned()));
+                            }
                         } else if event.event == MouseEvent::Down {
                             self.pressed = true; 
                             self.on_button_pressed(cx);
@@ -233,7 +215,7 @@ impl VisualNode for ButtonPrivate {
                             if self.pressed == true {
                                 web_sys::console::log_1(&"mouse cancel".into());
                                 self.pressed = false;
-                                self.on_button_pressed(cx);
+                                self.play_off_animation(cx);
                             }
                         }
                     }
