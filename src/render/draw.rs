@@ -99,7 +99,10 @@ pub fn draw_scene(
     if *cx.dirty.borrow() == false {
         return;
     }
-    
+
+    let canvas_width = webgl_context.drawing_buffer_width() as i32;
+    let canvas_height = webgl_context.drawing_buffer_height() as i32;
+    webgl_context.viewport(0, 0 , canvas_width, canvas_height);
     let uuid = cx.root.unwrap();
 
     if let Some(node) = cx.get_node_unmut(uuid) {
@@ -180,11 +183,16 @@ fn render(
 ) {
     context.use_program(Some(&program));
 
-    let canvas_width = 1280.0;
-    let canvas_height = 703.0;
-    //    let canvas_width = context.canvas().clientWidth();
-    //    let canvas_height = context.canvas().clientHeight();
-
+//    let canvas_width = 1280.0;
+//    let canvas_height = 703.0;
+        let canvas_width = context.drawing_buffer_width() as f32;
+        let canvas_height = context.drawing_buffer_height() as f32;
+        web_sys::console::debug_4(
+            &"Canvas size, width: ".into(),
+            &canvas_width.to_string().into(),
+            &" height: ".into(),
+            &canvas_height.to_string().into(),
+        );
     let rect_height = rect_height / 2.0;
     let rect_width = rect_width / 2.0;
     // All of the positions of our quad in local space
@@ -278,9 +286,17 @@ fn render_bg(
     color: (f32, f32, f32),
 ) {
     context.use_program(Some(&program));
-    let canvas_width = 1280.0;
-    let canvas_height = 703.0;
+ //   let canvas_width = 1280.0;
+ //   let canvas_height = 703.0;
 
+    let canvas_width = context.drawing_buffer_width() as f32;
+    let canvas_height = context.drawing_buffer_height() as f32;
+    web_sys::console::debug_4(
+        &"Canvas size, width: ".into(),
+        &canvas_width.to_string().into(),
+        &" height: ".into(),
+        &canvas_height.to_string().into(),
+    );
     let rect_height = rect_height / 2.0;
     let rect_width = rect_width / 2.0;
     // All of the positions of our quad in local space
@@ -363,8 +379,18 @@ fn render_text(
     let rect_width = 0.0;
     let rect_height = 0.0;
     context.use_program(Some(&program));
-    let canvas_width = 1280.0;
-    let canvas_height = 703.0;
+//    let canvas_width = 1280.0;
+//    let canvas_height = 703.0;
+
+    let canvas_width = context.drawing_buffer_width() as f32;
+    let canvas_height = context.drawing_buffer_height() as f32;
+
+    web_sys::console::debug_4(
+        &"Canvas size, width: ".into(),
+        &canvas_width.to_string().into(),
+        &" height: ".into(),
+        &canvas_height.to_string().into(),
+    );
 
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
@@ -435,8 +461,17 @@ fn render_stencil(
     let vertex_data_attrib = context.get_attrib_location(&program, "vertexData");
     context.enable_vertex_attrib_array(vertex_data_attrib as u32);
 
-    let canvas_width = 1280.0;
-    let canvas_height = 703.0;
+//    let canvas_width = 1280.0;
+//    let canvas_height = 703.0;
+
+    let canvas_width = context.drawing_buffer_width() as f32;
+    let canvas_height = context.drawing_buffer_height() as f32;
+        web_sys::console::debug_4(
+        &"Canvas size, width: ".into(),
+        &canvas_width.to_string().into(),
+        &" height: ".into(),
+        &canvas_height.to_string().into(),
+    );
 
     let rect_height = rect_height / 2.0;
     let rect_width = rect_width / 2.0;

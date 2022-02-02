@@ -86,7 +86,7 @@ impl SliderPrivate {
     }
 
     fn start_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
-
+        web_sys::console::log_1(&"start_scroll_event".into());
         let node = cx.get_node(self.slider_node_active).unwrap();
         self.start_x = Some(message.x as f32 - node.translate_x());
         let on_animation = cx.get_animation(self.on_animation_uuid);
@@ -94,6 +94,7 @@ impl SliderPrivate {
     }
 
     fn on_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
+        web_sys::console::log_1(&"on_scroll_event".into());
         if self.start_x.is_some() {
             let position = message.x as f32 - self.start_x.unwrap();
             let node_bg = cx.get_node_unmut(self.background_node).unwrap();
@@ -112,9 +113,11 @@ impl SliderPrivate {
     }
 
     fn end_scroll_event(&mut self, cx: &mut Context, _message: &Mouse) {
-        self.start_x = None;
-        let off_animation = cx.get_animation(self.off_animation_uuid);
-        off_animation.unwrap().play();
+        if self.start_x != None {
+            self.start_x = None;
+            let off_animation = cx.get_animation(self.off_animation_uuid);
+            off_animation.unwrap().play();
+        }
     }
     
 }
@@ -137,9 +140,11 @@ impl VisualNode for SliderPrivate {
                     self.end_scroll_event(cx, &event);
                 } else if event.event == MouseEvent::Down {
                     self.start_scroll_event(cx, &event);
-                } else if event.event == MouseEvent::Move && target == self.background_node {
+                } else if event.event == MouseEvent::Move { //&& target == self.background_node {
                     self.on_scroll_event(cx, &event);
-                } 
+                } else if event.event == MouseEvent::Out {
+                    self.end_scroll_event(cx, &event);
+                }
 //                return true;
             },
             Event::Message(_message) => {

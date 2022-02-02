@@ -6,7 +6,7 @@ pub enum Event {
     None,
     Mouse(Mouse),
     Message(Message),
-    Scroll(Scroll)
+    Window(Window)
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
@@ -46,7 +46,6 @@ pub enum Message {
 }
 
 #[derive(PartialEq, Clone, Copy)]
-pub enum Scroll {
-    ImmediateValue(f32),
-    Value(f32),
+pub enum Window {
+    Resize(),
 }

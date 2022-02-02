@@ -9,6 +9,7 @@ use std::rc::Rc;
 use crate::events::handler::*;
 use crate::events::mouse::*;
 
+use crate::events::mouse::Window::Resize;
 
 pub fn attach_mouse_down_handler(
     canvas: &web_sys::HtmlCanvasElement,
@@ -142,6 +143,19 @@ pub fn attach_touch_end_handler(
 
     handler.forget();
 
+    Ok(())
+}
+pub fn attach_window_resize_handler(
+    window: &web_sys::Window,
+    events: Rc<RefCell<Handler>>,) -> Result<(), JsValue> {
+    let handler = move | event: web_sys::UiEvent| {
+        let window_event = Event::Window(Resize());
+        web_sys::console::log_1(&"window resize".into());
+        events.borrow_mut().set_event(window_event);
+    };
+    let handler = Closure::wrap(Box::new(handler) as Box<dyn FnMut(_)>);
+    window.add_event_listener_with_callback("resize", handler.as_ref().unchecked_ref())?;
+    handler.forget();
     Ok(())
 }
 

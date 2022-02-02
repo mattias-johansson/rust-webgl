@@ -36,6 +36,7 @@ impl LabelPrivate {
             node.text = true;
             let node_uuid = node.uuid;
             cx.vertices.insert(node.uuid, cx.word.get_char_points_for_char(&(c as usize)).unwrap().to_vec());
+            //Get bounds for font to adjust placment in height for fx gjpq chars
             advance = advance + (cx.word.get_advance_for_char(c as usize) * 0.009);   
 //            web_sys::console::log_1(&advance.to_string().into());         
             cx.nodes.push(node);
