@@ -65,21 +65,21 @@ impl SliderPrivate {
     }
 
     fn background(cx: &mut Context, this: Uuid, x: f32, y: f32, opacity: f32) -> Node {
-        let mut node = Node::new(this, x, y, 447.0, 60.0);
+        let mut node = Node::new(this, x+14.0, y, 447.0, 60.0);
         node.set_opacity(opacity);
         node.set_texture(Some(Node::create_texture(cx, "/assets/slider_track.png")));
         node
     }
 
     fn handle_pressed(cx: &mut Context, this: Uuid, x: f32, y: f32) -> Node {
-        let mut node = Node::new(this, x, y, 60.0, 60.0);
+        let mut node = Node::new(this, -30.0, 0.0, 60.0, 60.0);
         node.set_opacity(0.0);
         node.set_texture(Some(Node::create_texture(cx, "/assets/handle_pressed.png")));
         node
     }
     
     fn handle_inactive(cx: &mut Context, this: Uuid, _x: f32, _y: f32) -> Node {
-        let mut node = Node::new(this, 14.0, 14.0, 30.0, 30.0);
+        let mut node = Node::new(this, -14.0, 14.0, 30.0, 30.0);
         node.set_opacity(1.0);
         node.set_texture(Some(Node::create_texture(cx, "/assets/handle_inactive.png")));
         node
@@ -96,9 +96,15 @@ impl SliderPrivate {
     fn on_scroll_event(&mut self, cx: &mut Context, message: &Mouse) {
         web_sys::console::log_1(&"on_scroll_event".into());
         if self.start_x.is_some() {
-            let position = message.x as f32 - self.start_x.unwrap();
+            let mut position = message.x as f32 - self.start_x.unwrap();
             let node_bg = cx.get_node_unmut(self.background_node).unwrap();
             let max_slider = node_bg.width();
+            if position > max_slider {
+                position = max_slider;
+            }
+            if position < 0.0 {
+                position = 0.0;
+            }
             let node = cx.get_node(self.slider_node_active).unwrap();
             node.set_translate_x(position);
             let node = cx.get_node(self.slider_node_inactive).unwrap();

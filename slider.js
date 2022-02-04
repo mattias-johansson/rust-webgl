@@ -31,7 +31,7 @@ class App {
     color.b = 1.0;
     this.container = new ContainerBuilder().x(0.0).y(0.0).width(700.0).opacity(1.0).height(700.0).color(color).build();    
     this.imageView = new ImageViewBuilder().x(10.0).y(100.0).width(700.0).height(700.0).image("IMG_20160408_164451.jpg").opacity(0.0).build();
-    let button = new SliderBuilder().x(10.0).y(10.0).text("Knapp").build();
+    let button = new SliderBuilder().x(100.0).y(0.0).text("Knapp").build();
     this.container.add_slider(button);
     this.label = new LabelBuilder().x(10.0).y(35.0).opacity(0.0).text("0").build();
     this.container.add_label(this.label);
