@@ -27,6 +27,7 @@ pub struct Context {
     pub messaging: Messaging,
     pub word: Word,
     pub list_traits: HashMap<Uuid, ListTraitHolder>,
+    pub touch_target: Option<Uuid>,
 }
 
 impl Context {
@@ -44,7 +45,8 @@ impl Context {
         let messaging = Messaging { worker };
         let word = Word::default();
         let list_traits = HashMap::default();
-        Context { nodes, node_relations, animations, events, textures, root, callbacks, fonts, vertices, dirty, messaging, word, list_traits }
+        let touch_target: Option<Uuid> = None;
+        Context { nodes, node_relations, animations, events, textures, root, callbacks, fonts, vertices, dirty, messaging, word, list_traits, touch_target }
     }
 
     pub fn get_node(&mut self, uuid: Uuid) -> Option<&mut Node> {

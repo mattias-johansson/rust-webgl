@@ -133,7 +133,7 @@ impl VisualNode for SliderPrivate {
     }
 
     fn event_handler(&mut self, cx: &mut Context, message: &Event, target: Uuid) -> bool {
-//        web_sys::console::log_1(&"got event".into());
+        web_sys::console::log_1(&"got event".into());
         match message {
             Event::Mouse(event) => {
                 if event.event == MouseEvent::Up {
@@ -142,8 +142,6 @@ impl VisualNode for SliderPrivate {
                     self.start_scroll_event(cx, &event);
                 } else if event.event == MouseEvent::Move { //&& target == self.background_node {
                     self.on_scroll_event(cx, &event);
-                } else if event.event == MouseEvent::Out {
-                    self.end_scroll_event(cx, &event);
                 }
 //                return true;
             },

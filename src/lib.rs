@@ -430,10 +430,29 @@ pub fn new_send_mouse_events(
         match event {
             Event::Mouse(event) => {
                 if event.event != MouseEvent::None {
-                    //                    web_sys::console::debug_4(&"event_x".into(), &event.x.to_string().into(), &"event_y".into(), &event.y.to_string().into());
+                    //web_sys::console::debug_4(&"event_x".into(), &event.x.to_string().into(), &"event_y".into(), &event.y.to_string().into());
                     matched_nodes = travers_tree(context, node, *event, this_frame, node_relations);
                     matched_nodes.dedup();
-                    //                    web_sys::console::debug_2(&"matched_nodes:".into(), &matched_nodes.len().to_string().into());
+                    //web_sys::console::debug_2(&"matched_nodes:".into(), &matched_nodes.len().to_string().into());
+                    if event.event == MouseEvent::Down {
+                        let target = matched_nodes.get(matched_nodes.len() - 1).unwrap();
+                        context.touch_target = Some(*target);
+                        web_sys::console::debug_2(&"Setting touch_target:".into(), &target.to_string().into());
+                    } 
+                    if event.event == MouseEvent::Move && context.touch_target.is_some() {
+                        if context.touch_target.unwrap() != *matched_nodes.get(matched_nodes.len() - 1).unwrap() {
+                            matched_nodes.push(context.touch_target.unwrap());
+                            web_sys::console::debug_2(&"sending touch_target:".into(), &context.touch_target.unwrap().to_string().into());
+                        }
+                    }
+                    if event.event == MouseEvent::Up {
+                        if context.touch_target.unwrap() != *matched_nodes.get(matched_nodes.len() - 1).unwrap() {
+                            matched_nodes.push(context.touch_target.unwrap());
+                            web_sys::console::debug_1(&"adding touch_target".into());
+                        }
+                        context.touch_target = None
+
+                    }
                 }
             }
             Event::Window(_resize) => {
@@ -447,6 +466,8 @@ pub fn new_send_mouse_events(
         if matched_nodes.len() > 0 {
             let target = matched_nodes.get(matched_nodes.len() - 1).unwrap();
             let target = *target;
+            
+            web_sys::console::debug_2(&"Target is: ".into(), &target.to_string().into());
             for node in matched_nodes {
                 //                web_sys::console::debug_1(&"node".into());
                 let opt_visual_node = get_visual_node(this_frame, node);
