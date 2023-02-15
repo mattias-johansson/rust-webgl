@@ -63,7 +63,7 @@ impl Word {
     pub fn get_advance_for_char(&self, unicode: usize) -> f32{
         let glyph_id = self.font.char_code_to_glyph_index_map[unicode];
         let glyph = &self.font.glyphs[glyph_id];
-        glyph.horizontal_metrics.advance_width
+        glyph.horizontal_metrics.advance_width * 0.008
     }
 
     //Get bounds for font to adjust placment in height for fx gjpq chars

@@ -98,7 +98,7 @@ impl ButtonPrivate {
             node.text = true;
             let node_uuid = node.uuid;
             cx.vertices.insert(node.uuid, word.get_char_points_for_char(&(c as usize)).unwrap().to_vec());
-            advance = advance + (word.get_advance_for_char(c as usize) * 0.009);   
+            advance = advance + (word.get_advance_for_char(c as usize));   
             
             web_sys::console::log_1(&advance.to_string().into());         
             cx.nodes.push(node);
