@@ -79,12 +79,19 @@ impl Word {
         let tx = glyphtc.tx1 * cx.fonts_atlas.texture_size.x + todo.subpixel_x_fract * atlas_page.dpi_factor;
         let ty = 1.0 + glyphtc.ty1 * cx.fonts_atlas.texture_size.y - todo.subpixel_y_fract * atlas_page.dpi_factor;
 */
+
+            
+        // this one needs pixel snapping
+     //   let min_pos_x = walk_x + font_size_logical * glyph.bounds.p_min.x;
+     //   let min_pos_y = pos.y - font_size_logical * glyph.bounds.p_min.y + self.text_style.font_size * self.text_style.top_drop;
+
+
         let font_size = 6.0;
         let font_scale_logical = font_size * 96.0 / (72.0 * self.font.units_per_em);
         let font_scale_pixels = font_scale_logical * get_device_pixel_ratio() as f32;
 
         let trapezoids = {
-//            let font_scale_pixels = 0.009;
+            //let font_scale_pixels = 0.009;
             let mut trapezoids = Vec::new();
             let trapezoidate = trapezoidator.trapezoidate(
                 glyph
@@ -94,7 +101,7 @@ impl Word {
                     move | command | {
                         command.transform(
                             &AffineTransformation::identity()
-                                .translate(Vector::new(-glyph.bounds.p_min.x, -glyph.bounds.p_min.y))
+                                .translate(Vector::new(-glyph.bounds.p_min.x, -(glyph.bounds.p_min.y)/20.0))
                                 .uniform_scale(font_scale_pixels)
                                 .translate(Vector::new(0.0, 0.0)) //.translate(Vector::new(tx, ty))
                         )
