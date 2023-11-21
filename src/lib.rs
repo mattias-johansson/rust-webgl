@@ -134,8 +134,11 @@ impl Application {
      */
     pub fn event_loop(&mut self, dt: f32) {
         // Handle animation events & clear events when done
+        
         let events = &self.context.events.clone();
+
         send_events_from_context(&mut self.context, events, &mut self.core_app.visual_nodes); //Animation events
+        
         self.context.events = vec![];
 
         handle_application_events(
@@ -143,7 +146,7 @@ impl Application {
             &mut self.core_app,
             Rc::clone(&self.application_events),
         );
-
+        
         // Handle Mouse and Touch events (Currently only one at per frame)
         new_send_mouse_events(
             &mut self.context,
@@ -151,7 +154,9 @@ impl Application {
             &mut self.core_app.visual_nodes,
             &mut self.node_relations,
         ); // Touch events
+
         update_animations(dt, &mut self.context);
+        
         update_target_attributes(dt, &mut self.context);
 
         draw_scene(
@@ -414,18 +419,24 @@ pub fn new_send_mouse_events(
     this_frame: &mut Vec<Box<dyn VisualNode>>,
     node_relations: &mut HashMap<Uuid, Vec<Uuid>>,
 ) {
-    {
-        let event = events.borrow().event;
-        if event == Event::None {
-            return;
+    let event = match events.try_borrow() {
+        Ok(events) => {
+            events.event
         }
+        _ => {
+            Event::None
+        }
+    };
+    if event == Event::None {
+        return;
     }
+    web_sys::console::log_1(&"1".into());
     let uuid = context.root.unwrap();
     let node = context.get_node_unmut(uuid);
     let node = *node.unwrap();
     node_relations.clone_from(&context.node_relations);
     {
-        let event = &events.borrow().event;
+        let event = &event;
         let mut matched_nodes: Vec<Uuid> = vec![];
         match event {
             Event::Mouse(event) => {
@@ -434,25 +445,43 @@ pub fn new_send_mouse_events(
                     matched_nodes = travers_tree(context, node, *event, this_frame, node_relations);
                     matched_nodes.dedup();
                     //web_sys::console::debug_2(&"matched_nodes:".into(), &matched_nodes.len().to_string().into());
+
+                    web_sys::console::log_1(&"A".into());
                     if event.event == MouseEvent::Down {
-                        let target = matched_nodes.get(matched_nodes.len() - 1).unwrap();
-                        context.touch_target = Some(*target);
-                        web_sys::console::debug_2(&"Setting touch_target:".into(), &target.to_string().into());
+                        match matched_nodes.get(matched_nodes.len() - 1) {
+                            Some(target) => {  
+                                context.touch_target = Some(*target);
+                                web_sys::console::debug_2(&"Setting touch_target:".into(), &target.to_string().into());
+                            }
+                            None => {}
+                        }
                     } 
+                    web_sys::console::log_1(&"B".into());
                     if event.event == MouseEvent::Move && context.touch_target.is_some() {
-                        if context.touch_target.unwrap() != *matched_nodes.get(matched_nodes.len() - 1).unwrap() {
-                            matched_nodes.push(context.touch_target.unwrap());
-                            web_sys::console::debug_2(&"sending touch_target:".into(), &context.touch_target.unwrap().to_string().into());
+                        match matched_nodes.get(matched_nodes.len() - 1) {
+                            Some(target) => {  
+                                if context.touch_target.unwrap() != *target {
+                                    matched_nodes.push(context.touch_target.unwrap());
+                                    web_sys::console::debug_2(&"sending touch_target:".into(), &context.touch_target.unwrap().to_string().into());
+                                }
+                            }
+                            None => {}
                         }
                     }
+                    web_sys::console::log_1(&"C".into());
                     if event.event == MouseEvent::Up {
-                        if context.touch_target.unwrap() != *matched_nodes.get(matched_nodes.len() - 1).unwrap() {
-                            matched_nodes.push(context.touch_target.unwrap());
-                            web_sys::console::debug_1(&"adding touch_target".into());
+                        match matched_nodes.get(matched_nodes.len() - 1) {
+                            Some(target) => {   
+                                if context.touch_target.unwrap() != *target {
+                                    matched_nodes.push(context.touch_target.unwrap());
+                                    web_sys::console::debug_1(&"adding touch_target".into());
+                                }
+                            }
+                            None => {}
                         }
                         context.touch_target = None
-
                     }
+                    web_sys::console::log_1(&"D".into());
                 }
             }
             Event::Window(_resize) => {
@@ -463,6 +492,8 @@ pub fn new_send_mouse_events(
                 web_sys::console::debug_1(&"FAILED".into());
             }
         }
+
+        web_sys::console::log_1(&"E".into());
         if matched_nodes.len() > 0 {
             let target = matched_nodes.get(matched_nodes.len() - 1).unwrap();
             let target = *target;
@@ -475,7 +506,7 @@ pub fn new_send_mouse_events(
                     Some(visual_node) => {
                         //web_sys::console::debug_1(&"node".into());
                         //web_sys::console::debug_1(&visual_node.get_uuid().to_string().into());
-                        visual_node.event_handler(context, &events.borrow().event, target);
+                        visual_node.event_handler(context, &event, target);
                     }
                     _ => (),
                 }
@@ -483,7 +514,9 @@ pub fn new_send_mouse_events(
         }
     }
     let new_event = Event::None;
+    web_sys::console::log_1(&"2".into());
     events.borrow_mut().set_event(new_event);
+    web_sys::console::log_1(&"3".into());
 }
 
 pub fn travers_tree(
